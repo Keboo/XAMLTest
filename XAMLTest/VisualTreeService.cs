@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -20,6 +20,7 @@ using XAMLTest.Internal;
 using Brush = System.Windows.Media.Brush;
 using Color = System.Windows.Media.Color;
 using Point = System.Windows.Point;
+using Window = System.Windows.Window;
 
 namespace XAMLTest
 {

@@ -7,6 +7,18 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <Title>XAML UI Testing Library</Title>
+    <Description>A library that allows unit tests to be written again WPF XAML.</Description>
+    <Copyright>Copyright 2020</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <IncludeSymbols>True</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <RepositoryUrl>https://github.com/Keboo/XAMLTest</RepositoryUrl>
+    <Version>0.0.1</Version>
+    <Authors>Keboo</Authors>
+  </PropertyGroup>
   
   <ItemGroup>
     <PackageReference Include="Grpc.Tools" Version="2.30.0">
@@ -19,11 +31,4 @@
     
     <Protobuf Include="VTspec.proto" GrpcServices="Both" />
   </ItemGroup>
-
-  <Target Name="CopyOutputs" AfterTargets="AfterBuild">
-    <ItemGroup>
-      <CopyItems Include="$(TargetDir)*" />
-    </ItemGroup>
-    <Copy SourceFiles="@(CopyItems)" DestinationFolder="$(SolutionDir)MaterialDesignThemes.UITests\bin\$(Configuration)\netcoreapp3.1\" />
-  </Target>
 </Project>
