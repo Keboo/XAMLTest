@@ -31,4 +31,20 @@
     
     <Protobuf Include="VTspec.proto" GrpcServices="Both" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);IncludeExeInPackage</TargetsForTfmSpecificContentInPackage>
+  </PropertyGroup>
+
+  <Target Name="IncludeExeInPackage">
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="$(TargetDir)$(TargetName).exe">
+        <PackagePath>build</PackagePath>
+      </TfmSpecificPackageFile>
+
+      <TfmSpecificPackageFile Include="$(ProjectDir)Build\*.targets">
+        <PackagePath>build</PackagePath>
+      </TfmSpecificPackageFile>
+    </ItemGroup>
+  </Target>
 </Project>
