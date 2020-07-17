@@ -32,4 +32,4 @@ jobs:
     #- name: NuGet push
     #  run: nuget push .\XAMLTest\bin\Release\XAMLTest.*.nupkg
     - name: Push NuGet
-      run: dotnet nuget push .\XAMLTest\bin\Release\XAMLTest.*.nupkg -k ${{ secrets.NUGET_API_KEY }}
+      run: dotnet nuget push .\XAMLTest\bin\Release\XAMLTest.*.nupkg --source https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }}
