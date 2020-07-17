@@ -5,6 +5,9 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  #schedule:
+    # * is a special character in YAML so you have to quote this string
+    #- cron:  '*/15 * * * *'
 
 jobs:
   build:
@@ -17,10 +20,6 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.1.101
-    #- uses: nuget/setup-nuget@v1
-    #  with:
-    #    nuget-api-key: ${{ secrets.NUGET_API_KEY }}
-    #    nuget-version: '>=5'
     - name: Install dependencies
       run: dotnet restore
     - name: Build
@@ -28,8 +27,8 @@ jobs:
     #- name: Test
     #  run: dotnet test --no-restore --verbosity normal
     - name: Pack
+      if: ${{ github.event_name != pull_request }}
       run: dotnet pack --configuration Release --no-build
-    #- name: NuGet push
-    #  run: nuget push .\XAMLTest\bin\Release\XAMLTest.*.nupkg
     - name: Push NuGet
-      run: dotnet nuget push .\XAMLTest\bin\Release\XAMLTest.*.nupkg --source https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }}
+      run: dotnet nuget push .\XAMLTest\bin\Release\XAMLTest.*.nupkg --source https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }} --skip-duplicate
+      if: ${{ github.event_name != pull_request }}
