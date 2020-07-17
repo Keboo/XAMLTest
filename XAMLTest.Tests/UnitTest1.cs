@@ -8,6 +8,7 @@ namespace XAMLTest.Tests
     [TestClass]
     public class UnitTest1
     {
+        /*
         [TestMethod]
         public async Task TestMethod1()
         {
@@ -30,5 +31,6 @@ xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""/>", Assembly.GetExecuti
 
             await Task.Delay(TimeSpan.FromSeconds(3));
         }
+        */
     }
 }

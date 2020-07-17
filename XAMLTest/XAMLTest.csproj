@@ -41,6 +41,9 @@
       <TfmSpecificPackageFile Include="$(TargetDir)$(TargetName).exe">
         <PackagePath>build</PackagePath>
       </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(TargetDir)$(TargetName).runtimeconfig.json">
+        <PackagePath>build</PackagePath>
+      </TfmSpecificPackageFile>
 
       <TfmSpecificPackageFile Include="$(ProjectDir)Build\*.targets">
         <PackagePath>build</PackagePath>
