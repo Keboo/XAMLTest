@@ -17,17 +17,19 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.1.101
-    - uses: nuget/setup-nuget@v1
-      with:
-        nuget-api-key: ${{ secrets.NUGET_API_KEY }}
-        nuget-version: '>=5'
+    #- uses: nuget/setup-nuget@v1
+    #  with:
+    #    nuget-api-key: ${{ secrets.NUGET_API_KEY }}
+    #    nuget-version: '>=5'
     - name: Install dependencies
       run: dotnet restore
     - name: Build
       run: dotnet build --configuration Release --no-restore
-    - name: Test
-      run: dotnet test --no-restore --verbosity normal
+    #- name: Test
+    #  run: dotnet test --no-restore --verbosity normal
     - name: Pack
       run: dotnet pack --configuration Release --no-build
-    - name: NuGet push
-      run: nuget push XAMLTest\bin\Release\XAMLTest.*nupkg
+    #- name: NuGet push
+    #  run: nuget push .\XAMLTest\bin\Release\XAMLTest.*.nupkg
+    - name: Push NuGet
+      run: dotnet nuget push .\XAMLTest\bin\Release\XAMLTest.*.nupkg -k ${{ secrets.NUGET_API_KEY }}
