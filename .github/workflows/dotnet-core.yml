@@ -43,7 +43,7 @@ jobs:
       if: ${{ github.event_name != 'pull_request' }}
       with:
         name: ${{ github.ref }}-${{ github.event_name }}
-        path: ${{ github.workspace }}/XAMLTest/XAMLTest/bin/${{ env.configuration }}/XAMLTest.${{ env.version }}-*nupkg
+        path: ${{ github.workspace }}\XAMLTest\bin\${{ env.configuration }}\XAMLTest.${{ env.version }}-*nupkg
     #- name: Create Release
     #  id: create_release
     #  uses: actions/create-release@v1
