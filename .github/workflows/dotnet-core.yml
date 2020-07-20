@@ -33,12 +33,12 @@ jobs:
     - name: Install dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --version ${{ env.version }} --configuration ${{ env.configuration }} --no-restore
+      run: dotnet build -p:Version=${{ env.version }}.${{ github.run_number }} --configuration ${{ env.configuration }} --no-restore
     #- name: Test
     #  run: dotnet test --no-restore --verbosity normal
     - name: Pack
       if: ${{ github.event_name != 'pull_request' }}
-      run: dotnet pack --version ${{ env.version }}-ci${{ github.run_number }} --configuration ${{ env.configuration }} --no-build
+      run: dotnet pack -p:PackageVersion=${{ env.version }}-ci${{ github.run_number }} --configuration ${{ env.configuration }} --no-build
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
