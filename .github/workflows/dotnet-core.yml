@@ -39,20 +39,24 @@ jobs:
     - name: Pack
       if: ${{ github.event_name != 'pull_request' }}
       run: dotnet pack -p:PackageVersion=${{ env.version }}-ci${{ github.run_number }} --configuration ${{ env.configuration }} --no-build
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - uses: actions/upload-artifact@v2
       with:
-        #tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        body: |
-          Changes in this Release
-          - First Change
-          - Second Change
-        draft: true
-        prerelease: true
+        name: Packages
+        path: **/XAMLTest.${{ env.version }}-*nupkg
+    #- name: Create Release
+    #  id: create_release
+    #  uses: actions/create-release@v1
+    #  env:
+    #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #  with:
+    #    #tag_name: ${{ github.ref }}
+    #    release_name: Release ${{ github.ref }}
+    #    body: |
+    #      Changes in this Release
+    #      - First Change
+    #      - Second Change
+    #    draft: true
+    #    prerelease: true
     #- name: Push GitHub NuGet
     #  run: dotnet nuget push .\XAMLTest\bin\${{ env.Configuration }}\XAMLTest.*.nupkg --source https://nuget.pkg.github.com/keboo/index.json -k ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
     #  if: ${{ github.event_name != 'pull_request' }}
