@@ -42,7 +42,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         name: Packages
-        path: **/XAMLTest.${{ env.version }}-*nupkg
+        path: ${{ github.workspace }}/**/XAMLTest.${{ env.version }}-*nupkg
     #- name: Create Release
     #  id: create_release
     #  uses: actions/create-release@v1
