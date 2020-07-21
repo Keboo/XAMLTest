@@ -8,9 +8,6 @@ on:
       - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
   pull_request:
     branches: [ master ]
-  #schedule:
-    # * is a special character in YAML so you have to quote this string
-    #- cron:  '*/15 * * * *'
 
 defaults:
   run:
@@ -18,7 +15,7 @@ defaults:
 
 env:
   configuration: Release
-  buildVersion: 0.0.1
+  baseVersion: 0.0.1
   preRelease: true
 
 jobs:
@@ -38,8 +35,8 @@ jobs:
           Write-Host "::set-env name=nugetVersion::$tagVersion"
           Write-Host "::set-env name=preRelease::false"
         } else {
-          Write-Host "::set-env name=buildVersion::${{ env.buildVersion }}.${{ github.run_number }}"
-          Write-Host "::set-env name=nugetVersion::${{ env.buildVersion }}-ci${{ github.run_number }}"
+          Write-Host "::set-env name=buildVersion::${{ env.baseVersion }}.${{ github.run_number }}"
+          Write-Host "::set-env name=nugetVersion::${{ env.baseVersion }}-ci${{ github.run_number }}"
         }
     
     - name: Setup .NET Core
@@ -71,20 +68,15 @@ jobs:
         path: ${{ github.workspace }}\XAMLTest\bin\${{ env.configuration }}\XAMLTest.${{ env.nugetVersion }}*nupkg
     
     - name: Create Release
-      if: ${{ env.preRelease == 'false' }}
       id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        body: |
-          Release Notes
-          - First Change
-          - Second Change
+        tag_name: v${{ env.baseVersion }}
+        release_name: Release ${{ env.baseVersion }}
         draft: true
-        prerelease: true
+        prerelease: ${{ env.preRelease }}
 
     - name: Push NuGet
       if: ${{ github.event_name != 'pull_request' }}
