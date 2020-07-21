@@ -360,7 +360,7 @@ namespace XamlTest
         public override async Task<WindowResult> CreateWindow(WindowConfiguration request, ServerCallContext context)
         {
             var reply = new WindowResult();
-            await Application.Dispatcher.InvokeAsync(async () =>
+            await Application.Dispatcher.InvokeAsync(() =>
             {
                 Window? window = null;
                 try
