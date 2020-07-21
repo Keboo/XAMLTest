@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace XAMLTest
+namespace XamlTest
 {
     public interface IService : IDisposable
     { }

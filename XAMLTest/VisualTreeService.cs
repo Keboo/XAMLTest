@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -16,13 +17,14 @@ using System.Windows.Markup;
 using System.Windows.Media;
 using Google.Protobuf;
 using Grpc.Core;
-using XAMLTest.Internal;
+using XamlTest;
+using XamlTest.Internal;
 using Brush = System.Windows.Media.Brush;
 using Color = System.Windows.Media.Color;
 using Point = System.Windows.Point;
 using Window = System.Windows.Window;
 
-namespace XAMLTest
+namespace XamlTest
 {
     internal class VisualTreeService : Protocol.ProtocolBase
     {
@@ -358,7 +360,7 @@ namespace XAMLTest
         public override async Task<WindowResult> CreateWindow(WindowConfiguration request, ServerCallContext context)
         {
             var reply = new WindowResult();
-            await Application.Dispatcher.InvokeAsync(() =>
+            await Application.Dispatcher.InvokeAsync(async () =>
             {
                 Window? window = null;
                 try

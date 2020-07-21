@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using XamlTest;
 
-namespace XAMLTest.Internal
+namespace XamlTest.Internal
 {
 
     internal class App : IApp

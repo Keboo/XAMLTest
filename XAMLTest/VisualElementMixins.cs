@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Media;
 using static PInvoke.User32;
 
-namespace XAMLTest
+namespace XamlTest
 {
     public static class VisualElementMixins
     {

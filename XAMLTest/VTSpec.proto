@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-option csharp_namespace = "XAMLTest";
+option csharp_namespace = "XamlTest";
 
-package XAMLTest;
+package XamlTest;
 
 // The visual tree service definition.
 service Protocol {

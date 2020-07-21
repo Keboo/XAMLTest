@@ -1,18 +1,17 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace XAMLTest.Tests
+namespace XamlTest.Tests
 {
     [TestClass]
-    public class UnitTest1
+    public class WindowTests
     {
-        /*
         [TestMethod]
         public async Task TestMethod1()
         {
             using var app = App.StartRemote();
+            await using var recorder = new TestRecorder(app);
 
             await app.Initialize(@"<ResourceDictionary xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
 xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""/>", Assembly.GetExecutingAssembly().Location);
@@ -29,8 +28,12 @@ xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""/>", Assembly.GetExecuti
 </Window>";
             IWindow window = await app.CreateWindow(xaml);
 
-            await Task.Delay(TimeSpan.FromSeconds(3));
+            Assert.AreEqual("Test Window", await window.GetTitle());
+            await window.WaitForLoaded();
+
+            await recorder.SaveScreenshot();
+
+            recorder.Success();
         }
-        */
     }
 }

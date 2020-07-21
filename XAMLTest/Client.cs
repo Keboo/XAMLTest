@@ -2,14 +2,14 @@
 using System.Diagnostics;
 using GrpcDotNetNamedPipes;
 
-namespace XAMLTest
+namespace XamlTest
 {
     public static class Client
     {
-        public static IApp ConnectToApp() 
+        public static IApp ConnectToApp()
             => ConnectToApp(Process.GetCurrentProcess());
 
-        public static IApp ConnectToApp(int processId) 
+        public static IApp ConnectToApp(int processId)
             => ConnectToApp(Process.GetProcessById(processId));
 
         public static IApp ConnectToApp(Process process)

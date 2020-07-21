@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 
-namespace XAMLTest
+namespace XamlTest
 {
     public static class Wait
     {

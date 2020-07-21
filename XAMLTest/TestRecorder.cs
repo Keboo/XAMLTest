@@ -2,8 +2,9 @@
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using XamlTest;
 
-namespace XAMLTest
+namespace XamlTest
 {
     public sealed class TestRecorder : IAsyncDisposable
     {

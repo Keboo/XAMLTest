@@ -1,4 +1,4 @@
-﻿namespace XAMLTest.Internal
+﻿namespace XamlTest.Internal
 {
     internal class Window : VisualElement, IWindow
     {

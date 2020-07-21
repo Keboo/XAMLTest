@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Windows;
 
-namespace XAMLTest.Internal
+namespace XamlTest.Internal
 {
     internal static class DependencyObjectTracker
     {

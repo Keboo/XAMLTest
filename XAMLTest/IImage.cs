@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 
-namespace XAMLTest
+namespace XamlTest
 {
     public interface IImage
     {

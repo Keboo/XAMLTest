@@ -6,6 +6,7 @@
     <UseWPF>true</UseWPF>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RootNamespace>XamlTest</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -15,7 +16,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <IncludeSymbols>True</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <RepositoryUrl>https://github.com/Keboo/XAMLTest</RepositoryUrl>
+    <RepositoryUrl>https://github.com/Keboo/XamlTest</RepositoryUrl>
     <Authors>Keboo</Authors>
   </PropertyGroup>
   

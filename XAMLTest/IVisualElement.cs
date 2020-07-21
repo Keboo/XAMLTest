@@ -2,7 +2,7 @@
 using System.Windows;
 using System.Windows.Media;
 
-namespace XAMLTest
+namespace XamlTest
 {
     public interface IVisualElement
     {

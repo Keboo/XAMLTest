@@ -3,9 +3,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using GrpcDotNetNamedPipes;
-using XAMLTest.Internal;
+using XamlTest.Internal;
 
-namespace XAMLTest
+namespace XamlTest
 {
     public static class App
     {

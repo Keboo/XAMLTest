@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace XAMLTest
+namespace XamlTest
 {
     public interface IApp : IDisposable
     {
