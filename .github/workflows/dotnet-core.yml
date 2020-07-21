@@ -19,6 +19,7 @@ defaults:
 env:
   configuration: Release
   buildVersion: 0.0.1
+  preRelease: true
 
 jobs:
   build:
@@ -26,7 +27,8 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v2
     
     - name: Set Version
       run: |
@@ -34,6 +36,7 @@ jobs:
           $tagVersion = "${{ github.ref }}".subsctring(11)
           Write-Host "::set-env name=buildVersion::$tagVersion.${{ github.run_number }}"
           Write-Host "::set-env name=nugetVersion::$tagVersion"
+          Write-Host "::set-env name=preRelease::false"
         } else {
           Write-Host "::set-env name=buildVersion::${{ env.buildVersion }}.${{ github.run_number }}"
           Write-Host "::set-env name=nugetVersion::${{ env.buildVersion }}-ci${{ github.run_number }}"
@@ -52,31 +55,37 @@ jobs:
     
     - name: Build
       run: dotnet build -p:Version=${{ env.buildVersion }} --configuration ${{ env.configuration }} --no-restore
-    #- name: Test
-    #  run: dotnet test --no-restore --verbosity normal
+    
+    - name: Test
+      run: dotnet test --no-restore --verbosity normal
+
     - name: Pack
       if: ${{ github.event_name != 'pull_request' }}
       run: dotnet pack -p:PackageVersion=${{ env.nugetVersion }} --configuration ${{ env.configuration }} --no-build
     
-    - uses: actions/upload-artifact@v2
+    - name: Upload Artifacts
       if: ${{ github.event_name != 'pull_request' }}
+      uses: actions/upload-artifact@v2
       with:
         name: ${{ env.buildVersion }}
-        path: ${{ github.workspace }}\XAMLTest\bin\${{ env.configuration }}\XAMLTest.${{ env.version }}-*nupkg
-    #- name: Create Release
-    #  id: create_release
-    #  uses: actions/create-release@v1
-    #  env:
-    #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #  with:
-    #    #tag_name: ${{ github.ref }}
-    #    release_name: Release ${{ github.ref }}
-    #    body: |
-    #      Changes in this Release
-    #      - First Change
-    #      - Second Change
-    #    draft: true
-    #    prerelease: true
-    #- name: Push NuGet
-    #  run: dotnet nuget push .\XAMLTest\bin\${{ env.Configuration }}\XAMLTest.*.nupkg --source https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }} --skip-duplicate
-    #  if: ${{ github.event_name != 'pull_request' }}
+        path: ${{ github.workspace }}\XAMLTest\bin\${{ env.configuration }}\XAMLTest.${{ env.nugetVersion }}*nupkg
+    
+    - name: Create Release
+      if: ${{ env.preRelease == 'false' }}
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: |
+          Release Notes
+          - First Change
+          - Second Change
+        draft: true
+        prerelease: true
+
+    - name: Push NuGet
+      if: ${{ github.event_name != 'pull_request' }}
+      run: dotnet nuget push ${{ github.workspace }}\XAMLTest\bin\${{ env.configuration }}\XAMLTest.${{ env.nugetVersion }}.nupkg --source https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }} --skip-duplicate
