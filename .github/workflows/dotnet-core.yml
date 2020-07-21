@@ -36,7 +36,7 @@ jobs:
           Write-Host "::set-env name=nugetVersion::$tagVersion"
         } else {
           Write-Host "::set-env name=buildVersion::${{ env.buildVersion }}.${{ github.run_number }}"
-          Write-Host "::set-env name=nugetVersion::$tagVersion-ci${{ github.run_number }}"
+          Write-Host "::set-env name=nugetVersion::${{ env.buildVersion }}-ci${{ github.run_number }}"
         }
     
     - name: Setup .NET Core
@@ -54,7 +54,7 @@ jobs:
       run: dotnet build -p:Version=${{ env.buildVersion }} --configuration ${{ env.configuration }} --no-restore
     #- name: Test
     #  run: dotnet test --no-restore --verbosity normal
-    - name: Pack CI 
+    - name: Pack
       if: ${{ github.event_name != 'pull_request' }}
       run: dotnet pack -p:PackageVersion=${{ env.nugetVersion }} --configuration ${{ env.configuration }} --no-build
     
