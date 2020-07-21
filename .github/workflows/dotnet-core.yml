@@ -12,9 +12,13 @@ on:
     # * is a special character in YAML so you have to quote this string
     #- cron:  '*/15 * * * *'
 
+defaults:
+  run:
+    shell: pwsh
+
 env:
   configuration: Release
-  version: 0.0.1
+  buildVersion: 0.0.1
 
 jobs:
   build:
@@ -23,6 +27,18 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    
+    - name: Set Version
+      run: |
+          if ("${{ github.ref }}".startsWith("refs/tags/v")) {
+            $tagVersion = "${{ github.ref }}".subsctring(11)
+            Write-Host "::set-env name=buildVersion::$tagVersion.${{ github.run_number }}"
+            Write-Host "::set-env name=nugetVersion::$tagVersion"
+          } else {
+            Write-Host "::set-env name=buildVersion::${{ env.buildVersion }}.${{ github.run_number }}"
+            Write-Host "::set-env name=nugetVersion::$tagVersion-ci${{ github.run_number }}"
+          }
+    
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
@@ -30,19 +46,26 @@ jobs:
         source-url: https://nuget.pkg.github.com/keboo/index.json
       env:
         NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}  
+    
     - name: Install dependencies
       run: dotnet restore
+    
     - name: Build
-      run: dotnet build -p:Version=${{ env.version }}.${{ github.run_number }} --configuration ${{ env.configuration }} --no-restore
+      run: dotnet build -p:Version=${{ env.buildVersion }}.${{ github.run_number }} --configuration ${{ env.configuration }} --no-restore
     #- name: Test
     #  run: dotnet test --no-restore --verbosity normal
-    - name: Pack
-      if: ${{ github.event_name != 'pull_request' }}
-      run: dotnet pack -p:PackageVersion=${{ env.version }}-ci${{ github.run_number }} --configuration ${{ env.configuration }} --no-build
+    - name: Pack CI 
+      if: ${{ github.event_name != 'pull_request' && env.tagVersion == '' }}
+      run: dotnet pack -p:PackageVersion=${{ env.nugetVersion }}-ci${{ github.run_number }} --configuration ${{ env.configuration }} --no-build
+    
+    - name: Pack CI 
+      if: ${{ github.event_name != 'pull_request' && env.tagVersion == env.nugetVersion }}
+      run: dotnet pack -p:PackageVersion=${{ env.nugetVersion }} --configuration ${{ env.configuration }} --no-build
+    
     - uses: actions/upload-artifact@v2
       if: ${{ github.event_name != 'pull_request' }}
       with:
-        name: ${{ github.ref }}-${{ github.event_name }}
+        name: ${{ env.buildVersion }}
         path: ${{ github.workspace }}\XAMLTest\bin\${{ env.configuration }}\XAMLTest.${{ env.version }}-*nupkg
     #- name: Create Release
     #  id: create_release
