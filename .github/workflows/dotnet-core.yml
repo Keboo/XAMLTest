@@ -75,7 +75,7 @@ jobs:
         path: ${{ github.workspace }}\XAMLTest.Tests\bin\${{ env.configuration }}\netcoreapp3.1\Screenshots
     
     - name: Create Release
-      if: ${{ github.event_name != 'pull_request' && ${{ env.preRelease == 'false' }}
+      if: ${{ github.event_name != 'pull_request' }} && ${{ env.preRelease == 'false' }}
       id: create_release
       uses: actions/create-release@v1
       env:
