@@ -68,6 +68,7 @@ jobs:
         path: ${{ github.workspace }}\XAMLTest\bin\${{ env.configuration }}\XAMLTest.${{ env.nugetVersion }}*nupkg
     
     - name: Create Release
+      if: ${{ github.event_name != 'pull_request' }}
       id: create_release
       uses: actions/create-release@v1
       env:
