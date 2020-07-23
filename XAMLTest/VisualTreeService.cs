@@ -1,3 +1,5 @@
+using Google.Protobuf;
+using Grpc.Core;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -8,16 +10,11 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Markup;
 using System.Windows.Media;
-using Google.Protobuf;
-using Grpc.Core;
-using XamlTest;
 using XamlTest.Internal;
 using Brush = System.Windows.Media.Brush;
 using Color = System.Windows.Media.Color;
@@ -57,13 +54,24 @@ namespace XamlTest
 
         public override async Task<GetWindowsResult> GetMainWindow(GetWindowsQuery request, ServerCallContext context)
         {
-            string id = await Application.Dispatcher.InvokeAsync(() =>
+            string? id = await Application.Dispatcher.InvokeAsync(() =>
             {
-                return DependencyObjectTracker.GetOrSetId(Application.MainWindow, KnownElements);
+                try
+                {
+                    Window mainWindow = Application.MainWindow;
+                    return DependencyObjectTracker.GetOrSetId(mainWindow, KnownElements);
+                }
+                catch (Exception e)
+                {
+                    return null;
+                }
             });
 
             var reply = new GetWindowsResult();
-            reply.WindowIds.Add(id);
+            if (!string.IsNullOrWhiteSpace(id))
+            {
+                reply.WindowIds.Add(id);
+            }
             return reply;
         }
 
