@@ -7,17 +7,17 @@ namespace XamlTest.Tests
     [TestClass]
     public class WindowTests
     {
-        public TestContext Context { get; set; }
+        public TestContext TestContext { get; set; }
 
         [TestMethod]
         public async Task TestMethod1()
         {
-            Context.WriteLine("Starting app");
+            TestContext.WriteLine("Starting app");
             using var app = App.StartRemote();
-            Context.WriteLine("Setup recorder");
+            TestContext.WriteLine("Setup recorder");
             await using var recorder = new TestRecorder(app);
 
-            Context.WriteLine("Initialize app");
+            TestContext.WriteLine("Initialize app");
             await app.Initialize(@"<ResourceDictionary xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
 xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""/>", Assembly.GetExecutingAssembly().Location);
 
@@ -31,17 +31,17 @@ xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""/>", Assembly.GetExecuti
         Title=""Test Window""
         WindowStartupLocation=""CenterScreen"">
 </Window>";
-            Context.WriteLine("Create window");
+            TestContext.WriteLine("Create window");
             IWindow window = await app.CreateWindow(xaml);
 
             Assert.AreEqual("Test Window", await window.GetTitle());
-            Context.WriteLine("Wait for loaded");
+            TestContext.WriteLine("Wait for loaded");
             await window.WaitForLoaded();
 
-            Context.WriteLine("Save Screenshot");
+            TestContext.WriteLine("Save Screenshot");
             await recorder.SaveScreenshot();
 
-            Context.WriteLine("Success");
+            TestContext.WriteLine("Success");
             recorder.Success();
         }
     }

@@ -36,6 +36,13 @@
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);IncludeExeInPackage</TargetsForTfmSpecificContentInPackage>
   </PropertyGroup>
 
+  <Target Name="CopyOutputs" AfterTargets="AfterBuild">
+    <ItemGroup>
+      <CopyItems Include="$(TargetDir)*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(CopyItems)" DestinationFolder="$(SolutionDir)XAMLTest.Tests\bin\$(Configuration)\netcoreapp3.1\" />
+  </Target>
+
   <Target Name="IncludeExeInPackage">
     <ItemGroup>
       <TfmSpecificPackageFile Include="$(TargetDir)$(TargetName).exe">
