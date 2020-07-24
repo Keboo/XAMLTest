@@ -11,8 +11,6 @@ namespace XamlTest.Tests
     [TestClass]
     public class AppTests
     {
-        public TestContext TestContext { get; set; }
-
         [TestMethod]
         public async Task OnCreateWindow_CanReadTitle()
         {

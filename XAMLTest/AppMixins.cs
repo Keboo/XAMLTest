@@ -27,6 +27,7 @@ xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
         public static async Task<IWindow> CreateWindowWithContent(this IApp app, string xamlContent,
             Size? windowSize = null,
             string title = "Test Window",
+            string background = "White",
             WindowStartupLocation startupLocation = WindowStartupLocation.CenterScreen)
         {
             if (app is null)
@@ -43,6 +44,7 @@ mc:Ignorable=""d""
 Height=""{windowSize?.Height ?? 800}"" 
 Width=""{windowSize?.Width ?? 1100}""
 Title=""{title}""
+Background=""{background}""
 WindowStartupLocation=""{startupLocation}"">
 {xamlContent}
 </Window>";

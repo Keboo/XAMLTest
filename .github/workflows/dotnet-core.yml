@@ -29,7 +29,7 @@ jobs:
     - name: Set Version
       run: |
         if ("${{ github.ref }}".startsWith("refs/tags/v")) {
-          $tagVersion = "${{ github.ref }}".subsctring(11)
+          $tagVersion = "${{ github.ref }}".substring(11)
           Write-Host "::set-env name=buildVersion::$tagVersion.${{ github.run_number }}"
           Write-Host "::set-env name=nugetVersion::$tagVersion"
           Write-Host "::set-env name=preRelease::false"
@@ -44,7 +44,7 @@ jobs:
         dotnet-version: 3.1.101
         source-url: https://nuget.pkg.github.com/keboo/index.json
       env:
-        NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}  
+        NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
     
     - name: Install dependencies
       run: dotnet restore
@@ -53,8 +53,19 @@ jobs:
       run: dotnet build -p:Version=${{ env.buildVersion }} --configuration ${{ env.configuration }} --no-restore
     
     - name: Test
-      run: dotnet test --no-restore --verbosity normal
+      run: dotnet test --no-build --verbosity normal
 
+    - name: Upload Screenshots
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: Test Images
+        path: ${{ github.workspace }}\XAMLTest.Tests\bin\${{ env.configuration }}\netcoreapp3.1\Screenshots
+
+    - name: Pack
+      if: ${{ github.event_name != 'pull_request' }}
+      run: dotnet pack -p:PackageVersion=${{ env.nugetVersion }} --configuration ${{ env.configuration }} --no-build
+    
     - name: Upload Artifacts
       if: ${{ github.event_name != 'pull_request' }}
       uses: actions/upload-artifact@v2
@@ -62,17 +73,6 @@ jobs:
         name: NuGet
         path: ${{ github.workspace }}\XAMLTest\bin\${{ env.configuration }}\XAMLTest.${{ env.nugetVersion }}*nupkg
 
-    - name: Pack
-      if: ${{ github.event_name != 'pull_request' }}
-      run: dotnet pack -p:PackageVersion=${{ env.nugetVersion }} --configuration ${{ env.configuration }} --no-build
-    
-    - name: Upload Screenshots
-      if: ${{ always() }}
-      uses: actions/upload-artifact@v2
-      with:
-        name: Test Images
-        path: ${{ github.workspace }}\XAMLTest.Tests\bin\${{ env.configuration }}\netcoreapp3.1\Screenshots
-    
     - name: Create Release
       if: ${{ github.event_name != 'pull_request' }} && ${{ env.preRelease == 'false' }}
       id: create_release

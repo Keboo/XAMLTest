@@ -143,7 +143,7 @@ namespace XamlTest
                 PropertyDescriptor? foundProperty = properties.Find(request.Name, false);
                 if (foundProperty is null)
                 {
-                    reply.ErrorMessages.Add($"Could not find property with name '{request.Name}'");
+                    reply.ErrorMessages.Add($"Could not find property with name '{request.Name}' on element '{element.GetType().FullName}'");
                     return;
                 }
 
@@ -167,7 +167,7 @@ namespace XamlTest
                     return;
                 }
 
-                Color backgroundColor = Colors.Transparent;
+                Color currentColor = Colors.Transparent;
                 foreach (var ancestor in Ancestors<FrameworkElement>(element))
                 {
                     Brush background;
@@ -184,9 +184,9 @@ namespace XamlTest
 
                     if (background is SolidColorBrush brush)
                     {
-                        Color foreground = brush.Color.WithOpacity(ancestor.Opacity);
-                        backgroundColor = foreground.FlattenOnto(backgroundColor);
-                        if (backgroundColor.A == byte.MaxValue)
+                        Color parentBackground = brush.Color.WithOpacity(ancestor.Opacity);
+                        currentColor = currentColor.FlattenOnto(parentBackground);
+                        if (currentColor.A == byte.MaxValue)
                         {
                             break;
                         }
@@ -197,10 +197,10 @@ namespace XamlTest
                         break;
                     }
                 }
-                reply.Alpha = backgroundColor.A;
-                reply.Red = backgroundColor.R;
-                reply.Green = backgroundColor.G;
-                reply.Blue = backgroundColor.B;
+                reply.Alpha = currentColor.A;
+                reply.Red = currentColor.R;
+                reply.Green = currentColor.G;
+                reply.Blue = currentColor.B;
             });
             return reply;
         }

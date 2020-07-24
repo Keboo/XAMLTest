@@ -71,6 +71,9 @@ namespace XamlTest
         public static async Task<bool> GetIsVisible(this IVisualElement element)
             => await element.GetProperty<bool>("IsVisible");
 
+        public static async Task<double> GetWidth(this IVisualElement element)
+            => await element.GetProperty<double>("Width");
+
         public static async Task<string> GetText(this IVisualElement element)
             => await element.GetProperty<string>("Text");
 
@@ -82,5 +85,53 @@ namespace XamlTest
 
         public static async Task<Color> GetForegroundColor(this IVisualElement element)
             => await element.GetProperty<Color>("Foreground");
+
+        public static async Task<Thickness> GetMargin(this IVisualElement element)
+            => await element.GetProperty<Thickness>("Margin");
+
+        public static async Task<object> GetContent(this IVisualElement element)
+            => await element.GetProperty<object>("Content");
+
+        public static async Task<T> SetProperty<T>(this IVisualElement element, string propertyName, T value)
+        {
+            if (element is null)
+            {
+                throw new ArgumentNullException(nameof(element));
+            }
+
+            if (string.IsNullOrEmpty(propertyName))
+            {
+                throw new ArgumentException($"'{nameof(propertyName)}' cannot be null or empty", nameof(propertyName));
+            }
+
+            IValue newValue = await element.SetProperty(propertyName, value?.ToString() ?? "", typeof(T).AssemblyQualifiedName);
+            if (newValue is { })
+            {
+#pragma warning disable CS8603 // Possible null reference return.
+                return newValue.GetValueAs<T>();
+#pragma warning restore CS8603 // Possible null reference return.
+            }
+#pragma warning disable CS8603 // Possible null reference return.
+            return default;
+#pragma warning restore CS8603 // Possible null reference return.
+        }
+
+        public static async Task<double> SetWidth(this IVisualElement element, double width)
+            => await element.SetProperty("Width", width);
+
+        public static async Task<double> SetHeight(this IVisualElement element, double height)
+            => await element.SetProperty("Height", height);
+
+        public static async Task<Thickness> SetMargin(this IVisualElement element, Thickness margin)
+            => await element.SetProperty("Margin", margin);
+
+        public static async Task<Color> SetBackgroundColor(this IVisualElement element, Color color)
+        {
+            SolidColorBrush? brush = await element.SetProperty("Background", new SolidColorBrush(color));
+            return brush?.Color ?? default;
+        }
+
+        public static async Task<string> SetText(this IVisualElement element, string text)
+            => await element.SetProperty<string>("Text", text);
     }
 }

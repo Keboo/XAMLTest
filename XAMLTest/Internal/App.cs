@@ -75,9 +75,9 @@ namespace XamlTest.Internal
                 {
                     throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
                 }
-                if (reply.ValueType is { } valueType && !string.IsNullOrWhiteSpace(valueType))
+                if (!string.IsNullOrWhiteSpace(reply.ValueType))
                 {
-                    return new Resource(reply.Key, valueType, reply.Value);
+                    return new Resource(reply.Key, reply.ValueType, reply.Value);
                 }
                 throw new Exception($"Resource with key '{reply.Key}' not found");
             }
