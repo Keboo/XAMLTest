@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Windows.Media;
 
-namespace XAMLTest
+namespace XamlTest
 {
     public static class ValueMixins
     {

@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace XAMLTest
+namespace XamlTest
 {
     internal static class RectMixins
     {

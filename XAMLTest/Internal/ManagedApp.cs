@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace XAMLTest.Internal
+namespace XamlTest.Internal
 {
     internal class ManagedApp : App
     {

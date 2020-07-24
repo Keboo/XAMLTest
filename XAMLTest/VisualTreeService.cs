@@ -1,3 +1,5 @@
+using Google.Protobuf;
+using Grpc.Core;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,18 +13,15 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Markup;
 using System.Windows.Media;
-using Google.Protobuf;
-using Grpc.Core;
-using XAMLTest.Internal;
+using XamlTest.Internal;
 using Brush = System.Windows.Media.Brush;
 using Color = System.Windows.Media.Color;
 using Point = System.Windows.Point;
 using Window = System.Windows.Window;
 
-namespace XAMLTest
+namespace XamlTest
 {
     internal class VisualTreeService : Protocol.ProtocolBase
     {
@@ -55,13 +54,24 @@ namespace XAMLTest
 
         public override async Task<GetWindowsResult> GetMainWindow(GetWindowsQuery request, ServerCallContext context)
         {
-            string id = await Application.Dispatcher.InvokeAsync(() =>
+            string? id = await Application.Dispatcher.InvokeAsync(() =>
             {
-                return DependencyObjectTracker.GetOrSetId(Application.MainWindow, KnownElements);
+                try
+                {
+                    Window mainWindow = Application.MainWindow;
+                    return DependencyObjectTracker.GetOrSetId(mainWindow, KnownElements);
+                }
+                catch (Exception e)
+                {
+                    return null;
+                }
             });
 
             var reply = new GetWindowsResult();
-            reply.WindowIds.Add(id);
+            if (!string.IsNullOrWhiteSpace(id))
+            {
+                reply.WindowIds.Add(id);
+            }
             return reply;
         }
 
@@ -133,7 +143,7 @@ namespace XAMLTest
                 PropertyDescriptor? foundProperty = properties.Find(request.Name, false);
                 if (foundProperty is null)
                 {
-                    reply.ErrorMessages.Add($"Could not find property with name '{request.Name}'");
+                    reply.ErrorMessages.Add($"Could not find property with name '{request.Name}' on element '{element.GetType().FullName}'");
                     return;
                 }
 
@@ -157,7 +167,7 @@ namespace XAMLTest
                     return;
                 }
 
-                Color backgroundColor = Colors.Transparent;
+                Color currentColor = Colors.Transparent;
                 foreach (var ancestor in Ancestors<FrameworkElement>(element))
                 {
                     Brush background;
@@ -174,9 +184,9 @@ namespace XAMLTest
 
                     if (background is SolidColorBrush brush)
                     {
-                        Color foreground = brush.Color.WithOpacity(ancestor.Opacity);
-                        backgroundColor = foreground.FlattenOnto(backgroundColor);
-                        if (backgroundColor.A == byte.MaxValue)
+                        Color parentBackground = brush.Color.WithOpacity(ancestor.Opacity);
+                        currentColor = currentColor.FlattenOnto(parentBackground);
+                        if (currentColor.A == byte.MaxValue)
                         {
                             break;
                         }
@@ -187,10 +197,10 @@ namespace XAMLTest
                         break;
                     }
                 }
-                reply.Alpha = backgroundColor.A;
-                reply.Red = backgroundColor.R;
-                reply.Green = backgroundColor.G;
-                reply.Blue = backgroundColor.B;
+                reply.Alpha = currentColor.A;
+                reply.Red = currentColor.R;
+                reply.Green = currentColor.G;
+                reply.Blue = currentColor.B;
             });
             return reply;
         }
@@ -251,17 +261,26 @@ namespace XAMLTest
 
         public override async Task<ResourceResult> GetResource(ResourceQuery request, ServerCallContext context)
         {
-            var reply = new ResourceResult();
+            var reply = new ResourceResult
+            {
+                Key = request.Key
+            };
             await Application.Dispatcher.InvokeAsync(() =>
             {
-                FrameworkElement? element = GetCachedElement<FrameworkElement>(request.ElementId);
-                object resourceValue = element is null ?
-                    Application.TryFindResource(request.Key) :
-                    element.TryFindResource(request.Key);
+                try
+                {
+                    FrameworkElement? element = GetCachedElement<FrameworkElement>(request.ElementId);
+                    object resourceValue = element is null ?
+                        Application.TryFindResource(request.Key) :
+                        element.TryFindResource(request.Key);
 
-                reply.Value = resourceValue?.ToString();
-                reply.ValueType = resourceValue?.GetType().AssemblyQualifiedName;
-                reply.Key = request.Key;
+                    reply.Value = resourceValue?.ToString() ?? "";
+                    reply.ValueType = resourceValue?.GetType().AssemblyQualifiedName ?? "";
+                }
+                catch (Exception ex)
+                {
+                    reply.ErrorMessages.Add(ex.ToString());
+                }
             });
 
             return reply;

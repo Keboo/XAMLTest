@@ -1,4 +1,4 @@
-﻿namespace XAMLTest
+﻿namespace XamlTest
 {
     public static class Types
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace XAMLTest.Internal
+namespace XamlTest.Internal
 {
     internal class Property : IValue
     {

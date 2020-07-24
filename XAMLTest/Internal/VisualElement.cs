@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 
-namespace XAMLTest.Internal
+namespace XamlTest.Internal
 {
 
     internal class VisualElement : IVisualElement
@@ -99,9 +100,9 @@ namespace XAMLTest.Internal
                 {
                     throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
                 }
-                if (reply.ValueType is { } valueType)
+                if (!string.IsNullOrWhiteSpace(reply.ValueType))
                 {
-                    return new Resource(reply.Key, valueType, reply.Value);
+                    return new Resource(reply.Key, reply.ValueType, reply.Value);
                 }
                 throw new Exception($"Resource with key '{reply.Key}' not found");
             }
@@ -168,5 +169,22 @@ namespace XAMLTest.Internal
             }
             throw new Exception("Failed to receive a reply");
         }
+
+        public bool Equals([AllowNull] IVisualElement other)
+        {
+            if (other is null) return false;
+            if (ReferenceEquals(this, other)) return true;
+            if (other is VisualElement visualElement)
+            {
+                return Id == visualElement.Id;
+            }
+            return false;
+        }
+
+        public override bool Equals([AllowNull] object other)
+            => Equals(other as IVisualElement);
+
+        public override int GetHashCode()
+            => Id.GetHashCode();
     }
 }

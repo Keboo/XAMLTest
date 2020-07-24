@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Windows;
-using XAMLTest.Internal;
+using XamlTest.Internal;
 
-namespace XAMLTest
+namespace XamlTest
 {
     public static class Server
     {

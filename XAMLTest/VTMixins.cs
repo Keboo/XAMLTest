@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using System.Windows.Controls;
 
-namespace XAMLTest
+namespace XamlTest
 {
     public static class VTMixins
     {

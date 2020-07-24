@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Google.Protobuf;
 
-namespace XAMLTest.Internal
+namespace XamlTest.Internal
 {
     internal class BitmapImage : IImage
     {

@@ -2,7 +2,7 @@
 using System.Windows;
 using GrpcDotNetNamedPipes;
 
-namespace XAMLTest.Internal
+namespace XamlTest.Internal
 {
     internal class Service : IService
     {
@@ -16,7 +16,7 @@ namespace XAMLTest.Internal
                 throw new ArgumentNullException(nameof(application));
             }
 
-            Server = new NamedPipeServer(XAMLTest.Server.PipePrefix + id);
+            Server = new NamedPipeServer(XamlTest.Server.PipePrefix + id);
 
             Protocol.BindService(Server.ServiceBinder, new VisualTreeService(application));
             Server.Start();

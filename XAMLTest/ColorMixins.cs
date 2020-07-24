@@ -1,6 +1,6 @@
 ﻿using System.Windows.Media;
 
-namespace XAMLTest
+namespace XamlTest
 {
     public static class ColorMixins
     {
@@ -69,7 +69,7 @@ namespace XAMLTest
             );
         }
 
-        public static Color WithOpacity(this Color color, double opacity) 
+        public static Color WithOpacity(this Color color, double opacity)
             => Color.FromArgb((byte)(color.A * opacity), color.R, color.G, color.B);
     }
 }
