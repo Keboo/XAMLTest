@@ -1,10 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 
 namespace XamlTest
 {
-    public interface IVisualElement
+    public interface IVisualElement : IEquatable<IVisualElement>
     {
         Task<IVisualElement> GetElement(string query);
         

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -168,5 +169,22 @@ namespace XamlTest.Internal
             }
             throw new Exception("Failed to receive a reply");
         }
+
+        public bool Equals([AllowNull] IVisualElement other)
+        {
+            if (other is null) return false;
+            if (ReferenceEquals(this, other)) return true;
+            if (other is VisualElement visualElement)
+            {
+                return Id == visualElement.Id;
+            }
+            return false;
+        }
+
+        public override bool Equals([AllowNull] object other)
+            => Equals(other as IVisualElement);
+
+        public override int GetHashCode()
+            => Id.GetHashCode();
     }
 }

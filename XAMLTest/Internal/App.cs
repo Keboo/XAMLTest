@@ -75,14 +75,14 @@ namespace XamlTest.Internal
                 {
                     throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
                 }
-                if (reply.ValueType is { } valueType)
+                if (reply.ValueType is { } valueType && !string.IsNullOrWhiteSpace(valueType))
                 {
                     return new Resource(reply.Key, valueType, reply.Value);
                 }
                 throw new Exception($"Resource with key '{reply.Key}' not found");
             }
 
-            throw new Exception("Failed ot receive a reply");
+            throw new Exception("Failed to receive a reply");
         }
 
         public async Task<IReadOnlyList<IWindow>> GetWindows()

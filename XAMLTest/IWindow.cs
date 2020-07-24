@@ -1,6 +1,8 @@
-﻿namespace XamlTest
+﻿using System;
+
+namespace XamlTest
 {
-    public interface IWindow : IVisualElement
+    public interface IWindow : IVisualElement, IEquatable<IWindow>
     {
         
     }

@@ -8,13 +8,20 @@ namespace XamlTest
     {
         public static async Task InitializeWithDefaults(this IApp app, params string[] assemblies)
         {
+            await InitializeWithResources(app, "", assemblies);
+        }
+
+        public static async Task InitializeWithResources(this IApp app, string resourceDictionaryContents, params string[] assemblies)
+        {
             if (app is null)
             {
                 throw new ArgumentNullException(nameof(app));
             }
 
-            await app.Initialize(@"<ResourceDictionary xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
-xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""/>", assemblies);
+            await app.Initialize(@$"<ResourceDictionary xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
+{resourceDictionaryContents}
+</ResourceDictionary>", assemblies);
         }
 
         public static async Task<IWindow> CreateWindowWithContent(this IApp app, string xamlContent,

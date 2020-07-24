@@ -261,17 +261,26 @@ namespace XamlTest
 
         public override async Task<ResourceResult> GetResource(ResourceQuery request, ServerCallContext context)
         {
-            var reply = new ResourceResult();
+            var reply = new ResourceResult
+            {
+                Key = request.Key
+            };
             await Application.Dispatcher.InvokeAsync(() =>
             {
-                FrameworkElement? element = GetCachedElement<FrameworkElement>(request.ElementId);
-                object resourceValue = element is null ?
-                    Application.TryFindResource(request.Key) :
-                    element.TryFindResource(request.Key);
+                try
+                {
+                    FrameworkElement? element = GetCachedElement<FrameworkElement>(request.ElementId);
+                    object resourceValue = element is null ?
+                        Application.TryFindResource(request.Key) :
+                        element.TryFindResource(request.Key);
 
-                reply.Value = resourceValue?.ToString();
-                reply.ValueType = resourceValue?.GetType().AssemblyQualifiedName;
-                reply.Key = request.Key;
+                    reply.Value = resourceValue?.ToString() ?? "";
+                    reply.ValueType = resourceValue?.GetType().AssemblyQualifiedName ?? "";
+                }
+                catch (Exception ex)
+                {
+                    reply.ErrorMessages.Add(ex.ToString());
+                }
             });
 
             return reply;

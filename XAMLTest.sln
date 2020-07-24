@@ -7,11 +7,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XAMLTest", "XAMLTest\XAMLTe
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0A942BB1-02B4-4E84-AA48-D87BC727E18D}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		.github\workflows\dotnet-core.yml = .github\workflows\dotnet-core.yml
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XAMLTest.Tests", "XAMLTest.Tests\XAMLTest.Tests.csproj", "{910AD9D6-3683-47EC-8831-5FE63D235E60}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XAMLTest.Tests", "XAMLTest.Tests\XAMLTest.Tests.csproj", "{910AD9D6-3683-47EC-8831-5FE63D235E60}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
