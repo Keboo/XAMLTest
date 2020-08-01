@@ -68,26 +68,14 @@ namespace XamlTest
 #pragma warning restore CS8603 // Possible null reference return.
         }
 
-        public static async Task<bool> GetIsVisible(this IVisualElement element)
-            => await element.GetProperty<bool>("IsVisible");
-
-        public static async Task<double> GetWidth(this IVisualElement element)
-            => await element.GetProperty<double>("Width");
-
         public static async Task<string> GetText(this IVisualElement element)
             => await element.GetProperty<string>("Text");
-
-        public static async Task<double> GetOpacity(this IVisualElement element)
-            => await element.GetProperty<double>("Opacity");
 
         public static async Task<Color> GetBackgroundColor(this IVisualElement element)
             => await element.GetProperty<Color>("Background");
 
         public static async Task<Color> GetForegroundColor(this IVisualElement element)
             => await element.GetProperty<Color>("Foreground");
-
-        public static async Task<Thickness> GetMargin(this IVisualElement element)
-            => await element.GetProperty<Thickness>("Margin");
 
         public static async Task<object> GetContent(this IVisualElement element)
             => await element.GetProperty<object>("Content");
@@ -115,12 +103,6 @@ namespace XamlTest
             return default;
 #pragma warning restore CS8603 // Possible null reference return.
         }
-
-        public static async Task<double> SetWidth(this IVisualElement element, double width)
-            => await element.SetProperty("Width", width);
-
-        public static async Task<Thickness> SetMargin(this IVisualElement element, Thickness margin)
-            => await element.SetProperty("Margin", margin);
 
         public static async Task<Color> SetBackgroundColor(this IVisualElement element, Color color)
         {
