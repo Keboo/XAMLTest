@@ -6,7 +6,7 @@ using static PInvoke.User32;
 
 namespace XamlTest
 {
-    public static class VisualElementMixins
+    public static partial class VisualElementMixins
     {
         public static async Task<IVisualElement?> SetXamlContent(this IVisualElement containerElement, string xaml)
         {
@@ -118,9 +118,6 @@ namespace XamlTest
 
         public static async Task<double> SetWidth(this IVisualElement element, double width)
             => await element.SetProperty("Width", width);
-
-        public static async Task<double> SetHeight(this IVisualElement element, double height)
-            => await element.SetProperty("Height", height);
 
         public static async Task<Thickness> SetMargin(this IVisualElement element, Thickness margin)
             => await element.SetProperty("Margin", margin);
