@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
@@ -24,7 +25,9 @@ namespace XamlTest
 
             Directory = callerFilePath.Substring(callerFilePath.IndexOf(_AssemblyName) + _AssemblyName.Length + 1);
             Directory = Path.ChangeExtension(Directory, "").TrimEnd('.');
-            Directory = Path.Combine(Path.GetFullPath("."), "Screenshots", Directory);
+            var rootDirectory = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location) ?? Path.GetFullPath(".");
+            Directory = Path.Combine(rootDirectory, "Screenshots", Directory);
+
             System.IO.Directory.CreateDirectory(Directory);
             
             BaseFileName = unitTestMethod;
