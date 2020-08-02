@@ -254,7 +254,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
 
             Assert.IsFalse(await element.GetIsKeyboardFocused());
 
-            bool result = await element.MoveKeyboardFocus();
+            await element.MoveKeyboardFocus();
 
             Assert.IsTrue(await element.GetIsKeyboardFocused());
         }
