@@ -15,7 +15,7 @@ defaults:
 
 env:
   configuration: Release
-  baseVersion: 0.0.3
+  baseVersion: 0.0.4
   preRelease: true
 
 jobs:

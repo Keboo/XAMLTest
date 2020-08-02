@@ -2,13 +2,12 @@
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using XamlTest;
 
 namespace XamlTest
 {
     public sealed class TestRecorder : IAsyncDisposable
     {
-        private static readonly string _ProjectName = typeof(TestRecorder).Assembly.GetName().Name!;
+        private static readonly string _AssemblyName = typeof(TestRecorder).Assembly.GetName().Name!;
 
         public IApp App { get; }
         private string BaseFileName { get; }
@@ -23,7 +22,7 @@ namespace XamlTest
         {
             App = app ?? throw new ArgumentNullException(nameof(app));
 
-            Directory = callerFilePath.Substring(callerFilePath.IndexOf(_ProjectName) + _ProjectName.Length + 1);
+            Directory = callerFilePath.Substring(callerFilePath.IndexOf(_AssemblyName) + _AssemblyName.Length + 1);
             Directory = Path.ChangeExtension(Directory, "").TrimEnd('.');
             Directory = Path.Combine(Path.GetFullPath("."), "Screenshots", Directory);
             System.IO.Directory.CreateDirectory(Directory);

@@ -17,6 +17,8 @@ namespace XamlTest
         Task<Color> GetEffectiveBackground();
         Task<Rect> GetCoordinates();
 
+        Task<bool> MoveKeyboardFocus();
+
         Task<IImage> GetBitmap();
     }
 }

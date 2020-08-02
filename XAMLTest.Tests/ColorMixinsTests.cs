@@ -1,6 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Windows.Media;
-using XamlTest;
 
 namespace XamlTest.Tests
 {

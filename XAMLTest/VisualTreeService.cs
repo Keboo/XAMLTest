@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
 using XamlTest.Internal;
@@ -428,6 +429,25 @@ namespace XamlTest
                 screenBmp.Save(ms, ImageFormat.Bmp);
                 ms.Position = 0;
                 reply.Data = await ByteString.FromStreamAsync(ms);
+            });
+            return reply;
+        }
+
+        public override async Task<KeyboardFocusResult> MoveKeyboardFocus(KeyboardFocusRequest request, ServerCallContext context)
+        {
+            var reply = new KeyboardFocusResult();
+            await Application.Dispatcher.InvokeAsync(() =>
+            {
+                IInputElement? element = GetCachedElement<DependencyObject>(request.ElementId) as IInputElement;
+                if (element is null)
+                {
+                    reply.ErrorMessages.Add("Could not find element");
+                    return;
+                }
+                if (Keyboard.Focus(element) != element)
+                {
+                    reply.ErrorMessages.Add($"Failed to move focus to element {element}");
+                }
             });
             return reply;
         }

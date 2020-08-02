@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -240,6 +241,22 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             IVisualElement element = await window.GetElement("/Grid~MyTextBox");
 
             Assert.AreEqual("Text", await element.GetText());
+        }
+
+        [TestMethod]
+        public async Task OnMoveKeyboardFocus_ItReceivesKeyboardFocus()
+        {
+            IWindow window = await App.CreateWindowWithContent(@"
+<Grid>
+  <TextBox x:Name=""MyTextBox"" />
+</Grid>");
+            IVisualElement element = await window.GetElement("/Grid~MyTextBox");
+
+            Assert.IsFalse(await element.GetIsKeyboardFocused());
+
+            bool result = await element.MoveKeyboardFocus();
+
+            Assert.IsTrue(await element.GetIsKeyboardFocused());
         }
     }
 }

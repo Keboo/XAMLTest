@@ -19,6 +19,9 @@ service Protocol {
   //Retrieve the property off of an element
   rpc GetProperty (PropertyQuery) returns (PropertyResult);
 
+  //Invoke a method on the element
+  rpc MoveKeyboardFocus (KeyboardFocusRequest) returns (KeyboardFocusResult);
+
   // Returns the effective background color, by attempting to look at the backgrounds of parent elements
   rpc GetEffectiveBackground (EffectiveBackgroundQuery) returns (EffectiveBackgroundResult);
 
@@ -144,4 +147,12 @@ message ImageQuery {
 message ImageResult {
   repeated string errorMessages = 1;
   bytes data = 2;
+}
+
+message KeyboardFocusRequest {
+  string elementId = 1;
+}
+
+message KeyboardFocusResult {
+  repeated string errorMessages = 1;
 }
