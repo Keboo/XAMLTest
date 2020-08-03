@@ -8,8 +8,6 @@ namespace XamlTest
 {
     public sealed class TestRecorder : IAsyncDisposable
     {
-        private static readonly string _AssemblyName = typeof(TestRecorder).Assembly.GetName().Name!;
-
         public IApp App { get; }
         private string BaseFileName { get; }
         private string Directory { get; }
@@ -23,7 +21,18 @@ namespace XamlTest
         {
             App = app ?? throw new ArgumentNullException(nameof(app));
 
-            Directory = callerFilePath.Substring(callerFilePath.IndexOf(_AssemblyName) + _AssemblyName.Length + 1);
+            //"C:\\Dev\\MaterialDesignInXamlToolkit\\MaterialDesignThemes.UITests\\WPF\\TextBox\\TextBoxTests.cs"
+            var callingAssembly = Assembly.GetCallingAssembly();
+            var assemblyName = callingAssembly.GetName().Name!;
+            int assemblyNameIndex = callerFilePath.IndexOf(assemblyName);
+            if (assemblyNameIndex >= 0)
+            {
+                Directory = callerFilePath.Substring(assemblyNameIndex + assemblyName.Length + 1);
+            }
+            else
+            {
+                Directory = Path.GetFileName(callerFilePath);
+            }
             Directory = Path.ChangeExtension(Directory, "").TrimEnd('.');
             var rootDirectory = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location) ?? Path.GetFullPath(".");
             Directory = Path.Combine(rootDirectory, "Screenshots", Directory);
