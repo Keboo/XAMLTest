@@ -18,7 +18,7 @@ namespace XamlTest.Internal
 
         private Protocol.ProtocolClient Client { get; }
 
-        public string Id { get; }
+        protected string Id { get; }
 
         public async Task<IVisualElement> GetElement(string query)
         {
@@ -110,11 +110,14 @@ namespace XamlTest.Internal
             throw new Exception("Failed to receive a reply");
         }
 
-        public async Task<Color> GetEffectiveBackground()
+        public async Task<Color> GetEffectiveBackground(IVisualElement? toElement)
         {
+            string? toElementId = (toElement as VisualElement)?.Id;
+
             var propertyQuery = new EffectiveBackgroundQuery
             {
-                ElementId = Id
+                ElementId = Id,
+                ToElementId = toElementId ?? ""
             };
             if (await Client.GetEffectiveBackgroundAsync(propertyQuery) is { } reply)
             {

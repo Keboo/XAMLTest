@@ -69,6 +69,7 @@ message PropertyQuery {
 
 message EffectiveBackgroundQuery {
   string elementId = 1;
+  string toElementId = 2;
 }
 
 message EffectiveBackgroundResult {

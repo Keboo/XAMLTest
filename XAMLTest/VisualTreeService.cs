@@ -168,8 +168,10 @@ namespace XamlTest
                     return;
                 }
 
+                DependencyObject? toElement = GetCachedElement<DependencyObject>(request.ToElementId);
+
                 Color currentColor = Colors.Transparent;
-                foreach (var ancestor in Ancestors<FrameworkElement>(element))
+                foreach (var ancestor in Ancestors<DependencyObject>(element))
                 {
                     Brush background;
                     switch (ancestor)
@@ -188,7 +190,12 @@ namespace XamlTest
 
                     if (background is SolidColorBrush brush)
                     {
-                        Color parentBackground = brush.Color.WithOpacity(ancestor.Opacity);
+                        Color parentBackground = brush.Color;
+                        if (ancestor is FrameworkElement ancestorElement)
+                        {
+                            parentBackground = parentBackground.WithOpacity(ancestorElement.Opacity);
+                        }
+
                         currentColor = currentColor.FlattenOnto(parentBackground);
                         if (currentColor.A == byte.MaxValue)
                         {
@@ -198,6 +205,10 @@ namespace XamlTest
                     else if (background != null)
                     {
                         reply.ErrorMessages.Add($"Could not evaluate background brush of type '{background.GetType().Name}' on '{ancestor.GetType().FullName}'");
+                        break;
+                    }
+                    if (ancestor == toElement)
+                    {
                         break;
                     }
                 }
@@ -652,7 +663,7 @@ namespace XamlTest
             }
         }
 
-        private TElement? GetCachedElement<TElement>(string id)
+        private TElement? GetCachedElement<TElement>(string? id)
             where TElement : DependencyObject
         {
             if (string.IsNullOrWhiteSpace(id)) return default;

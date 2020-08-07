@@ -8,6 +8,9 @@ namespace XamlTest
 {
     public static partial class VisualElementMixins
     {
+        public static async Task<Color> GetEffectiveBackground(this IVisualElement element) 
+            => await element.GetEffectiveBackground(null);
+
         public static async Task<IVisualElement?> SetXamlContent(this IVisualElement containerElement, string xaml)
         {
             if (containerElement is null)

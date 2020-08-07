@@ -126,6 +126,23 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         }
 
         [TestMethod]
+        public async Task OnGetEffectiveBackground_StopsProcessingAtDefinedParent()
+        {
+            IWindow window = await App.CreateWindowWithContent(@"
+<Grid Background=""#DDFF0000"">
+    <TextBlock />
+</Grid>
+",
+                background: "Blue");
+            IVisualElement child = await window.GetElement("/TextBlock");
+            IVisualElement parent = await window.GetElement("/Grid");
+
+            Color background = await child.GetEffectiveBackground(parent);
+
+            Assert.AreEqual(Color.FromArgb(0xDD, 0xFF, 0x00, 0x00), background);
+        }
+
+        [TestMethod]
         public async Task OnGetProperty_CanRetrieveDouble()
         {
             IWindow window = await App.CreateWindowWithContent(

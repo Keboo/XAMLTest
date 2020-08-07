@@ -14,7 +14,7 @@ namespace XamlTest
 
         Task<IResource> GetResource(string key);
 
-        Task<Color> GetEffectiveBackground();
+        Task<Color> GetEffectiveBackground(IVisualElement? toElement);
         Task<Rect> GetCoordinates();
 
         Task MoveKeyboardFocus();
