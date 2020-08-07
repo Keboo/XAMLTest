@@ -180,6 +180,9 @@ namespace XamlTest
                         case Control control:
                             background = control.Background;
                             break;
+                        case Panel panel:
+                            background = panel.Background;
+                            break;
                         default: continue;
                     }
 

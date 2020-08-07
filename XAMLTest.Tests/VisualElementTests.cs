@@ -110,6 +110,22 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         }
 
         [TestMethod]
+        public async Task OnGetEffectiveBackground_ReturnsOpaquePanelColor()
+        {
+            IWindow window = await App.CreateWindowWithContent(@"
+<Grid Background=""Red"">
+    <TextBlock />
+</Grid>
+",
+                background: "Blue");
+            IVisualElement element = await window.GetElement("/TextBlock");
+
+            Color background = await element.GetEffectiveBackground();
+
+            Assert.AreEqual(Colors.Red, background);
+        }
+
+        [TestMethod]
         public async Task OnGetProperty_CanRetrieveDouble()
         {
             IWindow window = await App.CreateWindowWithContent(
