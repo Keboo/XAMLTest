@@ -1,12 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Security.Policy;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Media;
 
 namespace XamlTest.Tests
@@ -143,6 +139,25 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         }
 
         [TestMethod]
+        public async Task OnGetEffectiveBackground_AppliesOpacityFromParents()
+        {
+            IWindow window = await App.CreateWindowWithContent(@"
+<Grid Background=""Red"" Opacity=""0.5"" x:Name=""RedGrid"">
+    <Grid Background=""Blue"" x:Name=""BlueGrid"">
+        <TextBlock />
+    </Grid>
+</Grid>
+",
+                background: "Lime");
+            IVisualElement child = await window.GetElement("/TextBlock");
+            IVisualElement parent = await window.GetElement("BlueGrid");
+
+            Color background = await child.GetEffectiveBackground(parent);
+
+            Assert.AreEqual(Color.FromArgb(127, 0x00, 0x00, 0xFF), background);
+        }
+
+        [TestMethod]
         public async Task OnGetProperty_CanRetrieveDouble()
         {
             IWindow window = await App.CreateWindowWithContent(
@@ -235,6 +250,24 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             IVisualElement element = await window.GetElement("/ListBoxItem");
 
             Assert.AreEqual("Item1", await element.GetContent());
+        }
+
+        [TestMethod]
+        public async Task OnGetElement_ItRetrievesNestedItemsByType()
+        {
+            IWindow window = await App.CreateWindowWithContent(@"
+<Grid x:Name=""Parent"">
+    <Grid x:Name=""Child"">
+        <TextBlock />
+    </Grid>
+</Grid>
+");
+            IVisualElement parent = await window.GetElement("Parent");
+            IVisualElement child = await window.GetElement("Child");
+
+            IVisualElement nestedElement = await window.GetElement("/Grid/Grid");
+
+            Assert.AreEqual(child, nestedElement);
         }
 
         [TestMethod]

@@ -3,6 +3,7 @@ using Grpc.Core;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -171,22 +172,18 @@ namespace XamlTest
                 DependencyObject? toElement = GetCachedElement<DependencyObject>(request.ToElementId);
 
                 Color currentColor = Colors.Transparent;
+                bool reachedToElement = false;
                 foreach (var ancestor in Ancestors<DependencyObject>(element))
                 {
-                    Brush background;
-                    switch (ancestor)
+                    if (reachedToElement)
                     {
-                        case Border border:
-                            background = border.Background;
-                            break;
-                        case Control control:
-                            background = control.Background;
-                            break;
-                        case Panel panel:
-                            background = panel.Background;
-                            break;
-                        default: continue;
+                        if (ancestor is FrameworkElement ancestorElement)
+                        {
+                            currentColor = currentColor.WithOpacity(ancestorElement.Opacity);
+                        }
+                        continue;
                     }
+                    Brush? background = GetBackground(ancestor);
 
                     if (background is SolidColorBrush brush)
                     {
@@ -197,10 +194,6 @@ namespace XamlTest
                         }
 
                         currentColor = currentColor.FlattenOnto(parentBackground);
-                        if (currentColor.A == byte.MaxValue)
-                        {
-                            break;
-                        }
                     }
                     else if (background != null)
                     {
@@ -209,7 +202,7 @@ namespace XamlTest
                     }
                     if (ancestor == toElement)
                     {
-                        break;
+                        reachedToElement = true;
                     }
                 }
                 reply.Alpha = currentColor.A;
@@ -218,6 +211,17 @@ namespace XamlTest
                 reply.Blue = currentColor.B;
             });
             return reply;
+
+            static Brush? GetBackground(DependencyObject element)
+            {
+                return element switch
+                {
+                    Border border => border.Background,
+                    Control control => control.Background,
+                    Panel panel => panel.Background,
+                    _ => null
+                };
+            }
         }
 
         public override async Task<PropertyResult> SetProperty(SetPropertyRequest request, ServerCallContext context)
@@ -623,30 +627,43 @@ namespace XamlTest
             if (parent is null) yield break;
 
             var queue = new Queue<DependencyObject>();
-            queue.Enqueue(parent);
+            Enqueue(GetChildren(parent));
 
             while (queue.Count > 0)
             {
                 var current = queue.Dequeue();
                 if (current is T match) yield return match;
 
-                int childrenCount = VisualTreeHelper.GetChildrenCount(current);
+                Enqueue(GetChildren(current));
+            }
+
+            static IEnumerable<DependencyObject> GetChildren(DependencyObject item)
+            {
+                int childrenCount = VisualTreeHelper.GetChildrenCount(item);
                 for (int i = 0; i < childrenCount; i++)
                 {
-                    if (VisualTreeHelper.GetChild(current, i) is DependencyObject child)
+                    if (VisualTreeHelper.GetChild(item, i) is DependencyObject child)
                     {
-                        queue.Enqueue(child);
+                        yield return child;
                     }
                 }
                 if (childrenCount == 0)
                 {
-                    foreach(object? logicalChild in LogicalTreeHelper.GetChildren(current))
+                    foreach (object? logicalChild in LogicalTreeHelper.GetChildren(item))
                     {
                         if (logicalChild is DependencyObject child)
                         {
-                            queue.Enqueue(child);
+                            yield return child;
                         }
                     }
+                }
+            }
+
+            void Enqueue(IEnumerable<DependencyObject> items)
+            {
+                foreach(var item in items)
+                {
+                    queue!.Enqueue(item);
                 }
             }
         }
