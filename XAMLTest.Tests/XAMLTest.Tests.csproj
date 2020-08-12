@@ -5,6 +5,7 @@
     <LangVersion>8.0</LangVersion>
     <IsPackable>false</IsPackable>
     <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
     <RootNamespace>XamlTest.Tests</RootNamespace>
   </PropertyGroup>
 

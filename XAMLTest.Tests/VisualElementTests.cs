@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using XamlTest.Tests.TestControls;
 
 namespace XamlTest.Tests
 {
@@ -307,6 +308,18 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             IVisualElement element = await window.GetElement("/Grid~MyTextBox");
 
             Assert.AreEqual("Text", await element.GetText());
+        }
+
+
+        [TestMethod]
+        public async Task OnGetElement_ItRetrieveElementFromAdornerLayer()
+        {
+            IWindow window = await App.CreateWindowWithUserControl<TextBox_ValidationError>();
+            IVisualElement textBox = await window.GetElement("/TextBox");
+
+            IVisualElement validationMessage = await textBox.GetElement("ErrorMessageText");
+
+            Assert.IsTrue(await validationMessage.GetIsVisible());
         }
 
         [TestMethod]

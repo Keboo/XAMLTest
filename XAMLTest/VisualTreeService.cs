@@ -14,6 +14,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
@@ -63,7 +64,7 @@ namespace XamlTest
                     Window mainWindow = Application.MainWindow;
                     return DependencyObjectTracker.GetOrSetId(mainWindow, KnownElements);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     return null;
                 }
@@ -80,27 +81,33 @@ namespace XamlTest
         public override async Task<ElementResult> GetElement(ElementQuery request, ServerCallContext context)
         {
             var reply = new ElementResult();
-
             await Application.Dispatcher.InvokeAsync(() =>
             {
-                FrameworkElement? searchRoot = GetParentElement();
-
-                if (searchRoot is null) return;
-
-                if (!string.IsNullOrWhiteSpace(request.Query))
+                try
                 {
-                    if (!(EvaluateQuery(searchRoot, request.Query) is DependencyObject element))
+                    FrameworkElement? searchRoot = GetParentElement();
+
+                    if (searchRoot is null) return;
+
+                    if (!string.IsNullOrWhiteSpace(request.Query))
                     {
-                        reply.ErrorMessages.Add($"Failed to find element by query '{request.Query}' in '{searchRoot.GetType().FullName}'");
+                        if (!(EvaluateQuery(searchRoot, request.Query) is DependencyObject element))
+                        {
+                            reply.ErrorMessages.Add($"Failed to find element by query '{request.Query}' in '{searchRoot.GetType().FullName}'");
+                            return;
+                        }
+
+                        string id = DependencyObjectTracker.GetOrSetId(element, KnownElements);
+                        reply.ElementIds.Add(id);
                         return;
                     }
 
-                    string id = DependencyObjectTracker.GetOrSetId(element, KnownElements);
-                    reply.ElementIds.Add(id);
-                    return;
+                    reply.ErrorMessages.Add($"{nameof(ElementQuery)} did not specify a query");
                 }
-
-                reply.ErrorMessages.Add($"{nameof(ElementQuery)} did not specify a query");
+                catch (Exception e)
+                {
+                    reply.ErrorMessages.Add(e.ToString());
+                }
             });
             return reply;
 
@@ -532,7 +539,7 @@ namespace XamlTest
                 if (match.Success)
                 {
                     currentQuery = query.Substring(0, match.Index);
-                    query = query.Substring(match.Index);
+                    query = query[match.Index..];
                 }
                 else
                 {
@@ -542,19 +549,19 @@ namespace XamlTest
                 QueryPartType rv;
                 if (currentQuery.StartsWith('.'))
                 {
-                    value = currentQuery.Substring(1);
+                    value = currentQuery[1..];
                     rv = QueryPartType.Property;
                 }
                 else if (currentQuery.StartsWith('/'))
                 {
-                    value = currentQuery.Substring(1);
+                    value = currentQuery[1..];
                     rv = QueryPartType.ChildType;
                 }
                 else
                 {
                     if (currentQuery.StartsWith('~'))
                     {
-                        value = currentQuery.Substring(1);
+                        value = currentQuery[1..];
                     }
                     else
                     {
@@ -628,6 +635,14 @@ namespace XamlTest
 
             var queue = new Queue<DependencyObject>();
             Enqueue(GetChildren(parent));
+
+            if (parent is UIElement parentVisual &&
+                AdornerLayer.GetAdornerLayer(parentVisual) is { } layer &&
+                layer.GetAdorners(parentVisual) is { } adorners &&
+                adorners.Length > 0)
+            {
+                Enqueue(adorners);
+            }
 
             while (queue.Count > 0)
             {
