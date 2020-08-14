@@ -40,12 +40,13 @@ namespace XamlTest.Internal
             throw new Exception("Failed to receive a reply");
         }
 
-        public async Task<IValue> GetProperty(string name)
+        public async Task<IValue> GetProperty(string name, string? ownerType)
         {
             var propertyQuery = new PropertyQuery
             {
                 ElementId = Id,
-                Name = name
+                Name = name,
+                OwnerType = ownerType ?? ""
             };
             if (await Client.GetPropertyAsync(propertyQuery) is { } reply)
             {
@@ -62,14 +63,15 @@ namespace XamlTest.Internal
             throw new Exception("Failed to receive a reply");
         }
         
-        public async Task<IValue> SetProperty(string name, string value, string? valueType = null)
+        public async Task<IValue> SetProperty(string name, string value, string? valueType, string? ownerType)
         {
             var query = new SetPropertyRequest
             {
                 ElementId = Id,
                 Name = name,
                 Value = value,
-                ValueType = valueType
+                ValueType = valueType,
+                OwnerType = ownerType ?? ""
             };
             if (await Client.SetPropertyAsync(query) is { } reply)
             {

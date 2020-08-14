@@ -3,6 +3,7 @@ using System;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 using XamlTest.Tests.TestControls;
 
@@ -199,6 +200,25 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         }
 
         [TestMethod]
+        public async Task OnGetProperty_CanRetrieveAttachedPropertyValue()
+        {
+            IWindow window = await App.CreateWindowWithContent(
+                @"<TextBlock x:Name=""MyTextblock"" Grid.Row=""3"" />");
+            IVisualElement element = await window.GetElement("MyTextblock");
+
+            Assert.AreEqual(3, await element.GetProperty<int>(Grid.RowProperty));
+        }
+
+        [TestMethod]
+        public async Task OnGetProperty_CanRetrieveCustomAttachedPropertyValue()
+        {
+            IWindow window = await App.CreateWindowWithUserControl<TextBlock_AttachedProperty>();
+            IVisualElement element = await window.GetElement("/TextBlock");
+
+            Assert.AreEqual("Bar", await element.GetProperty<string>(TextBlock_AttachedProperty.MyCustomPropertyProperty));
+        }
+
+        [TestMethod]
         public async Task OnSetProperty_CanSetDouble()
         {
             IWindow window = await App.CreateWindowWithContent(
@@ -236,6 +256,25 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             IVisualElement element = await window.GetElement("MyTextblock");
 
             Assert.AreEqual(new Thickness(2, 3, 4, 5), await element.SetMargin(new Thickness(2, 3, 4, 5)));
+        }
+
+        [TestMethod]
+        public async Task OnSetProperty_CanAssignAttachedPropertyValue()
+        {
+            IWindow window = await App.CreateWindowWithContent(
+                @"<TextBlock x:Name=""MyTextblock"" />");
+            IVisualElement element = await window.GetElement("MyTextblock");
+
+            Assert.AreEqual(2, await element.SetProperty(Grid.RowProperty, 2));
+        }
+
+        [TestMethod]
+        public async Task OnSetProperty_CanAssignCustomAttachedPropertyValue()
+        {
+            IWindow window = await App.CreateWindowWithUserControl<TextBlock_AttachedProperty>();
+            IVisualElement element = await window.GetElement("/TextBlock");
+
+            Assert.AreEqual("New value", await element.SetProperty(TextBlock_AttachedProperty.MyCustomPropertyProperty, "New value"));
         }
 
         [TestMethod]
@@ -310,7 +349,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             Assert.AreEqual("Text", await element.GetText());
         }
 
-
         [TestMethod]
         public async Task OnGetElement_ItRetrieveElementFromAdornerLayer()
         {
@@ -330,7 +368,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
   <TextBox x:Name=""MyTextBox"" />
 </Grid>");
             IVisualElement element = await window.GetElement("/Grid~MyTextBox");
-
             Assert.IsFalse(await element.GetIsKeyboardFocused());
 
             await element.MoveKeyboardFocus();

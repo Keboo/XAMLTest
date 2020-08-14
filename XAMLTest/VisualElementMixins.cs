@@ -58,6 +58,16 @@ namespace XamlTest
         private static unsafe void LeftClick()
             => mouse_event(mouse_eventFlags.MOUSEEVENTF_LEFTDOWN | mouse_eventFlags.MOUSEEVENTF_LEFTUP, 0, 0, 0, null);
 
+        public static async Task<IValue> GetProperty(this IVisualElement element, string name)
+        {
+            if (element is null)
+            {
+                throw new ArgumentNullException(nameof(element));
+            }
+
+            return await element.GetProperty(name, null);
+        }
+
         public static async Task<T> GetProperty<T>(this IVisualElement element, string propertyName)
         {
             if (element is null)
@@ -66,6 +76,24 @@ namespace XamlTest
             }
 
             IValue value = await element.GetProperty(propertyName);
+#pragma warning disable CS8603 // Possible null reference return.
+            return value.GetValueAs<T>();
+#pragma warning restore CS8603 // Possible null reference return.
+        }
+
+        public static async Task<T> GetProperty<T>(this IVisualElement element, DependencyProperty dependencyProperty)
+        {
+            if (element is null)
+            {
+                throw new ArgumentNullException(nameof(element));
+            }
+
+            if (dependencyProperty is null)
+            {
+                throw new ArgumentNullException(nameof(dependencyProperty));
+            }
+
+            IValue value = await element.GetProperty(dependencyProperty.Name, dependencyProperty.OwnerType.AssemblyQualifiedName);
 #pragma warning disable CS8603 // Possible null reference return.
             return value.GetValueAs<T>();
 #pragma warning restore CS8603 // Possible null reference return.
@@ -83,6 +111,27 @@ namespace XamlTest
         public static async Task<object> GetContent(this IVisualElement element)
             => await element.GetProperty<object>("Content");
 
+        public static async Task<IValue> SetProperty(this IVisualElement element, 
+            string name, string value, string? valueType = null)
+        {
+            return await element.SetProperty(name, value, valueType, null);
+        }
+
+        public static async Task<T> SetProperty<T>(this IVisualElement element, DependencyProperty dependencyProperty, T value)
+        {
+            if (element is null)
+            {
+                throw new ArgumentNullException(nameof(element));
+            }
+
+            if (dependencyProperty is null)
+            {
+                throw new ArgumentNullException(nameof(dependencyProperty));
+            }
+
+            return await SetProperty(element, dependencyProperty.Name, value, dependencyProperty.OwnerType.AssemblyQualifiedName);
+        }
+
         public static async Task<T> SetProperty<T>(this IVisualElement element, string propertyName, T value)
         {
             if (element is null)
@@ -95,7 +144,12 @@ namespace XamlTest
                 throw new ArgumentException($"'{nameof(propertyName)}' cannot be null or empty", nameof(propertyName));
             }
 
-            IValue newValue = await element.SetProperty(propertyName, value?.ToString() ?? "", typeof(T).AssemblyQualifiedName);
+            return await SetProperty(element, propertyName, value, null);
+        }
+
+        private static async Task<T> SetProperty<T>(IVisualElement element, string propertyName, T value, string? ownerType)
+        {
+            IValue newValue = await element.SetProperty(propertyName, value?.ToString() ?? "", typeof(T).AssemblyQualifiedName, ownerType);
             if (newValue is { })
             {
 #pragma warning disable CS8603 // Possible null reference return.

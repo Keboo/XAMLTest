@@ -1,17 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using Microsoft.Toolkit.Mvvm.ComponentModel;
 using System.Globalization;
-using System.Text;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace XamlTest.Tests.TestControls
 {
@@ -26,22 +15,13 @@ namespace XamlTest.Tests.TestControls
             DataContext = new ViewModel();
         }
 
-        public class ViewModel : INotifyPropertyChanged
+        public class ViewModel : ObservableObject
         {
-            public event PropertyChangedEventHandler? PropertyChanged;
-
             private string? _name;
             public string? Name
             {
                 get => _name;
-                set
-                {
-                    if (_name != value)
-                    {
-                        _name = value;
-                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Name)));
-                    }
-                }
+                set => SetProperty(ref _name, value);
             }
         }
     }

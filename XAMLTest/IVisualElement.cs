@@ -9,8 +9,8 @@ namespace XamlTest
     {
         Task<IVisualElement> GetElement(string query);
         
-        Task<IValue> GetProperty(string name);
-        Task<IValue> SetProperty(string name, string value, string? valueType = null);
+        Task<IValue> GetProperty(string name, string? ownerType);
+        Task<IValue> SetProperty(string name, string value, string? valueType, string? ownerType);
 
         Task<IResource> GetResource(string key);
 

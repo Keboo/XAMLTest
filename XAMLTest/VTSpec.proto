@@ -65,6 +65,7 @@ message ElementResult {
 message PropertyQuery {
   string elementId = 1;
   string name = 2;
+  string ownerType = 3;
 }
 
 message EffectiveBackgroundQuery {
@@ -85,6 +86,7 @@ message SetPropertyRequest {
   string name = 2;
   string value = 3;
   string valueType = 4;
+  string ownerType = 5;
 }
 
 message PropertyResult {
