@@ -34,7 +34,7 @@ namespace XamlTest.Tests
 
             await app.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
 
-            IWindow mainWindow = await app.GetMainWindow();
+            IWindow? mainWindow = await app.GetMainWindow();
             
             Assert.IsNull(mainWindow);
 
@@ -52,7 +52,7 @@ namespace XamlTest.Tests
             IWindow window1 = await app.CreateWindowWithContent("");
             IWindow window2 = await app.CreateWindowWithContent("");
 
-            IWindow mainWindow = await app.GetMainWindow();
+            IWindow? mainWindow = await app.GetMainWindow();
             
             Assert.AreEqual(window1, mainWindow);
 

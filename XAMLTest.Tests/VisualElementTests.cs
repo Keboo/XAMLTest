@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
@@ -12,7 +13,8 @@ namespace XamlTest.Tests
     [TestClass]
     public class VisualElementTests
     {
-        private IApp App { get; set; }
+        [NotNull]
+        private IApp? App { get; set; }
 
         [TestInitialize]
         public async Task TestInitialize()
@@ -264,7 +266,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             IWindow window = await App.CreateWindowWithContent(
                 @"<TextBlock x:Name=""MyTextblock"" />");
             IVisualElement element = await window.GetElement("MyTextblock");
-
+            
             Assert.AreEqual(2, await element.SetProperty(Grid.RowProperty, 2));
         }
 
@@ -302,7 +304,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
     </Grid>
 </Grid>
 ");
-            IVisualElement parent = await window.GetElement("Parent");
             IVisualElement child = await window.GetElement("Child");
 
             IVisualElement nestedElement = await window.GetElement("/Grid/Grid");

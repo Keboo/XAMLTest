@@ -310,19 +310,13 @@ namespace XamlTest
             });
             return reply;
 
-            object? GetValue(TypeConverter? propertyConverter)
+            object? GetValue(TypeConverter propertyConverter)
             {
-                object? value = null;
-                switch (request.ValueType)
+                return request.ValueType switch
                 {
-                    case Types.XamlString:
-                        value = LoadXaml<object>(request.Value);
-                        break;
-                    default:
-                        value = propertyConverter.ConvertFromString(request.Value);
-                        break;
-                }
-                return value;
+                    Types.XamlString => LoadXaml<object>(request.Value),
+                    _ => propertyConverter.ConvertFromString(request.Value),
+                };
             }
         }
 
@@ -504,8 +498,7 @@ namespace XamlTest
             var reply = new KeyboardFocusResult();
             await Application.Dispatcher.InvokeAsync(() =>
             {
-                IInputElement? element = GetCachedElement<DependencyObject>(request.ElementId) as IInputElement;
-                if (element is null)
+                if (!(GetCachedElement<DependencyObject>(request.ElementId) is IInputElement element))
                 {
                     reply.ErrorMessages.Add("Could not find element");
                     return;

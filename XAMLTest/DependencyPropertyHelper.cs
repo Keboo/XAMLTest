@@ -26,7 +26,7 @@ namespace XamlTest
         private static DependencyProperty? Find(string name, Type ownerType)
             => FromName(name, ownerType);
 
-        public static bool TryGetDependencyProperty(string name, string? ownerType,
+        public static bool TryGetDependencyProperty(string name, string ownerType,
             [NotNullWhen(true)]out DependencyProperty? dependencyProperty)
         {
             Type? type = Type.GetType(ownerType);

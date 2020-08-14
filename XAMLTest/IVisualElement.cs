@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
@@ -20,5 +21,10 @@ namespace XamlTest
         Task MoveKeyboardFocus();
 
         Task<IImage> GetBitmap();
+    }
+
+    public interface IVisualElement<TElement> : IVisualElement
+    {
+        Task<T> Get<T>(Expression<Func<TElement, T>> propertyExpression);
     }
 }

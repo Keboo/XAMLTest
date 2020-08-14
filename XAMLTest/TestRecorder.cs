@@ -27,7 +27,7 @@ namespace XamlTest
             int assemblyNameIndex = callerFilePath.IndexOf(assemblyName);
             if (assemblyNameIndex >= 0)
             {
-                Directory = callerFilePath.Substring(assemblyNameIndex + assemblyName.Length + 1);
+                Directory = callerFilePath[(assemblyNameIndex + assemblyName.Length + 1)..];
             }
             else
             {
