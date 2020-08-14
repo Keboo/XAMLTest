@@ -154,8 +154,7 @@ namespace XamlTest
                     {
                         object value = element.GetValue(dependencyProperty);
                         reply.PropertyType = dependencyProperty.PropertyType.AssemblyQualifiedName;
-                        reply.ValueType = value?.GetType().AssemblyQualifiedName;
-                        reply.Value = value?.ToString();
+                        SetValue(reply, value);
                     }
                     else
                     {
@@ -175,8 +174,7 @@ namespace XamlTest
 
                     object value = foundProperty.GetValue(element);
                     reply.PropertyType = foundProperty.PropertyType.AssemblyQualifiedName;
-                    reply.ValueType = value?.GetType().AssemblyQualifiedName;
-                    reply.Value = value?.ToString();
+                    SetValue(reply, value);
                 }
             });
             return reply;
@@ -304,9 +302,7 @@ namespace XamlTest
                     reply.PropertyType = foundProperty.PropertyType.AssemblyQualifiedName;
                 }
 
-                reply.ValueType = value?.GetType().AssemblyQualifiedName;
-                reply.Value = value?.ToString();
-
+                SetValue(reply, value);
             });
             return reply;
 
@@ -318,6 +314,13 @@ namespace XamlTest
                     _ => propertyConverter.ConvertFromString(request.Value),
                 };
             }
+        }
+
+        // assume that reply.PropertyType is already set.
+        private static void SetValue(PropertyResult reply, object value)
+        {
+            reply.ValueType = value?.GetType().AssemblyQualifiedName ?? reply.PropertyType;
+            reply.Value = value?.ToString() ?? string.Empty;
         }
 
         public override async Task<ResourceResult> GetResource(ResourceQuery request, ServerCallContext context)

@@ -202,6 +202,25 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         }
 
         [TestMethod]
+        public async Task OnGetProperty_CanRetrieveNull()
+        {
+            IWindow window = await App.CreateWindowWithContent(
+                @"<DatePicker/>");
+            IVisualElement element = await window.GetElement("/DatePicker");
+
+            Assert.IsNull(await element.GetProperty<DateTime?>(nameof(DatePicker.SelectedDate)));
+        }
+
+        [TestMethod]
+        public async Task OnGetProperty_CanRetrieveNullableDateTime()
+        {
+            IWindow window = await App.CreateWindowWithContent(
+                @"<DatePicker SelectedDate=""1234-05-06T00:00:00""/>");
+            IVisualElement element = await window.GetElement("/DatePicker");
+            Assert.AreEqual(new DateTime(1234, 5, 6), await element.GetProperty<DateTime?>(nameof(DatePicker.SelectedDate)));
+        }
+
+        [TestMethod]
         public async Task OnGetProperty_CanRetrieveAttachedPropertyValue()
         {
             IWindow window = await App.CreateWindowWithContent(
@@ -258,6 +277,26 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             IVisualElement element = await window.GetElement("MyTextblock");
 
             Assert.AreEqual(new Thickness(2, 3, 4, 5), await element.SetMargin(new Thickness(2, 3, 4, 5)));
+        }
+
+        [TestMethod]
+        public async Task OnSetProperty_CanSetNull()
+        {
+            IWindow window = await App.CreateWindowWithContent(
+                @"<DatePicker/>");
+            IVisualElement element = await window.GetElement("/DatePicker");
+
+            Assert.IsNull(await element.SetProperty<DateTime?>(nameof(DatePicker.SelectedDate), null));
+        }
+
+        [TestMethod]
+        public async Task OnSetProperty_CanSetNullableDateTime()
+        {
+            IWindow window = await App.CreateWindowWithContent(
+                @"<DatePicker/>");
+            IVisualElement element = await window.GetElement("/DatePicker");
+
+            Assert.AreEqual(new DateTime(1234, 5, 6), await element.SetProperty<DateTime?>(nameof(DatePicker.SelectedDate), new DateTime(1234, 5, 6)));
         }
 
         [TestMethod]
