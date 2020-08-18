@@ -435,5 +435,20 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
 
             Assert.IsTrue(await element.GetIsKeyboardFocused());
         }
+
+        [TestMethod]
+        public async Task OnSendTextInput_TextIsChanged()
+        {
+            IWindow window = await App.CreateWindowWithContent(@"
+<Grid>
+  <TextBox x:Name=""MyTextBox"" />
+</Grid>");
+            IVisualElement element = await window.GetElement("/Grid~MyTextBox");
+            await element.MoveKeyboardFocus();
+
+            await element.SendInput("Test Text!");
+
+            Assert.AreEqual("Test Text!", await element.GetText());
+        }
     }
 }

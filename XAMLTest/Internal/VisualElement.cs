@@ -169,6 +169,26 @@ namespace XamlTest.Internal
 
             throw new Exception("Failed to receive a reply");
         }
+        
+        public async Task SendInput(string textInput)
+        {
+            var request = new InputRequest
+            {
+                ElementId = Id,
+                TextInput = textInput ?? ""
+            };
+
+            if (await Client.SendInputAsync(request) is { } reply)
+            {
+                if (reply.ErrorMessages.Any())
+                {
+                    throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
+                }
+                return;
+            }
+
+            throw new Exception("Failed to receive a reply");
+        }
 
         protected virtual ElementQuery GetFindElementQuery(string query)
             => new ElementQuery
@@ -210,5 +230,6 @@ namespace XamlTest.Internal
 
         public override int GetHashCode()
             => Id.GetHashCode();
+
     }
 }

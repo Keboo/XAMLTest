@@ -3,10 +3,12 @@ using Grpc.Core;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -512,6 +514,51 @@ namespace XamlTest
                 if (Keyboard.Focus(element) != element)
                 {
                     reply.ErrorMessages.Add($"Failed to move focus to element {element}");
+                }
+            });
+            return reply;
+        }
+
+        public override async Task<InputResponse> SendInput(InputRequest request, ServerCallContext context)
+        {
+            //Debugger.Launch();
+            var reply = new InputResponse();
+
+            await Application.Dispatcher.InvokeAsync(() =>
+            {
+                try
+                {
+                    PresentationSource source;
+                    if (!string.IsNullOrEmpty(request.ElementId))
+                    {
+                        if (!(GetCachedElement<Visual>(request.ElementId) is Visual cachedVisual))
+                        {
+                            reply.ErrorMessages.Add("Could not find element");
+                            return;
+                        }
+                        source = PresentationSource.FromVisual(cachedVisual);
+                    }
+                    else if (Keyboard.FocusedElement is Visual focusedVisual)
+                    {
+                        source = PresentationSource.FromVisual(focusedVisual);
+                    }
+                    else
+                    {
+                        reply.ErrorMessages.Add("No source element to generate text.");
+                        return;
+                    }
+
+                    TextCompositionEventArgs textArgs = new TextCompositionEventArgs(InputManager.Current.PrimaryKeyboardDevice,
+                        new TextComposition(InputManager.Current, Keyboard.FocusedElement, request.TextInput));
+                    textArgs.RoutedEvent = UIElement.TextInputEvent;
+                    if (!InputManager.Current.ProcessInput(textArgs))
+                    {
+                        reply.ErrorMessages.Add($"Failed to process text composition '{request.TextInput}'");
+                    }
+                }
+                catch (Exception e)
+                {
+                    reply.ErrorMessages.Add(e.ToString());
                 }
             });
             return reply;

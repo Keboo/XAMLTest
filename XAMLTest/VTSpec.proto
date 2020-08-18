@@ -22,6 +22,9 @@ service Protocol {
   //Invoke a method on the element
   rpc MoveKeyboardFocus (KeyboardFocusRequest) returns (KeyboardFocusResult);
 
+  //Simulate keyboard input
+  rpc SendInput (InputRequest) returns (InputResponse);
+
   // Returns the effective background color, by attempting to look at the backgrounds of parent elements
   rpc GetEffectiveBackground (EffectiveBackgroundQuery) returns (EffectiveBackgroundResult);
 
@@ -157,5 +160,14 @@ message KeyboardFocusRequest {
 }
 
 message KeyboardFocusResult {
+  repeated string errorMessages = 1;
+}
+
+message InputRequest {
+  string elementId = 1;
+  string textInput = 2;
+}
+
+message InputResponse {
   repeated string errorMessages = 1;
 }

@@ -19,6 +19,7 @@ namespace XamlTest
         Task<Rect> GetCoordinates();
 
         Task MoveKeyboardFocus();
+        Task SendInput(string textInput);
 
         Task<IImage> GetBitmap();
     }
