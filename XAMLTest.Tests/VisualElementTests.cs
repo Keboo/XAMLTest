@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using XamlTest.Tests.TestControls;
 
@@ -449,6 +450,23 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             await element.SendInput("Test Text!");
 
             Assert.AreEqual("Test Text!", await element.GetText());
+        }
+
+        [TestMethod]
+        public async Task OnSendKey_TextIsChanged()
+        {
+            IWindow window = await App.CreateWindowWithContent(@"
+<Grid>
+  <TextBox x:Name=""MyTextBox"" AcceptsReturn=""True""/>
+</Grid>");
+            IVisualElement element = await window.GetElement("/Grid~MyTextBox");
+            await element.MoveKeyboardFocus();
+
+            await element.SendInput("ab");
+            await element.SendKey(Key.Left);
+            await element.SendKey(Key.Enter);
+
+            Assert.AreEqual("a\r\nb", await element.GetText());
         }
     }
 }

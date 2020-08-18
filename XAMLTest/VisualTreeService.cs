@@ -548,12 +548,32 @@ namespace XamlTest
                         return;
                     }
 
-                    TextCompositionEventArgs textArgs = new TextCompositionEventArgs(InputManager.Current.PrimaryKeyboardDevice,
-                        new TextComposition(InputManager.Current, Keyboard.FocusedElement, request.TextInput));
-                    textArgs.RoutedEvent = UIElement.TextInputEvent;
-                    if (!InputManager.Current.ProcessInput(textArgs))
+                    if (request.Key == (int)Key.None)
                     {
-                        reply.ErrorMessages.Add($"Failed to process text composition '{request.TextInput}'");
+                        TextCompositionEventArgs textArgs = new TextCompositionEventArgs(InputManager.Current.PrimaryKeyboardDevice,
+                            new TextComposition(InputManager.Current, Keyboard.FocusedElement, request.TextInput));
+                        textArgs.RoutedEvent = UIElement.TextInputEvent;
+                        if (!InputManager.Current.ProcessInput(textArgs))
+                        {
+                            reply.ErrorMessages.Add($"Failed to process text composition '{request.TextInput}'");
+                        }
+                    }
+                    else
+                    {
+                        var keyboardDevice = InputManager.Current.PrimaryKeyboardDevice;
+                        if (keyboardDevice.ActiveSource == null)
+                        {
+                            reply.ErrorMessages.Add("No input source for the primary keyboard device.");
+                            return;
+                        }
+
+                        var keyArgs = new KeyEventArgs(keyboardDevice, keyboardDevice.ActiveSource, 0, (Key)request.Key);
+                        keyArgs.RoutedEvent = UIElement.KeyDownEvent;
+                        if (!InputManager.Current.ProcessInput(keyArgs))
+                        {
+                            reply.ErrorMessages.Add($"Failed to process key down '{(Key)request.Key}'");
+                            return;
+                        }
                     }
                 }
                 catch (Exception e)

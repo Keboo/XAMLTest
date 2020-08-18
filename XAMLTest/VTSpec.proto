@@ -165,7 +165,8 @@ message KeyboardFocusResult {
 
 message InputRequest {
   string elementId = 1;
-  string textInput = 2;
+  string textInput = 2;   // ignored if key != Key.None
+  int32 key = 3;
 }
 
 message InputResponse {

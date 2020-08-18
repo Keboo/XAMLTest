@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace XamlTest.Internal
@@ -172,12 +173,26 @@ namespace XamlTest.Internal
         
         public async Task SendInput(string textInput)
         {
-            var request = new InputRequest
+            await SendInputRequest(new InputRequest
             {
                 ElementId = Id,
-                TextInput = textInput ?? ""
-            };
+                TextInput = textInput ?? "",
+                Key = (int)Key.None
+            });
+        }
 
+        public async Task SendKey(Key key)
+        {
+            await SendInputRequest(new InputRequest
+            {
+                ElementId = Id,
+                TextInput = "",
+                Key = (int)key
+            });
+        }
+
+        private async Task SendInputRequest(InputRequest request)
+        {
             if (await Client.SendInputAsync(request) is { } reply)
             {
                 if (reply.ErrorMessages.Any())
