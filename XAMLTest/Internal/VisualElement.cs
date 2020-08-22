@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
@@ -171,33 +171,19 @@ namespace XamlTest.Internal
             throw new Exception("Failed to receive a reply");
         }
         
-        public async Task SendInput(string textInput)
+        public async Task SendInput(KeyboardInput keyboardInput)
         {
-            var request = new InputRequest
+            if (keyboardInput is null)
             {
-                ElementId = Id,
-                TextInput = textInput ?? ""
-            };
-
-            if (await Client.SendInputAsync(request) is { } reply)
-            {
-                if (reply.ErrorMessages.Any())
-                {
-                    throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
-                }
-                return;
+                throw new ArgumentNullException(nameof(keyboardInput));
             }
 
-            throw new Exception("Failed to receive a reply");
-        }
-
-        public async Task SendInput(Key[] keys)
-        {
             var request = new InputRequest
             {
                 ElementId = Id,
+                TextInput = keyboardInput.Text
             };
-            request.Keys.AddRange(keys.Cast<int>());
+            request.Keys.AddRange(keyboardInput.Keys.Cast<int>());
             if (await Client.SendInputAsync(request) is { } reply)
             {
                 if (reply.ErrorMessages.Any())

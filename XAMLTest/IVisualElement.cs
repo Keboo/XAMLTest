@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using System.Windows;
@@ -20,14 +21,35 @@ namespace XamlTest
         Task<Rect> GetCoordinates();
 
         Task MoveKeyboardFocus();
-        Task SendInput(string textInput);
-        Task SendInput(params Key[] keys);
+
+        Task SendInput(KeyboardInput keyboardInput);
+        //Task SendInput(MouseInput mouseInput);
 
         Task<IImage> GetBitmap();
     }
 
-    public interface IVisualElement<TElement> : IVisualElement
+
+
+    public sealed class KeyboardInput
     {
-        Task<T> Get<T>(Expression<Func<TElement, T>> propertyExpression);
+        public string Text { get; }
+        public IReadOnlyList<Key> Keys { get; }
+
+        public KeyboardInput(string text)
+        {
+            Text = text ?? throw new ArgumentNullException(nameof(text));
+            Keys = Array.Empty<Key>();
+        }
+
+        public KeyboardInput(params Key[] keys)
+        {
+            Text = "";
+            Keys = keys;
+        }
+    }
+
+    public sealed class MouseInput
+    {
+
     }
 }

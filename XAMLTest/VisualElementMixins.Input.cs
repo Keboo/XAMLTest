@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using static PInvoke.User32;
 
 namespace XamlTest
@@ -39,5 +41,11 @@ namespace XamlTest
 
         private static unsafe void LeftClick()
             => mouse_event(mouse_eventFlags.MOUSEEVENTF_LEFTDOWN | mouse_eventFlags.MOUSEEVENTF_LEFTUP, 0, 0, 0, null);
+
+        public static async Task SendInput(this IVisualElement element, string textInput) 
+            => await element.SendInput(new KeyboardInput(textInput));
+
+        public static async Task SendInput(this IVisualElement element, params Key[] keys) 
+            => await element.SendInput(new KeyboardInput(keys));
     }
 }
