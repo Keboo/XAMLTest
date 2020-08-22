@@ -166,6 +166,7 @@ message KeyboardFocusResult {
 message InputRequest {
   string elementId = 1;
   string textInput = 2;
+  repeated int32 keys = 3;
 }
 
 message InputResponse {

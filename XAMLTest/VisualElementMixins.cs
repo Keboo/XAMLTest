@@ -25,39 +25,6 @@ namespace XamlTest
             return null;
         }
 
-        public static async Task MoveCursorToElement(
-            this IVisualElement element, Position position = Position.Center)
-        {
-            if (element is null)
-            {
-                throw new ArgumentNullException(nameof(element));
-            }
-
-            Rect coordinates = await element.GetCoordinates();
-
-            Point location = position switch
-            {
-                Position.TopLeft => coordinates.TopLeft,
-                _ => coordinates.Center()
-            };
-
-            SetCursorPos((int)location.X, (int)location.Y);
-        }
-
-        public static async Task Click(this IVisualElement element)
-        {
-            if (element is null)
-            {
-                throw new ArgumentNullException(nameof(element));
-            }
-
-            await MoveCursorToElement(element);
-            LeftClick();
-        }
-
-        private static unsafe void LeftClick()
-            => mouse_event(mouse_eventFlags.MOUSEEVENTF_LEFTDOWN | mouse_eventFlags.MOUSEEVENTF_LEFTUP, 0, 0, 0, null);
-
         public static async Task<IValue> GetProperty(this IVisualElement element, string name)
         {
             if (element is null)

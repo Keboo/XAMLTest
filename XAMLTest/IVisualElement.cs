@@ -2,6 +2,7 @@
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace XamlTest
@@ -20,6 +21,7 @@ namespace XamlTest
 
         Task MoveKeyboardFocus();
         Task SendInput(string textInput);
+        Task SendInput(params Key[] keys);
 
         Task<IImage> GetBitmap();
     }

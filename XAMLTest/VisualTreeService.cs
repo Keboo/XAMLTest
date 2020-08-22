@@ -19,6 +19,9 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
+using System.Windows.Threading;
+using WindowsInput;
+using WindowsInput.Native;
 using XamlTest.Internal;
 using Brush = System.Windows.Media.Brush;
 using Color = System.Windows.Media.Color;
@@ -521,39 +524,42 @@ namespace XamlTest
 
         public override async Task<InputResponse> SendInput(InputRequest request, ServerCallContext context)
         {
-            //Debugger.Launch();
             var reply = new InputResponse();
-
             await Application.Dispatcher.InvokeAsync(() =>
             {
                 try
                 {
-                    PresentationSource source;
-                    if (!string.IsNullOrEmpty(request.ElementId))
+                    if (!(GetCachedElement<DependencyObject>(request.ElementId) is IInputElement element))
                     {
-                        if (!(GetCachedElement<Visual>(request.ElementId) is Visual cachedVisual))
-                        {
-                            reply.ErrorMessages.Add("Could not find element");
-                            return;
-                        }
-                        source = PresentationSource.FromVisual(cachedVisual);
+                        reply.ErrorMessages.Add("Could not find element");
+                        return;
                     }
-                    else if (Keyboard.FocusedElement is Visual focusedVisual)
+                    if (Keyboard.Focus(element) != element)
                     {
-                        source = PresentationSource.FromVisual(focusedVisual);
-                    }
-                    else
-                    {
-                        reply.ErrorMessages.Add("No source element to generate text.");
+                        reply.ErrorMessages.Add($"Failed to move focus to element {element}");
                         return;
                     }
 
-                    TextCompositionEventArgs textArgs = new TextCompositionEventArgs(InputManager.Current.PrimaryKeyboardDevice,
-                        new TextComposition(InputManager.Current, Keyboard.FocusedElement, request.TextInput));
-                    textArgs.RoutedEvent = UIElement.TextInputEvent;
-                    if (!InputManager.Current.ProcessInput(textArgs))
+                    IKeyboardSimulator? keyboard = new InputSimulator().Keyboard;
+                    if (keyboard is null)
                     {
-                        reply.ErrorMessages.Add($"Failed to process text composition '{request.TextInput}'");
+                        reply.ErrorMessages.Add("Could not get keybaord device");
+                        return;
+                    }
+
+                    if (!string.IsNullOrEmpty(request.TextInput))
+                    {
+                        keyboard.TextEntry(request.TextInput);
+                    }
+
+                    VirtualKeyCode[]? vKeys = request.Keys
+                                               .Cast<Key>()
+                                               .Select(KeyInterop.VirtualKeyFromKey)
+                                               .Cast<VirtualKeyCode>()
+                                               .ToArray();
+                    if (vKeys.Any())
+                    {
+                        keyboard.KeyPress(vKeys);
                     }
                 }
                 catch (Exception e)
@@ -561,6 +567,9 @@ namespace XamlTest
                     reply.ErrorMessages.Add(e.ToString());
                 }
             });
+
+            //Wait for input to be processed
+            await Application.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
             return reply;
         }
 

@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace XamlTest.Internal
@@ -178,6 +179,25 @@ namespace XamlTest.Internal
                 TextInput = textInput ?? ""
             };
 
+            if (await Client.SendInputAsync(request) is { } reply)
+            {
+                if (reply.ErrorMessages.Any())
+                {
+                    throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
+                }
+                return;
+            }
+
+            throw new Exception("Failed to receive a reply");
+        }
+
+        public async Task SendInput(Key[] keys)
+        {
+            var request = new InputRequest
+            {
+                ElementId = Id,
+            };
+            request.Keys.AddRange(keys.Cast<int>());
             if (await Client.SendInputAsync(request) is { } reply)
             {
                 if (reply.ErrorMessages.Any())
