@@ -12,11 +12,13 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -525,6 +527,11 @@ namespace XamlTest
         public override async Task<InputResponse> SendInput(InputRequest request, ServerCallContext context)
         {
             var reply = new InputResponse();
+            int keyDowns = 0;
+            int keyUps = 0;
+            int expectedKeyPresses = 0;
+            var hook = new HwndSourceHook(WndProc);
+            HwndSource? source = null;
             await Application.Dispatcher.InvokeAsync(() =>
             {
                 try
@@ -547,8 +554,18 @@ namespace XamlTest
                         return;
                     }
 
+                    Window window = Window.GetWindow((DependencyObject)element);
+                    if (window is null)
+                    {
+                        reply.ErrorMessages.Add("Failed to find parent window");
+                        return;
+                    }
+                    source = HwndSource.FromHwnd(new WindowInteropHelper(window).Handle);
+                    source.AddHook(hook);
+
                     if (!string.IsNullOrEmpty(request.TextInput))
                     {
+                        expectedKeyPresses += request.TextInput.Length;
                         keyboard.TextEntry(request.TextInput);
                     }
 
@@ -559,8 +576,10 @@ namespace XamlTest
                                                .ToArray();
                     if (vKeys.Any())
                     {
+                        expectedKeyPresses += vKeys.Length;
                         keyboard.KeyPress(vKeys);
                     }
+
                 }
                 catch (Exception e)
                 {
@@ -568,9 +587,40 @@ namespace XamlTest
                 }
             });
 
+            using var cts = new CancellationTokenSource();
+            //Only wait for 1 second for the key presses to be processed by the window.
+            cts.CancelAfter(TimeSpan.FromSeconds(1));
+            
+            await Task.Run(() =>
+            {
+                CancellationToken token = cts.Token;
+                while(expectedKeyPresses != keyDowns && expectedKeyPresses!= keyUps && !token.IsCancellationRequested)
+                { }
+            });
+
             //Wait for input to be processed
-            await Application.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
+            if (source != null && hook != null)
+            {
+                source.RemoveHook(hook);
+            }
+
             return reply;
+
+            IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+            {
+                switch ((WindowMessage)msg)
+                {
+                    case WindowMessage.WM_KEYDOWN:
+                    case WindowMessage.WM_IME_KEYDOWN:
+                        Interlocked.Increment(ref keyDowns);
+                        break;
+                    case WindowMessage.WM_KEYUP:
+                    case WindowMessage.WM_IME_KEYUP:
+                        Interlocked.Increment(ref keyUps);
+                        break;
+                }
+                return IntPtr.Zero;
+            }
         }
 
         private Assembly? CurrentDomain_AssemblyResolve(object? sender, ResolveEventArgs args)
