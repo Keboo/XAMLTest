@@ -463,7 +463,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             await element.MoveKeyboardFocus();
 
             await element.SendInput("Line 1");
-            await element.SendInput(Key.Enter);
+            await element.SendInput(Key.Return);
             await element.SendInput("Line 2");
 
 
