@@ -440,6 +440,8 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnSendTextInput_TextIsChanged()
         {
+            await using var recorder = new TestRecorder(App);
+
             IWindow window = await App.CreateWindowWithContent(@"
 <Grid>
   <TextBox x:Name=""MyTextBox"" />
@@ -450,11 +452,15 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             await element.SendInput("Test Text!");
 
             Assert.AreEqual("Test Text!", await element.GetText());
+
+            recorder.Success();
         }
 
         [TestMethod]
         public async Task OnSendTextInput_ExplicitKeyIsSent()
         {
+            await using var recorder = new TestRecorder(App);
+
             IWindow window = await App.CreateWindowWithContent(@"
 <Grid>
   <TextBox x:Name=""MyTextBox"" AcceptsReturn=""True"" MinWidth=""280"" Height=""80"" />
@@ -462,12 +468,14 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             IVisualElement element = await window.GetElement("/Grid~MyTextBox");
             await element.MoveKeyboardFocus();
 
-            await element.SendInput("Line 1");
+            await element.SendInput("First Line");
             await element.SendInput(Key.Return);
-            await element.SendInput("Line 2");
+            await element.SendInput("Second Line");
 
 
             Assert.AreEqual($"Line 1{Environment.NewLine}Line 2", await element.GetText());
+
+            recorder.Success();
         }
     }
 }
