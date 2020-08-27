@@ -548,6 +548,7 @@ namespace XamlTest
                         reply.ErrorMessages.Add("Failed to find parent window");
                         return;
                     }
+                    window.Activate();
                     source = HwndSource.FromHwnd(new WindowInteropHelper(window).EnsureHandle());
                     source.AddHook(hook);
                 }
