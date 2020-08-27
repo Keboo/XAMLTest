@@ -3,12 +3,10 @@ using Grpc.Core;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -21,11 +19,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Markup;
 using System.Windows.Media;
-using System.Windows.Threading;
-using WindowsInput;
-using WindowsInput.Native;
 using XamlTest.Internal;
-using static PInvoke.User32;
 using Brush = System.Windows.Media.Brush;
 using Color = System.Windows.Media.Color;
 using Point = System.Windows.Point;
@@ -528,10 +522,7 @@ namespace XamlTest
         public override async Task<InputResponse> SendInput(InputRequest request, ServerCallContext context)
         {
             var reply = new InputResponse();
-            int keyDowns = 0;
-            int keyUps = 0;
             int expectedKeyPresses = 0;
-            var downKeys = new List<ulong>();
             var upKeys = new List<ulong>();
             var messages = new List<WindowMessage>();
             var hook = new HwndSourceHook(WndProc);
@@ -566,53 +557,47 @@ namespace XamlTest
                 }
             });
 
-            IKeyboardSimulator? keyboard = new InputSimulator().Keyboard;
-            if (keyboard is null)
+            try
             {
-                reply.ErrorMessages.Add("Could not get keybaord device");
-                return reply;
+                if (!string.IsNullOrEmpty(request.TextInput))
+                {
+                    expectedKeyPresses += request.TextInput.Length;
+                    Input.KeyboardInput.SendKeysForText(request.TextInput);
+                }
+                if (request.Keys.Any())
+                {
+                    expectedKeyPresses += request.Keys.Count;
+                    Input.KeyboardInput.SendKeys(request.Keys.Cast<Key>().ToArray());
+
+                }
+
+                using var cts = new CancellationTokenSource();
+                //Only wait for 1 second for the key presses to be processed by the window.
+                cts.CancelAfter(TimeSpan.FromSeconds(1));
+
+                await Task.Run(() =>
+                {
+                    CancellationToken token = cts.Token;
+                    while (expectedKeyPresses != upKeys.Count && !token.IsCancellationRequested)
+                    { }
+                });
+
+                if (source != null && hook != null)
+                {
+                    source.RemoveHook(hook);
+                }
+
+                if (expectedKeyPresses != upKeys.Count)
+                {
+                    reply.ErrorMessages.Add($"Failed to send keys to expected window. Expected {expectedKeyPresses}, Keys {upKeys.Count}");
+                    reply.ErrorMessages.Add($"Keys: {string.Join(",", upKeys)}");
+                    reply.ErrorMessages.Add($"Messages: {string.Join(",", messages)}");
+                }
             }
-
-            if (!string.IsNullOrEmpty(request.TextInput))
+            catch(Exception e)
             {
-                expectedKeyPresses += request.TextInput.Length;
-                keyboard.TextEntry(request.TextInput);
+                reply.ErrorMessages.Add(e.ToString());
             }
-            VirtualKeyCode[]? vKeys = request.Keys
-                                       .Cast<Key>()
-                                       .Select(KeyInterop.VirtualKeyFromKey)
-                                       .Cast<VirtualKeyCode>()
-                                       .ToArray();
-            if (vKeys.Any())
-            {
-                expectedKeyPresses += vKeys.Length;
-                keyboard.KeyPress(vKeys);
-            }
-
-            using var cts = new CancellationTokenSource();
-            //Only wait for 1 second for the key presses to be processed by the window.
-            cts.CancelAfter(TimeSpan.FromSeconds(5));
-
-            await Task.Run(() =>
-            {
-                CancellationToken token = cts.Token;
-                while ((expectedKeyPresses != keyDowns || expectedKeyPresses != keyUps) && !token.IsCancellationRequested)
-                { }
-            });
-
-            if (source != null && hook != null)
-            {
-                source.RemoveHook(hook);
-            }
-
-            if (expectedKeyPresses != keyDowns || expectedKeyPresses != keyUps)
-            {
-                reply.ErrorMessages.Add($"Failed to send keys to expected window. Expected {expectedKeyPresses}, Down {keyDowns}, Up {keyUps}");
-                reply.ErrorMessages.Add($"Down: {string.Join(",", downKeys)}");
-                reply.ErrorMessages.Add($"Up:   {string.Join(",", upKeys)}");
-                reply.ErrorMessages.Add($"Messages: {string.Join(",", messages)}");
-            }
-
             return reply;
 
             IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
@@ -620,27 +605,27 @@ namespace XamlTest
                 messages.Add((WindowMessage)msg);
                 switch ((WindowMessage)msg)
                 {
+                    /*
+                    //NB: Currently sending the Enter key only appears to trigger WM_KEYUP
                     case WindowMessage.WM_SYSKEYDOWN:
                     case WindowMessage.WM_KEYDOWN:
                     case WindowMessage.WM_IME_KEYDOWN:
-                        /*
-                         * https://docs.microsoft.com/windows/win32/inputdev/wm-keydown#remarks
-                         * Because of the autorepeat feature, more than one WM_KEYDOWN message may be 
-                         * posted before a WM_KEYUP message is posted. The previous key state (bit 30) 
-                         * can be used to determine whether the WM_KEYDOWN message indicates the first 
-                         * down transition or a repeated down transition.
-                         */
+                        // https://docs.microsoft.com/windows/win32/inputdev/wm-keydown#remarks
+                        // Because of the autorepeat feature, more than one WM_KEYDOWN message may be 
+                        // posted before a WM_KEYUP message is posted. The previous key state (bit 30) 
+                        // can be used to determine whether the WM_KEYDOWN message indicates the first 
+                        // down transition or a repeated down transition.
                         downKeys.Add((ulong)wParam.ToInt64());
                         if ((wParam.ToInt32() & 0x0400_0000) == 0)
                         {
                             Interlocked.Increment(ref keyDowns);
                         }
                         break;
+                    */
                     case WindowMessage.WM_SYSKEYUP:
                     case WindowMessage.WM_KEYUP:
                     case WindowMessage.WM_IME_KEYUP:
                         upKeys.Add((ulong)wParam.ToInt64());
-                        Interlocked.Increment(ref keyUps);
                         break;
                 }
                 return IntPtr.Zero;
