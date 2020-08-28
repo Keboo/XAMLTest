@@ -444,7 +444,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
 
             IWindow window = await App.CreateWindowWithContent(@"
 <Grid>
-  <TextBox x:Name=""MyTextBox"" />
+  <TextBox x:Name=""MyTextBox"" VerticalAlignment=""Center"" Margin=""40"" />
 </Grid>");
             IVisualElement element = await window.GetElement("/Grid~MyTextBox");
             await element.MoveKeyboardFocus();
@@ -464,14 +464,14 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
 
             IWindow window = await App.CreateWindowWithContent(@"
 <Grid>
-  <TextBox x:Name=""MyTextBox"" AcceptsReturn=""True"" MinWidth=""280"" Height=""80"" />
+  <TextBox x:Name=""MyTextBox"" AcceptsReturn=""True"" MinWidth=""280"" Height=""80"" VerticalAlignment=""Center"" HorizontalAlignment=""Center"" />
 </Grid>");
             IVisualElement element = await window.GetElement("/Grid~MyTextBox");
             await element.MoveKeyboardFocus();
 
             await element.SendInput("First Line");
-            //await element.SendInput(Key.Enter);
-            //await element.SendInput("Second Line");
+            await element.SendInput(Key.Enter);
+            await element.SendInput("Second Line");
 
             Assert.AreEqual($"First Line{Environment.NewLine}Second Line", await element.GetText());
 
