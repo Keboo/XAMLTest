@@ -453,6 +453,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
 
             Assert.AreEqual("Test Text!", await element.GetText());
 
+            await recorder.SaveScreenshot();
             recorder.Success();
         }
 
@@ -469,11 +470,10 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             await element.MoveKeyboardFocus();
 
             await element.SendInput("First Line");
-            await element.SendInput(Key.Return);
-            await element.SendInput("Second Line");
+            //await element.SendInput(Key.Enter);
+            //await element.SendInput("Second Line");
 
-
-            Assert.AreEqual($"Line 1{Environment.NewLine}Line 2", await element.GetText());
+            Assert.AreEqual($"First Line{Environment.NewLine}Second Line", await element.GetText());
 
             recorder.Success();
         }
