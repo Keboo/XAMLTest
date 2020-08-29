@@ -500,16 +500,12 @@ namespace XamlTest
                 }
 
                 Point topLeft = element.PointToScreen(new Point(0, 0));
-                Point bottomRight = element.PointToScreen(new Point(element.ActualWidth, element.ActualHeight));
+                
+                var screen = Screen.FromRect(new Rect(topLeft.X, topLeft.Y, element.ActualWidth, element.ActualHeight));
 
-                int left = (int)Math.Floor(topLeft.X);
-                int top = (int)Math.Floor(topLeft.Y);
-                int width = (int)Math.Ceiling(bottomRight.X - topLeft.X);
-                int height = (int)Math.Ceiling(bottomRight.Y - topLeft.Y);
-
-                using var screenBmp = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                using var screenBmp = new Bitmap((int)screen.Bounds.Width, (int)screen.Bounds.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
                 using var bmpGraphics = Graphics.FromImage(screenBmp);
-                bmpGraphics.CopyFromScreen(left, top, 0, 0, new System.Drawing.Size(width, height));
+                bmpGraphics.CopyFromScreen(0, 0, 0, 0, new System.Drawing.Size((int)screen.Bounds.Width, (int)screen.Bounds.Height));
                 using var ms = new MemoryStream();
                 screenBmp.Save(ms, ImageFormat.Bmp);
                 ms.Position = 0;
