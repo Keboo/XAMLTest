@@ -139,6 +139,7 @@ message ApplicationResult {
 
 message WindowConfiguration {
   string xaml = 1;
+  bool fitToScreen = 2;
 }
 
 message WindowResult {

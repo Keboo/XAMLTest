@@ -39,7 +39,8 @@ namespace XamlTest.Internal
         {
             var request = new WindowConfiguration()
             {
-                Xaml = windowXaml
+                Xaml = windowXaml,
+                FitToScreen = true
             };
             if (await Client.CreateWindowAsync(request) is { } reply)
             {

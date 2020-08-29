@@ -461,6 +461,23 @@ namespace XamlTest
                 {
                     reply.WindowsId = DependencyObjectTracker.GetOrSetId(window, KnownElements);
                     window.Show();
+
+                    if (request.FitToScreen)
+                    {
+                        var windowRect = new Rect(window.Left, window.Top, window.Width, window.Height);
+                        Screen screen = Screen.FromRect(windowRect);
+                        if (!screen.WorkingArea.Contains(windowRect))
+                        {
+                            window.Left = Math.Max(window.Left, screen.WorkingArea.Left);
+                            window.Left = Math.Max(screen.WorkingArea.Left, window.Left + window.Width - screen.WorkingArea.Right - window.Width);
+
+                            window.Top = Math.Max(window.Top, screen.WorkingArea.Top);
+                            window.Top = Math.Max(screen.WorkingArea.Top, window.Top + window.Height - screen.WorkingArea.Top - window.Height);
+
+                            window.Width = Math.Min(window.Width, screen.WorkingArea.Width);
+                            window.Height = Math.Min(window.Height, screen.WorkingArea.Height);
+                        }
+                    }
                 }
                 else
                 {
