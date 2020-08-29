@@ -469,7 +469,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             IVisualElement element = await window.GetElement("/Grid~MyTextBox");
             await element.MoveKeyboardFocus();
 
-            await element.SendInput("First Line");
+            await element.SendInput("Test Text!");
             await element.SendInput(Key.Enter);
             await element.SendInput("Second Line");
 
