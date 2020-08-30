@@ -524,9 +524,19 @@ namespace XamlTest
                     reply.ErrorMessages.Add("Could not find element");
                     return;
                 }
+                if (element is DependencyObject @do &&
+                    Window.GetWindow(@do) is Window window)
+                {
+                    window.Activate();
+                }
+
                 if (Keyboard.Focus(element) != element)
                 {
                     reply.ErrorMessages.Add($"Failed to move focus to element {element}");
+                }
+                if (element is UIElement uIElement)
+                {
+                    uIElement.Focus();
                 }
             });
             return reply;
@@ -561,9 +571,9 @@ namespace XamlTest
                         reply.ErrorMessages.Add("Failed to find parent window");
                         return;
                     }
-                    window.Activate();
                     source = HwndSource.FromHwnd(new WindowInteropHelper(window).EnsureHandle());
                     source.AddHook(hook);
+                    window.Activate();
                 }
                 catch (Exception e)
                 {
