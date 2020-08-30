@@ -496,7 +496,7 @@ namespace XamlTest
                     }
                     else
                     {
-                        window.LogMessage("Window is acitive");
+                        window.LogMessage("Window is active");
                     }
                 }
                 else

@@ -466,7 +466,9 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
 <Grid>
   <TextBox x:Name=""MyTextBox"" AcceptsReturn=""True"" MinWidth=""280"" Height=""80"" VerticalAlignment=""Center"" HorizontalAlignment=""Center"" />
 </Grid>");
+            await recorder.SaveScreenshot();
             IVisualElement element = await window.GetElement("/Grid~MyTextBox");
+            await recorder.SaveScreenshot();
             await element.MoveKeyboardFocus();
             await recorder.SaveScreenshot();
 
