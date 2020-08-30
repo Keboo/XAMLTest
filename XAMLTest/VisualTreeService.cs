@@ -9,6 +9,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -28,6 +29,7 @@ using Window = System.Windows.Window;
 
 namespace XamlTest
 {
+
     internal class VisualTreeService : Protocol.ProtocolBase
     {
         private static Guid Initialized { get; } = Guid.NewGuid();
@@ -453,6 +455,8 @@ namespace XamlTest
                 try
                 {
                     window = LoadXaml<Window>(request.Xaml);
+                    window.Activated += Window_Activated;
+                    window.Deactivated += Window_Deactivated;
                 }
                 catch (Exception e)
                 {
@@ -479,6 +483,11 @@ namespace XamlTest
                             window.Height = Math.Min(window.Height, screen.WorkingArea.Height);
                         }
                     }
+
+                    if (!window.IsActive)
+                    {
+                        reply.ErrorMessages.Add("Window not active");
+                    }
                 }
                 else
                 {
@@ -486,6 +495,22 @@ namespace XamlTest
                 }
             });
             return reply;
+        }
+
+        private void Window_Deactivated(object? sender, EventArgs e)
+        {
+            if (sender is Window window)
+            {
+                window.LogMessage("Window activated");
+            }
+        }
+
+        private void Window_Activated(object? sender, EventArgs e)
+        {
+            if (sender is Window window)
+            {
+                window.LogMessage("Window deactivated");
+            }
         }
 
         public override async Task<ImageResult> GetImage(ImageQuery request, ServerCallContext context)
@@ -535,6 +560,7 @@ namespace XamlTest
                         Process foregroundProcess = Process.GetProcessById(processId);
 
                         reply.ErrorMessages.Add($"Failed to activate window. Foreground window '{foregroundProcess.MainWindowTitle}', PID {processId}, Name: {foregroundProcess.ProcessName}");
+                        reply.ErrorMessages.AddRange(window.GetLogMessages());
                         return;
                     }
                     if (!window.IsActive)
