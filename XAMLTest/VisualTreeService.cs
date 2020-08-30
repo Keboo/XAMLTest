@@ -527,7 +527,11 @@ namespace XamlTest
                 if (element is DependencyObject @do &&
                     Window.GetWindow(@do) is Window window)
                 {
-                    window.Activate();
+                    if (!window.Activate() || !window.IsActive)
+                    {
+                        reply.ErrorMessages.Add($"Failed to activate window");
+                        return;
+                    }
                 }
 
                 if (Keyboard.Focus(element) != element)
@@ -573,13 +577,22 @@ namespace XamlTest
                     }
                     source = HwndSource.FromHwnd(new WindowInteropHelper(window).EnsureHandle());
                     source.AddHook(hook);
-                    window.Activate();
+                    if (!window.Activate() || !window.IsActive)
+                    {
+                        reply.ErrorMessages.Add($"Failed to active window");
+                        return;
+                    }
                 }
                 catch (Exception e)
                 {
                     reply.ErrorMessages.Add(e.ToString());
                 }
             });
+
+            if (reply.ErrorMessages.Any())
+            {
+                return reply;
+            }
 
             try
             {
