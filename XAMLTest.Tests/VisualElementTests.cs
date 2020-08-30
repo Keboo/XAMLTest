@@ -437,6 +437,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             Assert.IsTrue(await element.GetIsKeyboardFocused());
         }
 
+        /*
         [TestMethod]
         public async Task OnSendTextInput_TextIsChanged()
         {
@@ -455,7 +456,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
 
             await recorder.SaveScreenshot();
             recorder.Success();
-        }
+        }*/
 
         [TestMethod]
         public async Task OnSendTextInput_ExplicitKeyIsSent()
