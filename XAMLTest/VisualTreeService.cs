@@ -527,9 +527,14 @@ namespace XamlTest
                 if (element is DependencyObject @do &&
                     Window.GetWindow(@do) is Window window)
                 {
-                    if (!window.Activate() || !window.IsActive)
+                    if (!window.Activate())
                     {
                         reply.ErrorMessages.Add($"Failed to activate window");
+                        return;
+                    }
+                    if (!window.IsActive)
+                    {
+                        reply.ErrorMessages.Add($"Window is not active");
                         return;
                     }
                 }
