@@ -93,6 +93,9 @@ namespace XamlTest
 
                     if (searchRoot is null) return;
 
+                    var window = searchRoot as Window ?? Window.GetWindow(searchRoot);
+                    window.LogMessage("Getting element");
+
                     if (!string.IsNullOrWhiteSpace(request.Query))
                     {
                         if (!(EvaluateQuery(searchRoot, request.Query) is DependencyObject element))
@@ -103,6 +106,8 @@ namespace XamlTest
 
                         string id = DependencyObjectTracker.GetOrSetId(element, KnownElements);
                         reply.ElementIds.Add(id);
+
+                        window.LogMessage("Got element");
                         return;
                     }
 
@@ -466,6 +471,7 @@ namespace XamlTest
                 {
                     reply.WindowsId = DependencyObjectTracker.GetOrSetId(window, KnownElements);
                     window.Show();
+                    window.LogMessage("Window shown");
 
                     if (request.FitToScreen)
                     {
@@ -487,6 +493,10 @@ namespace XamlTest
                     if (!window.IsActive)
                     {
                         reply.ErrorMessages.Add("Window not active");
+                    }
+                    else
+                    {
+                        window.LogMessage("Window is acitive");
                     }
                 }
                 else
@@ -553,6 +563,7 @@ namespace XamlTest
                 if (element is DependencyObject @do &&
                     Window.GetWindow(@do) is Window window)
                 {
+                    window.LogMessage("Activating window");
                     if (!window.Activate())
                     {
                         var foregroupWindowPtr = PInvoke.User32.GetForegroundWindow();
