@@ -472,6 +472,12 @@ namespace XamlTest
                     reply.WindowsId = DependencyObjectTracker.GetOrSetId(window, KnownElements);
                     window.Show();
                     window.LogMessage("Window shown");
+                    
+                    if (!window.Activate())
+                    {
+                        reply.ErrorMessages.Add("Failed to activate window");
+                        return;
+                    }
 
                     if (request.FitToScreen)
                     {
