@@ -437,7 +437,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             Assert.IsTrue(await element.GetIsKeyboardFocused());
         }
 
-        /*
         [TestMethod]
         public async Task OnSendTextInput_TextIsChanged()
         {
@@ -456,13 +455,14 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
 
             await recorder.SaveScreenshot();
             recorder.Success();
-        }*/
+        }
 
         [TestMethod]
         public async Task OnSendTextInput_ExplicitKeyIsSent()
         {
             await using var recorder = new TestRecorder(App);
 
+            await Task.Delay(3000);
             IWindow window = await App.CreateWindowWithContent(@"
 <Grid>
   <TextBox x:Name=""MyTextBox"" AcceptsReturn=""True"" MinWidth=""280"" Height=""80"" VerticalAlignment=""Center"" HorizontalAlignment=""Center"" />
