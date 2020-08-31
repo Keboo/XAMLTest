@@ -477,10 +477,26 @@ namespace XamlTest
                         string text = PInvoke.User32.GetWindowText(foregroundWindow);
                         window.LogMessage($"Current foreground window '{text}', {foregroundWindow}");
                     }
+                    
                     window.Show();
                     window.LogMessage("Window shown");
 
+                    foregroundWindow = PInvoke.User32.GetForegroundWindow();
+                    if (foregroundWindow != IntPtr.Zero)
+                    {
+                        string text = PInvoke.User32.GetWindowText(foregroundWindow);
+                        window.LogMessage($"Foreground window after show '{text}', {foregroundWindow}");
+                    }
+
                     bool activated = PInvoke.User32.SetForegroundWindow(new WindowInteropHelper(window).EnsureHandle());
+                    
+                    foregroundWindow = PInvoke.User32.GetForegroundWindow();
+                    if (foregroundWindow != IntPtr.Zero)
+                    {
+                        string text = PInvoke.User32.GetWindowText(foregroundWindow);
+                        window.LogMessage($"Foreground window after activate '{text}', {foregroundWindow}");
+                    }
+
                     if (!activated)
                     {
                         var foregroupWindowPtr = PInvoke.User32.GetForegroundWindow();
