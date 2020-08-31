@@ -12,7 +12,7 @@ namespace XamlTest
         public static IApp ConnectToApp(int processId)
             => ConnectToApp(Process.GetProcessById(processId));
 
-        public static IApp ConnectToApp(Process process)
+        public static IApp ConnectToApp(Process process, Action<string>? logMessage = null)
         {
             if (process is null)
             {
@@ -22,7 +22,7 @@ namespace XamlTest
             var channel = new NamedPipeChannel(".", Server.PipePrefix + process.Id);
             var client = new Protocol.ProtocolClient(channel);
 
-            return new Internal.App(client);
+            return new Internal.App(client, logMessage);
         }
     }
 }

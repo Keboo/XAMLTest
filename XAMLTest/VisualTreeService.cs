@@ -475,7 +475,7 @@ namespace XamlTest
                     if (foregroundWindow != IntPtr.Zero)
                     {
                         string text = PInvoke.User32.GetWindowText(foregroundWindow);
-                        window.LogMessage($"Curent foreground window '{text}', {foregroundWindow}");
+                        window.LogMessage($"Current foreground window '{text}', {foregroundWindow}");
                     }
                     window.Show();
                     window.LogMessage("Window shown");
@@ -518,12 +518,16 @@ namespace XamlTest
                     {
                         window.LogMessage("Window is active");
                     }
+
+                    reply.LogMessages.AddRange(window.GetLogMessages());
                 }
                 else
                 {
                     reply.ErrorMessages.Add("Failed to load window");
                 }
+
             });
+
             return reply;
         }
 

@@ -144,7 +144,8 @@ message WindowConfiguration {
 
 message WindowResult {
   repeated string errorMessages = 1;
-  string windowsId = 2;
+  repeated string logMessages = 2;
+  string windowsId = 3;
 }
 
 message ImageQuery {

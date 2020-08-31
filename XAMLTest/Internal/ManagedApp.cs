@@ -5,8 +5,9 @@ namespace XamlTest.Internal
 {
     internal class ManagedApp : App
     {
-        public ManagedApp(Process managedProcess, Protocol.ProtocolClient client)
-            : base(client) => ManagedProcess = managedProcess ?? throw new ArgumentNullException(nameof(managedProcess));
+        public ManagedApp(Process managedProcess, Protocol.ProtocolClient client, Action<string>? logMessage)
+            : base(client, logMessage) 
+            => ManagedProcess = managedProcess ?? throw new ArgumentNullException(nameof(managedProcess));
 
         public Process ManagedProcess { get; }
 

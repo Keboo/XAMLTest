@@ -2,17 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using XamlTest;
 
 namespace XamlTest.Internal
 {
 
     internal class App : IApp
     {
-        public App(Protocol.ProtocolClient client) 
-            => Client = client ?? throw new ArgumentNullException(nameof(client));
+        public App(Protocol.ProtocolClient client, Action<string>? logMessage)
+        {
+            Client = client ?? throw new ArgumentNullException(nameof(client));
+            LogMessage = logMessage;
+        }
 
         private Protocol.ProtocolClient Client { get; }
+        public Action<string>? LogMessage { get; }
 
         public virtual void Dispose()
         { }
@@ -44,6 +47,13 @@ namespace XamlTest.Internal
             };
             if (await Client.CreateWindowAsync(request) is { } reply)
             {
+                if (LogMessage is { })
+                {
+                    foreach(string logsMessage in reply.LogMessages)
+                    {
+                        LogMessage(logsMessage);
+                    }
+                }
                 if (reply.ErrorMessages.Any())
                 {
                     throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));

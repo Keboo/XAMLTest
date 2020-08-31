@@ -14,13 +14,15 @@ namespace XamlTest.Tests
     [TestClass]
     public class VisualElementTests
     {
+        public TestContext TestContext { get; set; } = null!;
+
         [NotNull]
         private IApp? App { get; set; }
 
         [TestInitialize]
         public async Task TestInitialize()
         {
-            App = XamlTest.App.StartRemote();
+            App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
 
             await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
         }
