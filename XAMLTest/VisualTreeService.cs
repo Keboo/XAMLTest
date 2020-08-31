@@ -472,8 +472,9 @@ namespace XamlTest
                     reply.WindowsId = DependencyObjectTracker.GetOrSetId(window, KnownElements);
                     window.Show();
                     window.LogMessage("Window shown");
-                    
-                    if (!window.Activate())
+
+                    bool activated = PInvoke.User32.SetForegroundWindow(new WindowInteropHelper(window).EnsureHandle());
+                    if (!activated)
                     {
                         var foregroupWindowPtr = PInvoke.User32.GetForegroundWindow();
                         PInvoke.User32.GetWindowThreadProcessId(foregroupWindowPtr, out int processId);
