@@ -450,6 +450,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             await element.MoveKeyboardFocus();
 
             await element.SendInput("Test Text!");
+            await Task.Delay(1000);
 
             Assert.AreEqual("Test Text!", await element.GetText());
 

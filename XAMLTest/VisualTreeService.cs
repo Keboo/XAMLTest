@@ -470,6 +470,13 @@ namespace XamlTest
                 if (window is { })
                 {
                     reply.WindowsId = DependencyObjectTracker.GetOrSetId(window, KnownElements);
+
+                    var foregroundWindow = PInvoke.User32.GetForegroundWindow();
+                    if (foregroundWindow != IntPtr.Zero)
+                    {
+                        string text = PInvoke.User32.GetWindowText(foregroundWindow);
+                        window.LogMessage($"Curent foreground window '{text}', {foregroundWindow}");
+                    }
                     window.Show();
                     window.LogMessage("Window shown");
 
