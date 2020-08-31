@@ -28,9 +28,9 @@ namespace XamlTest.Tests
         }
 
         [TestCleanup]
-        public void TestCleanup()
+        public async Task TestCleanup()
         {
-            App.Dispose();
+            await App.DisposeAsync();
         }
 
         [TestMethod]

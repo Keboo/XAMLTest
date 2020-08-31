@@ -477,7 +477,7 @@ namespace XamlTest
                         string text = PInvoke.User32.GetWindowText(foregroundWindow);
                         window.LogMessage($"Current foreground window '{text}', {foregroundWindow}");
                     }
-                    
+
                     window.Show();
                     window.LogMessage("Window shown");
 
@@ -489,7 +489,7 @@ namespace XamlTest
                     }
 
                     bool activated = PInvoke.User32.SetForegroundWindow(new WindowInteropHelper(window).EnsureHandle());
-                    
+
                     foregroundWindow = PInvoke.User32.GetForegroundWindow();
                     if (foregroundWindow != IntPtr.Zero)
                     {
@@ -576,7 +576,7 @@ namespace XamlTest
                 }
 
                 Point topLeft = element.PointToScreen(new Point(0, 0));
-                
+
                 var screen = Screen.FromRect(new Rect(topLeft.X, topLeft.Y, element.ActualWidth, element.ActualHeight));
 
                 using var screenBmp = new Bitmap((int)screen.Bounds.Width, (int)screen.Bounds.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
@@ -718,7 +718,7 @@ namespace XamlTest
                     reply.ErrorMessages.Add($"Messages: {string.Join(",", messages)}");
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 reply.ErrorMessages.Add(e.ToString());
             }
@@ -754,6 +754,23 @@ namespace XamlTest
                 }
                 return IntPtr.Zero;
             }
+        }
+
+        public override Task<ShutdownResponse> Shutdown(ShutdownRequest request, ServerCallContext context)
+        {
+            var reply = new ShutdownResponse();
+            try
+            {
+                Application.Dispatcher.InvokeAsync(() =>
+                {
+                    Application.Shutdown(request.ExitCode);
+                });
+            }
+            catch (Exception e)
+            {
+                reply.ErrorMessages.Add(e.ToString());
+            }
+            return Task.FromResult(reply);
         }
 
         private Assembly? CurrentDomain_AssemblyResolve(object? sender, ResolveEventArgs args)

@@ -14,11 +14,25 @@ namespace XamlTest.Internal
             LogMessage = logMessage;
         }
 
-        private Protocol.ProtocolClient Client { get; }
-        public Action<string>? LogMessage { get; }
+        protected Protocol.ProtocolClient Client { get; }
+        protected Action<string>? LogMessage { get; }
 
-        public virtual void Dispose()
-        { }
+        public virtual async ValueTask DisposeAsync()
+        {
+            var request = new ShutdownRequest
+            {
+                ExitCode = 0
+            };
+            if (await Client.ShutdownAsync(request) is { } reply)
+            {
+                if (reply.ErrorMessages.Any())
+                {
+                    throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
+                }
+                return;
+            }
+            throw new Exception("Failed to get a reply");
+        }
 
         public async Task Initialize(string applicationResourceXaml, params string[] assemblies)
         {

@@ -45,6 +45,9 @@ service Protocol {
 
   //Get an image of the specified element
   rpc GetImage (ImageQuery) returns (ImageResult);
+
+  //Request an application shutdown
+  rpc Shutdown (ShutdownRequest) returns (ShutdownResponse);
 }
 
 message GetWindowsQuery {
@@ -172,5 +175,13 @@ message InputRequest {
 }
 
 message InputResponse {
+  repeated string errorMessages = 1;
+}
+
+message ShutdownRequest {
+  int32 exitCode = 1;
+}
+
+message ShutdownResponse {
   repeated string errorMessages = 1;
 }

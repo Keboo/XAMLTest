@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace XamlTest.Internal
 {
@@ -11,10 +13,21 @@ namespace XamlTest.Internal
 
         public Process ManagedProcess { get; }
 
-        public override void Dispose()
+        public override async ValueTask DisposeAsync()
         {
-            base.Dispose();
-            ManagedProcess.Kill();
+            await base.DisposeAsync();
+            using var cts = new CancellationTokenSource();
+            cts.CancelAfter(TimeSpan.FromSeconds(10));
+            ManagedProcess.Refresh();
+            while (!ManagedProcess.HasExited && !cts.IsCancellationRequested)
+            {
+                await Task.Delay(10);
+                ManagedProcess.Refresh();
+            }
+            if (!ManagedProcess.HasExited)
+            {
+                ManagedProcess.Kill();
+            }
             ManagedProcess.WaitForExit();
         }
     }

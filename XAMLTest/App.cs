@@ -21,6 +21,7 @@ namespace XamlTest
             var startInfo = new ProcessStartInfo(path)
             {
                 WorkingDirectory = Path.GetDirectoryName(path) + Path.DirectorySeparatorChar,
+                UseShellExecute = true
             };
             Process process = Process.Start(startInfo);
             var channel = new NamedPipeChannel(".", Server.PipePrefix + process.Id);
