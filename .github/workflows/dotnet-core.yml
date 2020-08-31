@@ -53,20 +53,12 @@ jobs:
     
     - name: Build
       run: dotnet build -p:Version=${{ env.buildVersion }} --configuration ${{ env.configuration }} --no-restore
-    
-    - name: Install Screen Resolution Tool
-      uses: crazy-max/ghaction-chocolatey@v1
-      with:
-        args: install -y change-screen-resolution
-
-    - name: Change Screen Resolution
-      run: changescreenresolution 1920 1080
 
     - name: Minimize all windows
       run: (New-Object -ComObject "Shell.Application").minimizeall()
 
     - name: Test
-      run: dotnet test --no-build --verbosity normal --logger "console"
+      run: dotnet test --no-build --verbosity normal --logger "console;verbosity=detailed"
 
     - name: Upload Screenshots
       if: ${{ always() }}
