@@ -17,6 +17,23 @@ namespace XamlTest.Internal
         protected Protocol.ProtocolClient Client { get; }
         protected Action<string>? LogMessage { get; }
 
+        public virtual void Dispose()
+        {
+            var request = new ShutdownRequest
+            {
+                ExitCode = 0
+            };
+            if (Client.Shutdown(request) is { } reply)
+            {
+                if (reply.ErrorMessages.Any())
+                {
+                    throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
+                }
+                return;
+            }
+            throw new Exception("Failed to get a reply");
+        }
+
         public virtual async ValueTask DisposeAsync()
         {
             var request = new ShutdownRequest
@@ -118,5 +135,6 @@ namespace XamlTest.Internal
             }
             return Array.Empty<IWindow>();
         }
+
     }
 }

@@ -14,7 +14,7 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task OnCreateWindow_CanReadTitle()
         {
-            await using var app = App.StartRemote();
+            using var app = App.StartRemote();
             await using var recorder = new TestRecorder(app);
 
             await app.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
@@ -29,7 +29,7 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task OnGetMainWindow_ReturnsNullBeforeWindowCreated()
         {
-            await using var app = App.StartRemote();
+            using var app = App.StartRemote();
             await using var recorder = new TestRecorder(app);
 
             await app.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
@@ -44,7 +44,7 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task OnGetMainWindow_AfterMainWindowShownReturnsMainWindow()
         {
-            await using var app = App.StartRemote();
+            using var app = App.StartRemote();
             await using var recorder = new TestRecorder(app);
 
             await app.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
@@ -62,7 +62,7 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task OnGetWindows_ReturnsAllWindows()
         {
-            await using var app = App.StartRemote();
+            using var app = App.StartRemote();
             await using var recorder = new TestRecorder(app);
 
             await app.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
@@ -81,7 +81,7 @@ namespace XamlTest.Tests
         [ExpectedException(typeof(Exception))]
         public async Task OnGetResource_ThorwsExceptionWhenNotFound()
         {
-            await using var app = App.StartRemote();
+            using var app = App.StartRemote();
 
             await app.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
 
@@ -91,7 +91,7 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task OnGetResource_ReturnsFoundResource()
         {
-            await using var app = App.StartRemote();
+            using var app = App.StartRemote();
 
             await app.InitializeWithResources(
                 "<Color x:Key=\"TestResource\">Red</Color>",

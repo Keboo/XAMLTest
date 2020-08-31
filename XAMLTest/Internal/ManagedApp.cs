@@ -13,15 +13,25 @@ namespace XamlTest.Internal
 
         public Process ManagedProcess { get; }
 
+        public override void Dispose()
+        {
+            base.Dispose();
+            KillProcess();
+        }
+
         public override async ValueTask DisposeAsync()
         {
             await base.DisposeAsync();
+            KillProcess();
+        }
+
+        private void KillProcess()
+        {
             using var cts = new CancellationTokenSource();
             cts.CancelAfter(TimeSpan.FromSeconds(10));
             ManagedProcess.Refresh();
             while (!ManagedProcess.HasExited && !cts.IsCancellationRequested)
             {
-                await Task.Delay(10);
                 ManagedProcess.Refresh();
             }
             if (!ManagedProcess.HasExited)

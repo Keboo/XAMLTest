@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace XamlTest
 {
-    public interface IApp : IAsyncDisposable
+    public interface IApp : IAsyncDisposable, IDisposable
     {
         Task Initialize(string applicationResourceXaml, params string[] assemblies);
         Task<IWindow> CreateWindow(string xaml);
