@@ -27,18 +27,22 @@ namespace XamlTest.Internal
 
         private void KillProcess()
         {
+            LogMessage?.Invoke("Killing process");
             using var cts = new CancellationTokenSource();
             cts.CancelAfter(TimeSpan.FromSeconds(10));
-            ManagedProcess.Refresh();
-            while (!ManagedProcess.HasExited && !cts.IsCancellationRequested)
+            Process? process = Process.GetProcessById(ManagedProcess.Id);
+            while (process?.HasExited == false && !cts.IsCancellationRequested)
             {
-                ManagedProcess.Refresh();
+                process = Process.GetProcessById(ManagedProcess.Id);
             }
-            if (!ManagedProcess.HasExited)
+            LogMessage?.Invoke($"Process Exited? {process?.HasExited}");
+            if (process?.HasExited == false)
             {
-                ManagedProcess.Kill();
+                LogMessage?.Invoke($"Invoking kill");
+                process.Kill();
             }
-            ManagedProcess.WaitForExit();
+            process?.WaitForExit();
+            LogMessage?.Invoke($"Process exit code {ManagedProcess.ExitCode}");
         }
     }
 }

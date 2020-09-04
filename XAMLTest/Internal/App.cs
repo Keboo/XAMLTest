@@ -29,6 +29,7 @@ namespace XamlTest.Internal
                 {
                     throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
                 }
+
                 return;
             }
             throw new Exception("Failed to get a reply");
