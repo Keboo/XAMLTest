@@ -21,6 +21,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Markup;
 using System.Windows.Media;
+using XamlTest.Input;
 using XamlTest.Internal;
 using Brush = System.Windows.Media.Brush;
 using Color = System.Windows.Media.Color;
@@ -606,18 +607,20 @@ namespace XamlTest
                     window.LogMessage("Activating window");
                     if (!window.Activate())
                     {
-                        var foregroupWindowPtr = PInvoke.User32.GetForegroundWindow();
-                        PInvoke.User32.GetWindowThreadProcessId(foregroupWindowPtr, out int processId);
-                        Process foregroundProcess = Process.GetProcessById(processId);
+                        window.LogMessage("Activation failed, attempting mouse");
+                        MouseInput.MoveCursor(new Point(window.Left + 1, window.Top + 1));
+                        MouseInput.LeftClick();
 
-                        reply.ErrorMessages.Add($"Failed to activate window. Foreground window '{foregroundProcess.MainWindowTitle}', PID {processId}, Name: {foregroundProcess.ProcessName}");
-                        reply.ErrorMessages.AddRange(window.GetLogMessages());
-                        return;
-                    }
-                    if (!window.IsActive)
-                    {
-                        reply.ErrorMessages.Add($"Window is not active");
-                        return;
+                        if (!window.IsActive)
+                        {
+                            var foregroupWindowPtr = PInvoke.User32.GetForegroundWindow();
+                            PInvoke.User32.GetWindowThreadProcessId(foregroupWindowPtr, out int processId);
+                            Process foregroundProcess = Process.GetProcessById(processId);
+
+                            reply.ErrorMessages.Add($"Failed to activate window. Foreground window '{foregroundProcess.MainWindowTitle}', PID {processId}, Name: {foregroundProcess.ProcessName}");
+                            reply.ErrorMessages.AddRange(window.GetLogMessages());
+                            return;
+                        }
                     }
                 }
 

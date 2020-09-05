@@ -40,9 +40,8 @@ namespace XamlTest.Internal
             {
                 LogMessage?.Invoke($"Invoking kill");
                 process.Kill();
+                process.WaitForExit(1000);
             }
-            process?.WaitForExit();
-            LogMessage?.Invoke($"Process exit code {ManagedProcess.ExitCode}");
         }
     }
 }
