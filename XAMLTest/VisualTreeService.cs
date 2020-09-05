@@ -461,8 +461,6 @@ namespace XamlTest
                 try
                 {
                     window = LoadXaml<Window>(request.Xaml);
-                    window.Activated += Window_Activated;
-                    window.Deactivated += Window_Deactivated;
                 }
                 catch (Exception e)
                 {
@@ -471,56 +469,13 @@ namespace XamlTest
                 if (window is { })
                 {
                     reply.WindowsId = DependencyObjectTracker.GetOrSetId(window, KnownElements);
-
-                    var foregroundWindow = PInvoke.User32.GetForegroundWindow();
-                    if (foregroundWindow != IntPtr.Zero)
-                    {
-                        string text = PInvoke.User32.GetWindowText(foregroundWindow);
-                        window.LogMessage($"Current foreground window '{text}', {foregroundWindow}");
-                    }
-
                     window.Show();
-                    window.LogMessage("Window shown");
-
-                    foregroundWindow = PInvoke.User32.GetForegroundWindow();
-                    if (foregroundWindow != IntPtr.Zero)
-                    {
-                        string text = PInvoke.User32.GetWindowText(foregroundWindow);
-                        window.LogMessage($"Foreground window after show '{text}', {foregroundWindow}");
-                    }
-
-                    bool activated = PInvoke.User32.SetForegroundWindow(new WindowInteropHelper(window).EnsureHandle());
-
-                    foregroundWindow = PInvoke.User32.GetForegroundWindow();
-                    if (foregroundWindow != IntPtr.Zero)
-                    {
-                        string text = PInvoke.User32.GetWindowText(foregroundWindow);
-                        window.LogMessage($"Foreground window after activate '{text}', {foregroundWindow}");
-                    }
-
-                    if (!activated)
-                    {
-                        window.LogMessage("Activation failed, attempting mouse");
-                        MouseInput.MoveCursor(new Point(window.Left + 1, window.Top + 1));
-                        MouseInput.LeftClick();
-
-                        if (!window.IsActive)
-                        {
-                            var foregroupWindowPtr = PInvoke.User32.GetForegroundWindow();
-                            PInvoke.User32.GetWindowThreadProcessId(foregroupWindowPtr, out int processId);
-                            Process foregroundProcess = Process.GetProcessById(processId);
-
-                            reply.ErrorMessages.Add($"Failed to activate window. Foreground window '{foregroundProcess.MainWindowTitle}', PID {processId}, Name: {foregroundProcess.ProcessName}");
-                            reply.ErrorMessages.AddRange(window.GetLogMessages());
-
-                            return;
-                        }
-                    }
 
                     if (request.FitToScreen)
                     {
                         var windowRect = new Rect(window.Left, window.Top, window.Width, window.Height);
                         Screen screen = Screen.FromRect(windowRect);
+                        window.LogMessage($"Fitting window {windowRect} to screen {screen.WorkingArea}");
                         if (!screen.WorkingArea.Contains(windowRect))
                         {
                             window.Left = Math.Max(window.Left, screen.WorkingArea.Left);
@@ -531,16 +486,15 @@ namespace XamlTest
 
                             window.Width = Math.Min(window.Width, screen.WorkingArea.Width);
                             window.Height = Math.Min(window.Height, screen.WorkingArea.Height);
+
+                            window.LogMessage($"Window's new size and location {new Rect(window.Left, window.Top, window.Width, window.Height)}");
                         }
                     }
 
-                    if (!window.IsActive)
+                    if (window.ShowActivated && !ActivateWindow(window))
                     {
-                        reply.ErrorMessages.Add("Window not active");
-                    }
-                    else
-                    {
-                        window.LogMessage("Window is active");
+                        reply.ErrorMessages.Add("Failed to activate window");
+                        return;
                     }
 
                     reply.LogMessages.AddRange(window.GetLogMessages());
@@ -553,22 +507,6 @@ namespace XamlTest
             });
 
             return reply;
-        }
-
-        private void Window_Deactivated(object? sender, EventArgs e)
-        {
-            if (sender is Window window)
-            {
-                window.LogMessage("Window activated");
-            }
-        }
-
-        private void Window_Activated(object? sender, EventArgs e)
-        {
-            if (sender is Window window)
-            {
-                window.LogMessage("Window deactivated");
-            }
         }
 
         public override async Task<ImageResult> GetImage(ImageQuery request, ServerCallContext context)
@@ -611,24 +549,15 @@ namespace XamlTest
                 if (element is DependencyObject @do &&
                     Window.GetWindow(@do) is Window window)
                 {
-                    window.LogMessage("Activating window");
-                    if (!window.Activate())
+                    if (!ActivateWindow(window))
                     {
-                        window.LogMessage("Activation failed, attempting mouse");
-                        MouseInput.MoveCursor(new Point(window.Left + 1, window.Top + 1));
-                        MouseInput.LeftClick();
-
-                        if (!window.IsActive)
-                        {
-                            var foregroupWindowPtr = PInvoke.User32.GetForegroundWindow();
-                            PInvoke.User32.GetWindowThreadProcessId(foregroupWindowPtr, out int processId);
-                            Process foregroundProcess = Process.GetProcessById(processId);
-
-                            reply.ErrorMessages.Add($"Failed to activate window. Foreground window '{foregroundProcess.MainWindowTitle}', PID {processId}, Name: {foregroundProcess.ProcessName}");
-                            reply.ErrorMessages.AddRange(window.GetLogMessages());
-                            return;
-                        }
+                        reply.ErrorMessages.Add($"Failed to activate window.");
+                        return;
                     }
+                }
+                else
+                {
+                    reply.ErrorMessages.Add($"Failed to find parent window.");
                 }
 
                 if (Keyboard.Focus(element) != element)
@@ -660,11 +589,6 @@ namespace XamlTest
                         reply.ErrorMessages.Add("Could not find element");
                         return;
                     }
-                    if (Keyboard.Focus(element) != element)
-                    {
-                        reply.ErrorMessages.Add($"Failed to move focus to element {element}");
-                        return;
-                    }
 
                     Window window = Window.GetWindow((DependencyObject)element);
                     if (window is null)
@@ -672,13 +596,20 @@ namespace XamlTest
                         reply.ErrorMessages.Add("Failed to find parent window");
                         return;
                     }
-                    source = HwndSource.FromHwnd(new WindowInteropHelper(window).EnsureHandle());
-                    source.AddHook(hook);
-                    if (!window.Activate() || !window.IsActive)
+                    if (!ActivateWindow(window))
                     {
                         reply.ErrorMessages.Add($"Failed to active window");
                         return;
                     }
+
+                    if (Keyboard.Focus(element) != element)
+                    {
+                        reply.ErrorMessages.Add($"Failed to move focus to element {element}");
+                        return;
+                    }
+
+                    source = HwndSource.FromHwnd(new WindowInteropHelper(window).EnsureHandle());
+                    source.AddHook(hook);
                 }
                 catch (Exception e)
                 {
@@ -1014,6 +945,55 @@ namespace XamlTest
                 }
             }
             return null;
+        }
+
+        private static bool ActivateWindow(Window window)
+        {
+            window.LogMessage("Activating window");
+
+            if (window.IsActive)
+            {
+                window.LogMessage("Window already active");
+                return true;
+            }
+
+            if (window.Activate())
+            {
+                return true;
+            }
+
+            window.LogMessage("Using mouse to activate Window");
+
+            //Fall back, attempt to click on the window to activate it
+            foreach(Point clickPoint in GetClickPoints(window))
+            {
+                MouseInput.MoveCursor(clickPoint);
+                MouseInput.LeftClick();
+
+                if (window.IsActive)
+                {
+                    return true;
+                }
+            }
+
+            return window.IsActive;
+
+            static IEnumerable<Point> GetClickPoints(Window window)
+            {
+                //Skip top right and that could cause the window to close
+
+                // Top left
+                yield return new Point(window.Left + 1, window.Top + 1);
+
+                // Bottom right
+                yield return new Point(window.Left + window.Width - 1, window.Top + window.Height - 1);
+
+                // Bottom left
+                yield return new Point(window.Left + 1, window.Top + window.Height - 1);
+
+                // Center
+                yield return new Point(window.Left + window.Width / 2, window.Top + window.Height / 2);
+            }
         }
     }
 }
