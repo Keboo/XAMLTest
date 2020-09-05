@@ -452,11 +452,9 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             await element.MoveKeyboardFocus();
 
             await element.SendInput("Test Text!");
-            await Task.Delay(1000);
 
             Assert.AreEqual("Test Text!", await element.GetText());
 
-            await recorder.SaveScreenshot();
             recorder.Success();
         }
 
@@ -469,11 +467,8 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
 <Grid>
   <TextBox x:Name=""MyTextBox"" AcceptsReturn=""True"" MinWidth=""280"" Height=""80"" VerticalAlignment=""Center"" HorizontalAlignment=""Center"" />
 </Grid>");
-            await recorder.SaveScreenshot();
             IVisualElement element = await window.GetElement("/Grid~MyTextBox");
-            await recorder.SaveScreenshot();
             await element.MoveKeyboardFocus();
-            await recorder.SaveScreenshot();
 
             await element.SendInput("First Line");
             await element.SendInput(Key.Enter);

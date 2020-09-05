@@ -62,6 +62,9 @@ jobs:
     - name: Change Screen Resolution
       run: changescreenresolution 1920 1080
 
+    - name: Minimize all windows
+      run: (New-Object -ComObject "Shell.Application").minimizeall()
+
     - name: Test
       run: dotnet test --no-build --verbosity normal --logger "console"
 
