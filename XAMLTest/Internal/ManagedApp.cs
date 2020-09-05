@@ -41,7 +41,7 @@ namespace XamlTest.Internal
                 LogMessage?.Invoke($"Invoking kill");
                 process.Kill();
             }
-            process?.WaitForExit();
+            process?.WaitForExit(1000);
         }
     }
 }
