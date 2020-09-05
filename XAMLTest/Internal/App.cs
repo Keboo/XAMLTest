@@ -23,6 +23,7 @@ namespace XamlTest.Internal
             {
                 ExitCode = 0
             };
+            LogMessage?.Invoke($"{nameof(IApp)}{nameof(Dispose)}()");
             if (Client.Shutdown(request) is { } reply)
             {
                 if (reply.ErrorMessages.Any())
@@ -41,6 +42,7 @@ namespace XamlTest.Internal
             {
                 ExitCode = 0
             };
+            LogMessage?.Invoke($"{nameof(IApp)}{nameof(DisposeAsync)}()");
             if (await Client.ShutdownAsync(request) is { } reply)
             {
                 if (reply.ErrorMessages.Any())
@@ -59,6 +61,8 @@ namespace XamlTest.Internal
                 ApplicationResourceXaml = applicationResourceXaml
             };
             request.AssembliesToLoad.AddRange(assemblies);
+            LogMessage?.Invoke($"{nameof(IApp)}{nameof(Initialize)}(...)");
+
             if (await Client.InitializeApplicationAsync(request) is { } reply)
             {
                 if (reply.ErrorMessages.Any())
@@ -77,6 +81,7 @@ namespace XamlTest.Internal
                 Xaml = windowXaml,
                 FitToScreen = true
             };
+            LogMessage?.Invoke($"{nameof(IApp)}{nameof(CreateWindow)}(...)");
             if (await Client.CreateWindowAsync(request) is { } reply)
             {
                 if (LogMessage is { })
@@ -90,17 +95,18 @@ namespace XamlTest.Internal
                 {
                     throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
                 }
-                return new Window(Client, reply.WindowsId);
+                return new Window(Client, reply.WindowsId, LogMessage);
             }
             throw new Exception("Failed to get a reply");
         }
 
         public async Task<IWindow?> GetMainWindow()
         {
+            LogMessage?.Invoke($"{nameof(IApp)}{nameof(GetMainWindow)}()");
             if (await Client.GetMainWindowAsync(new GetWindowsQuery()) is { } reply &&
                 reply.WindowIds.Count == 1)
             {
-                return new Window(Client, reply.WindowIds[0]);
+                return new Window(Client, reply.WindowIds[0], LogMessage);
             }
             return null;
         }
@@ -111,7 +117,7 @@ namespace XamlTest.Internal
             {
                 Key = key
             };
-
+            LogMessage?.Invoke($"{nameof(IApp)}{nameof(GetResource)}()");
             if (await Client.GetResourceAsync(query) is { } reply)
             {
                 if (reply.ErrorMessages.Any())
@@ -130,9 +136,10 @@ namespace XamlTest.Internal
 
         public async Task<IReadOnlyList<IWindow>> GetWindows()
         {
+            LogMessage?.Invoke($"{nameof(IApp)}{nameof(GetWindows)}()");
             if (await Client.GetWindowsAsync(new GetWindowsQuery()) is { } reply)
             {
-                return reply.WindowIds.Select(x => new Window(Client, x)).ToList();
+                return reply.WindowIds.Select(x => new Window(Client, x, LogMessage)).ToList();
             }
             return Array.Empty<IWindow>();
         }

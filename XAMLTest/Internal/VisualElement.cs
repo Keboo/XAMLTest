@@ -3,28 +3,28 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Input;
 using System.Windows.Media;
 
 namespace XamlTest.Internal
 {
-
     internal class VisualElement : IVisualElement
     {
-        public VisualElement(Protocol.ProtocolClient client, string id)
+        public VisualElement(Protocol.ProtocolClient client, string id, Action<string>? logMessage)
         {
             Client = client ?? throw new ArgumentNullException(nameof(client));
             Id = id ?? throw new ArgumentNullException(nameof(id));
+            LogMessage = logMessage;
         }
 
         private Protocol.ProtocolClient Client { get; }
 
         protected string Id { get; }
+        public Action<string>? LogMessage { get; }
 
         public async Task<IVisualElement> GetElement(string query)
         {
             ElementQuery elementQuery = GetFindElementQuery(query);
-
+            LogMessage?.Invoke($"{nameof(GetElement)}({query})");
             if (await Client.GetElementAsync(elementQuery) is { } reply)
             {
                 if (reply.ErrorMessages.Any())
@@ -33,7 +33,7 @@ namespace XamlTest.Internal
                 }
                 if (reply.ElementIds.Count == 1)
                 {
-                    return new VisualElement(Client, reply.ElementIds[0]);
+                    return new VisualElement(Client, reply.ElementIds[0], LogMessage);
                 }
                 throw new Exception($"Found {reply.ElementIds.Count} elements");
             }
@@ -49,6 +49,7 @@ namespace XamlTest.Internal
                 Name = name,
                 OwnerType = ownerType ?? ""
             };
+            LogMessage?.Invoke($"{nameof(GetProperty)}({name},{ownerType})");
             if (await Client.GetPropertyAsync(propertyQuery) is { } reply)
             {
                 if (reply.ErrorMessages.Any())
@@ -74,6 +75,7 @@ namespace XamlTest.Internal
                 ValueType = valueType,
                 OwnerType = ownerType ?? ""
             };
+            LogMessage?.Invoke($"{nameof(SetProperty)}({name},{value},{valueType},{ownerType})");
             if (await Client.SetPropertyAsync(query) is { } reply)
             {
                 if (reply.ErrorMessages.Any())
@@ -96,7 +98,7 @@ namespace XamlTest.Internal
                 ElementId = Id,
                 Key = key
             };
-
+            LogMessage?.Invoke($"{nameof(GetResource)}({key})");
             if (await Client.GetResourceAsync(query) is { } reply)
             {
                 if (reply.ErrorMessages.Any())
@@ -122,6 +124,7 @@ namespace XamlTest.Internal
                 ElementId = Id,
                 ToElementId = toElementId ?? ""
             };
+            LogMessage?.Invoke($"{nameof(GetEffectiveBackground)}()");
             if (await Client.GetEffectiveBackgroundAsync(propertyQuery) is { } reply)
             {
                 if (reply.ErrorMessages.Any())
@@ -139,7 +142,7 @@ namespace XamlTest.Internal
             {
                 ElementId = Id
             };
-
+            LogMessage?.Invoke($"{nameof(GetCoordinates)}()");
             if (await Client.GetCoordinatesAsync(query) is { } reply)
             {
                 if (reply.ErrorMessages.Any())
@@ -159,6 +162,7 @@ namespace XamlTest.Internal
                 ElementId = Id
             };
 
+            LogMessage?.Invoke($"{nameof(MoveKeyboardFocus)}()");
             if (await Client.MoveKeyboardFocusAsync(request) is { } reply)
             {
                 if (reply.ErrorMessages.Any())
@@ -184,6 +188,7 @@ namespace XamlTest.Internal
                 TextInput = keyboardInput.Text
             };
             request.Keys.AddRange(keyboardInput.Keys.Cast<int>());
+            LogMessage?.Invoke($"{nameof(SendInput)}({keyboardInput})");
             if (await Client.SendInputAsync(request) is { } reply)
             {
                 if (reply.ErrorMessages.Any())
@@ -209,6 +214,7 @@ namespace XamlTest.Internal
             {
                 ElementId = Id
             };
+            LogMessage?.Invoke($"{nameof(GetBitmap)}()");
             if (await Client.GetImageAsync(imageQuery) is { } reply)
             {
                 if (reply.ErrorMessages.Any())

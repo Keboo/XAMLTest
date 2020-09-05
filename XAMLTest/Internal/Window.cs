@@ -1,11 +1,12 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace XamlTest.Internal
 {
     internal class Window : VisualElement, IWindow
     {
-        public Window(Protocol.ProtocolClient client, string id)
-            : base(client, id)
+        public Window(Protocol.ProtocolClient client, string id, Action<string>? logMessage)
+            : base(client, id, logMessage)
         { }
 
         public bool Equals([AllowNull] IWindow other)

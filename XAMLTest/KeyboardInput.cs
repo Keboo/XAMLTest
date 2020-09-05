@@ -20,5 +20,14 @@ namespace XamlTest
             Text = "";
             Keys = keys;
         }
+
+        public override string ToString()
+        {
+            if (string.IsNullOrEmpty(Text))
+            {
+                return $"{{Keys:{string.Join(",", Keys)}}}";
+            }
+            return $"{{{Text}}}";
+        }
     }
 }
