@@ -19,27 +19,24 @@ namespace XamlTest.Tests
         [NotNull]
         private IApp? App { get; set; }
 
-        //[TestInitialize]
-        //public async Task TestInitialize()
-        //{
-        //    App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
+        [TestInitialize]
+        public async Task TestInitialize()
+        {
+            App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
 
-        //    await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-        //}
+            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
+        }
 
-        //[TestCleanup]
-        //public void TestCleanup()
-        //{
-        //    App.Dispose();
-        //}
+        [TestCleanup]
+        public void TestCleanup()
+        {
+            App.Dispose();
+        }
 
         [TestMethod]
         [ExpectedException(typeof(Exception))]
         public async Task OnGetResource_ThorwsExceptionWhenNotFound()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await App.CreateWindowWithContent(@"<Grid x:Name=""MyGrid"" />");
             IVisualElement element = await window.GetElement("MyGrid");
 
@@ -49,9 +46,6 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task OnGetResource_ReturnsFoundResource()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await App.CreateWindowWithContent(@"<Grid x:Name=""MyGrid"">
   <Grid.Resources>
     <Color x:Key=""TestResource"">Red</Color>
@@ -69,9 +63,6 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task OnGetCoordinate_ReturnsScreenCoordinatesOfElement()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await App.CreateWindowWithContent(
                 @"<Border x:Name=""MyBorder"" 
 Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left""/>");
@@ -92,9 +83,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnGetCoordinate_ReturnsFractionalCoordinatesOfElement()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await App.CreateWindowWithContent(
                 @"<Border x:Name=""MyBorder"" 
 Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left""/>");
@@ -116,9 +104,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnGetEffectiveBackground_ReturnsFirstOpaqueColor()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await App.CreateWindowWithContent(
                 @"<Border x:Name=""MyBorder"" />",
                 background: "Red");
@@ -132,9 +117,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnGetEffectiveBackground_ReturnsMergingOfTransparentColors()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             var backgroundParent = Colors.Blue;
             var backgroundChild = Color.FromArgb(0xDD, 0, 0, 0);
             IWindow window = await App.CreateWindowWithContent(
@@ -154,9 +136,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnGetEffectiveBackground_ReturnsOpaquePanelColor()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await App.CreateWindowWithContent(@"
 <Grid Background=""Red"">
     <TextBlock />
@@ -173,9 +152,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnGetEffectiveBackground_StopsProcessingAtDefinedParent()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await App.CreateWindowWithContent(@"
 <Grid Background=""#DDFF0000"">
     <TextBlock />
@@ -193,9 +169,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnGetEffectiveBackground_AppliesOpacityFromParents()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await App.CreateWindowWithContent(@"
 <Grid Background=""Red"" Opacity=""0.5"" x:Name=""RedGrid"">
     <Grid Background=""Blue"" x:Name=""BlueGrid"">
@@ -215,9 +188,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnGetProperty_CanRetrieveDouble()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await App.CreateWindowWithContent(
                 @"<Grid x:Name=""MyGrid"" Width=""25"" />");
             IVisualElement element = await window.GetElement("MyGrid");
@@ -228,9 +198,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnGetProperty_CanRetrieveColor()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await App.CreateWindowWithContent(
                 @"<Grid x:Name=""MyGrid"" Background=""Red"" />");
             IVisualElement element = await window.GetElement("MyGrid");
@@ -241,9 +208,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnGetProperty_CanRetrieveString()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await App.CreateWindowWithContent(
                 @"<TextBlock x:Name=""MyTextblock"" Text=""WPF"" />");
             IVisualElement element = await window.GetElement("MyTextblock");
@@ -254,9 +218,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnGetProperty_CanRetrieveThickness()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await App.CreateWindowWithContent(
                 @"<TextBlock x:Name=""MyTextblock"" Margin=""2,3,4,5"" />");
             IVisualElement element = await window.GetElement("MyTextblock");
@@ -267,9 +228,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnGetProperty_CanRetrieveNull()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await App.CreateWindowWithContent(
                 @"<DatePicker/>");
             IVisualElement element = await window.GetElement("/DatePicker");
@@ -280,9 +238,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnGetProperty_CanRetrieveNullableDateTime()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await App.CreateWindowWithContent(
                 @"<DatePicker SelectedDate=""1234-05-06T00:00:00""/>");
             IVisualElement element = await window.GetElement("/DatePicker");
@@ -292,9 +247,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnGetProperty_CanRetrieveAttachedPropertyValue()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await App.CreateWindowWithContent(
                 @"<TextBlock x:Name=""MyTextblock"" Grid.Row=""3"" />");
             IVisualElement element = await window.GetElement("MyTextblock");
@@ -305,9 +257,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnGetProperty_CanRetrieveCustomAttachedPropertyValue()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await App.CreateWindowWithUserControl<TextBlock_AttachedProperty>();
             IVisualElement element = await window.GetElement("/TextBlock");
 
@@ -317,9 +266,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnSetProperty_CanSetDouble()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await App.CreateWindowWithContent(
                 @"<Grid x:Name=""MyGrid"" />");
             IVisualElement element = await window.GetElement("MyGrid");
@@ -330,9 +276,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnSetProperty_CanSetColor()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await App.CreateWindowWithContent(
                 @"<Grid x:Name=""MyGrid"" />");
             IVisualElement element = await window.GetElement("MyGrid");
@@ -343,9 +286,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnSetProperty_CanSetString()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await App.CreateWindowWithContent(
                 @"<TextBlock x:Name=""MyTextblock"" />");
             IVisualElement element = await window.GetElement("MyTextblock");
@@ -356,9 +296,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnSetProperty_CanSetThickness()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await App.CreateWindowWithContent(
                 @"<TextBlock x:Name=""MyTextblock"" />");
             IVisualElement element = await window.GetElement("MyTextblock");
@@ -369,9 +306,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnSetProperty_CanSetNull()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await App.CreateWindowWithContent(
                 @"<DatePicker/>");
             IVisualElement element = await window.GetElement("/DatePicker");
@@ -382,9 +316,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnSetProperty_CanSetNullableDateTime()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await App.CreateWindowWithContent(
                 @"<DatePicker/>");
             IVisualElement element = await window.GetElement("/DatePicker");
@@ -395,9 +326,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnSetProperty_CanAssignAttachedPropertyValue()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await App.CreateWindowWithContent(
                 @"<TextBlock x:Name=""MyTextblock"" />");
             IVisualElement element = await window.GetElement("MyTextblock");
@@ -408,9 +336,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnSetProperty_CanAssignCustomAttachedPropertyValue()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await App.CreateWindowWithUserControl<TextBlock_AttachedProperty>();
             IVisualElement element = await window.GetElement("/TextBlock");
 
@@ -420,9 +345,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnGetElement_ItRetrievesItemsByType()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await App.CreateWindowWithContent(
                 @"<ListBox MinWidth=""200"">
     <ListBoxItem Content=""Item1"" />
@@ -438,9 +360,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnGetElement_ItRetrievesNestedItemsByType()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await App.CreateWindowWithContent(@"
 <Grid x:Name=""Parent"">
     <Grid x:Name=""Child"">
@@ -458,9 +377,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnGetElement_ItRetrievesItemsByTypeAndIndex()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await App.CreateWindowWithContent(
                 @"<ListBox MinWidth=""200"">
     <ListBoxItem Content=""Item1"" />
@@ -476,9 +392,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnGetElement_ItRetrievesItemsByProperty()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await App.CreateWindowWithContent(@"
 <Border>
   <TextBlock Text=""Text"" />
@@ -491,9 +404,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnGetElement_ItRetrievesItemsByName()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await App.CreateWindowWithContent(@"
 <Grid>
   <TextBox x:Name=""MyTextBox"" Text=""Text"" />
@@ -506,9 +416,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnGetElement_ItRetrieveElementFromAdornerLayer()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await App.CreateWindowWithUserControl<TextBox_ValidationError>();
             IVisualElement textBox = await window.GetElement("/TextBox");
 
@@ -520,9 +427,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnMoveKeyboardFocus_ItReceivesKeyboardFocus()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await App.CreateWindowWithContent(@"
 <Grid>
   <TextBox x:Name=""MyTextBox"" />
@@ -538,9 +442,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnSendTextInput_TextIsChanged()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             await using var recorder = new TestRecorder(App);
 
             IWindow window = await App.CreateWindowWithContent(@"
@@ -562,9 +463,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnSendTextInput_ExplicitKeyIsSent()
         {
-            using var App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             await using var recorder = new TestRecorder(App);
 
             IWindow window = await App.CreateWindowWithContent(@"

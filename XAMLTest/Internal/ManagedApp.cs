@@ -27,7 +27,7 @@ namespace XamlTest.Internal
 
         private void KillProcess()
         {
-            LogMessage?.Invoke("Killing process");
+            LogMessage?.Invoke("Waiting for process exit");
             using var cts = new CancellationTokenSource();
             cts.CancelAfter(TimeSpan.FromSeconds(10));
             Process? process = Process.GetProcessById(ManagedProcess.Id);
