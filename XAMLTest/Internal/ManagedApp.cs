@@ -42,7 +42,6 @@ namespace XamlTest.Internal
                 process.Kill();
             }
             process?.WaitForExit();
-            LogMessage?.Invoke($"Process exit code {ManagedProcess.ExitCode}");
         }
     }
 }

@@ -54,6 +54,9 @@ jobs:
     - name: Build
       run: dotnet build -p:Version=${{ env.buildVersion }} --configuration ${{ env.configuration }} --no-restore
 
+    - name: Minimize all windows
+      run: (New-Object -ComObject "Shell.Application").minimizeall()
+
     - name: Test
       run: dotnet test --no-build --verbosity normal --logger "console;verbosity=detailed"
 
