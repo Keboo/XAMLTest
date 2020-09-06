@@ -509,21 +509,20 @@ namespace XamlTest
             return reply;
         }
 
-        public override async Task<ImageResult> GetImage(ImageQuery request, ServerCallContext context)
+        public override async Task<ImageResult> GetScreenshot(ImageQuery request, ServerCallContext context)
         {
             var reply = new ImageResult();
             await Application.Dispatcher.InvokeAsync(async () =>
             {
-                FrameworkElement? element = GetCachedElement<FrameworkElement>(request.ElementId);
-                if (element is null)
+                Window mainWindow = Application.MainWindow;
+                if (mainWindow is null)
                 {
-                    reply.ErrorMessages.Add("Could not find element");
+                    reply.ErrorMessages.Add("Could not find main window");
                     return;
                 }
+                Point topLeft = mainWindow.PointToScreen(new Point(0, 0));
 
-                Point topLeft = element.PointToScreen(new Point(0, 0));
-
-                var screen = Screen.FromRect(new Rect(topLeft.X, topLeft.Y, element.ActualWidth, element.ActualHeight));
+                var screen = Screen.FromRect(new Rect(topLeft.X, topLeft.Y, mainWindow.ActualWidth, mainWindow.ActualHeight));
 
                 using var screenBmp = new Bitmap((int)screen.Bounds.Width, (int)screen.Bounds.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
                 using var bmpGraphics = Graphics.FromImage(screenBmp);

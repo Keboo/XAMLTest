@@ -38,7 +38,7 @@ namespace XamlTest
             Directory = Path.Combine(rootDirectory, "Screenshots", Directory);
 
             System.IO.Directory.CreateDirectory(Directory);
-            
+
             BaseFileName = unitTestMethod;
             foreach (char invalidChar in Path.GetInvalidFileNameChars())
             {
@@ -57,16 +57,13 @@ namespace XamlTest
         private async Task SaveScreenshot(string suffix)
         {
             int index = 1;
-            foreach (IWindow window in await App.GetWindows())
-            {
-                string fileName = $"{BaseFileName}{suffix}-win{index++}.jpg";
-                string fullPath = Path.Combine(Directory, fileName);
-                File.Delete(fullPath);
+            string fileName = $"{BaseFileName}{suffix}-win{index++}.jpg";
+            string fullPath = Path.Combine(Directory, fileName);
+            File.Delete(fullPath);
 
-                if (await window.GetBitmap() is IImage screenshot)
-                {
-                    await screenshot.Save(fullPath);
-                }
+            if (await App.GetScreenshot() is IImage screenshot)
+            {
+                await screenshot.Save(fullPath);
             }
         }
 

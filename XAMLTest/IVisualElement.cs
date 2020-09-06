@@ -21,7 +21,5 @@ namespace XamlTest
 
         Task SendInput(KeyboardInput keyboardInput);
         //Task SendInput(MouseInput mouseInput);
-
-        Task<IImage> GetBitmap();
     }
 }

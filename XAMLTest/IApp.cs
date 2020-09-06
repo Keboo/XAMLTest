@@ -12,5 +12,6 @@ namespace XamlTest
         Task<IReadOnlyList<IWindow>> GetWindows();
 
         Task<IResource> GetResource(string key);
+        Task<IImage> GetScreenshot();
     }
 }

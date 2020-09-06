@@ -222,24 +222,6 @@ namespace XamlTest.Internal
                 Query = query
             };
 
-        public async Task<IImage> GetBitmap()
-        {
-            var imageQuery = new ImageQuery
-            {
-                ElementId = Id
-            };
-            LogMessage?.Invoke($"{nameof(GetBitmap)}()");
-            if (await Client.GetImageAsync(imageQuery) is { } reply)
-            {
-                if (reply.ErrorMessages.Any())
-                {
-                    throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
-                }
-                return new BitmapImage(reply.Data);
-            }
-            throw new Exception("Failed to receive a reply");
-        }
-
         public bool Equals([AllowNull] IVisualElement other)
         {
             if (other is null) return false;

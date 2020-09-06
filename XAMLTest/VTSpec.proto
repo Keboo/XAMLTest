@@ -44,7 +44,7 @@ service Protocol {
   rpc InitializeApplication (ApplicationConfiguration) returns (ApplicationResult);
 
   //Get an image of the specified element
-  rpc GetImage (ImageQuery) returns (ImageResult);
+  rpc GetScreenshot (ImageQuery) returns (ImageResult);
 
   //Request an application shutdown
   rpc Shutdown (ShutdownRequest) returns (ShutdownResponse);
@@ -152,7 +152,6 @@ message WindowResult {
 }
 
 message ImageQuery {
-  string elementId = 1;
 }
 
 message ImageResult {

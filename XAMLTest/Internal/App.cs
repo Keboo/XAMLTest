@@ -144,5 +144,20 @@ namespace XamlTest.Internal
             return Array.Empty<IWindow>();
         }
 
+        public async Task<IImage> GetScreenshot()
+        {
+            var imageQuery = new ImageQuery();
+            LogMessage?.Invoke($"{nameof(GetScreenshot)}()");
+            if (await Client.GetScreenshotAsync(imageQuery) is { } reply)
+            {
+                if (reply.ErrorMessages.Any())
+                {
+                    throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
+                }
+                return new BitmapImage(reply.Data);
+            }
+            throw new Exception("Failed to receive a reply");
+        }
+
     }
 }
