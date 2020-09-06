@@ -3,28 +3,28 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Input;
 using System.Windows.Media;
 
 namespace XamlTest.Internal
 {
-
     internal class VisualElement : IVisualElement
     {
-        public VisualElement(Protocol.ProtocolClient client, string id)
+        public VisualElement(Protocol.ProtocolClient client, string id, Action<string>? logMessage)
         {
             Client = client ?? throw new ArgumentNullException(nameof(client));
             Id = id ?? throw new ArgumentNullException(nameof(id));
+            LogMessage = logMessage;
         }
 
         private Protocol.ProtocolClient Client { get; }
 
         protected string Id { get; }
+        public Action<string>? LogMessage { get; }
 
         public async Task<IVisualElement> GetElement(string query)
         {
             ElementQuery elementQuery = GetFindElementQuery(query);
-
+            LogMessage?.Invoke($"{nameof(GetElement)}({query})");
             if (await Client.GetElementAsync(elementQuery) is { } reply)
             {
                 if (reply.ErrorMessages.Any())
@@ -33,7 +33,7 @@ namespace XamlTest.Internal
                 }
                 if (reply.ElementIds.Count == 1)
                 {
-                    return new VisualElement(Client, reply.ElementIds[0]);
+                    return new VisualElement(Client, reply.ElementIds[0], LogMessage);
                 }
                 throw new Exception($"Found {reply.ElementIds.Count} elements");
             }
@@ -49,6 +49,7 @@ namespace XamlTest.Internal
                 Name = name,
                 OwnerType = ownerType ?? ""
             };
+            LogMessage?.Invoke($"{nameof(GetProperty)}({name},{ownerType})");
             if (await Client.GetPropertyAsync(propertyQuery) is { } reply)
             {
                 if (reply.ErrorMessages.Any())
@@ -74,6 +75,7 @@ namespace XamlTest.Internal
                 ValueType = valueType,
                 OwnerType = ownerType ?? ""
             };
+            LogMessage?.Invoke($"{nameof(SetProperty)}({name},{value},{valueType},{ownerType})");
             if (await Client.SetPropertyAsync(query) is { } reply)
             {
                 if (reply.ErrorMessages.Any())
@@ -96,7 +98,7 @@ namespace XamlTest.Internal
                 ElementId = Id,
                 Key = key
             };
-
+            LogMessage?.Invoke($"{nameof(GetResource)}({key})");
             if (await Client.GetResourceAsync(query) is { } reply)
             {
                 if (reply.ErrorMessages.Any())
@@ -122,6 +124,7 @@ namespace XamlTest.Internal
                 ElementId = Id,
                 ToElementId = toElementId ?? ""
             };
+            LogMessage?.Invoke($"{nameof(GetEffectiveBackground)}()");
             if (await Client.GetEffectiveBackgroundAsync(propertyQuery) is { } reply)
             {
                 if (reply.ErrorMessages.Any())
@@ -139,7 +142,7 @@ namespace XamlTest.Internal
             {
                 ElementId = Id
             };
-
+            LogMessage?.Invoke($"{nameof(GetCoordinates)}()");
             if (await Client.GetCoordinatesAsync(query) is { } reply)
             {
                 if (reply.ErrorMessages.Any())
@@ -159,6 +162,7 @@ namespace XamlTest.Internal
                 ElementId = Id
             };
 
+            LogMessage?.Invoke($"{nameof(MoveKeyboardFocus)}()");
             if (await Client.MoveKeyboardFocusAsync(request) is { } reply)
             {
                 if (reply.ErrorMessages.Any())
@@ -180,12 +184,34 @@ namespace XamlTest.Internal
 
             var request = new InputRequest
             {
-                ElementId = Id,
-                TextInput = keyboardInput.Text
+                ElementId = Id
             };
-            request.Keys.AddRange(keyboardInput.Keys.Cast<int>());
+            request.KeyboardData.AddRange(keyboardInput.Inputs.Select(i => 
+            {
+                var rv = new KeyboardData();
+                switch(i)
+                {
+                    case KeysInput keysInput:
+                        rv.Keys.AddRange(keysInput.Keys.Cast<int>());
+                        break;
+                    case TextInput textInput:
+                        rv.TextInput = textInput.Text;
+                        break;
+                    default:
+                        throw new InvalidOperationException($"Unknown input type {i.GetType().FullName}");
+                }
+                return rv;
+            }));
+            LogMessage?.Invoke($"{nameof(SendInput)}({keyboardInput})");
             if (await Client.SendInputAsync(request) is { } reply)
             {
+                if (reply.LogMessages.Any() && LogMessage is { } logMessage)
+                {
+                    foreach(var message in reply.LogMessages)
+                    {
+                        logMessage(message);
+                    }
+                }
                 if (reply.ErrorMessages.Any())
                 {
                     throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
@@ -202,23 +228,6 @@ namespace XamlTest.Internal
                 ParentId = Id,
                 Query = query
             };
-
-        public async Task<IImage> GetBitmap()
-        {
-            var imageQuery = new ImageQuery
-            {
-                ElementId = Id
-            };
-            if (await Client.GetImageAsync(imageQuery) is { } reply)
-            {
-                if (reply.ErrorMessages.Any())
-                {
-                    throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
-                }
-                return new BitmapImage(reply.Data);
-            }
-            throw new Exception("Failed to receive a reply");
-        }
 
         public bool Equals([AllowNull] IVisualElement other)
         {

@@ -14,13 +14,15 @@ namespace XamlTest.Tests
     [TestClass]
     public class VisualElementTests
     {
+        public TestContext TestContext { get; set; } = null!;
+
         [NotNull]
         private IApp? App { get; set; }
 
         [TestInitialize]
         public async Task TestInitialize()
         {
-            App = XamlTest.App.StartRemote();
+            App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
 
             await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
         }
@@ -440,34 +442,39 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnSendTextInput_TextIsChanged()
         {
+            await using var recorder = new TestRecorder(App);
+
             IWindow window = await App.CreateWindowWithContent(@"
 <Grid>
-  <TextBox x:Name=""MyTextBox"" />
+  <TextBox x:Name=""MyTextBox"" VerticalAlignment=""Center"" Margin=""40"" />
 </Grid>");
             IVisualElement element = await window.GetElement("/Grid~MyTextBox");
             await element.MoveKeyboardFocus();
 
-            await element.SendInput("Test Text!");
+            await element.SendInput($"Test Text!");
 
             Assert.AreEqual("Test Text!", await element.GetText());
+
+            recorder.Success();
         }
 
         [TestMethod]
         public async Task OnSendTextInput_ExplicitKeyIsSent()
         {
+            await using var recorder = new TestRecorder(App);
+
             IWindow window = await App.CreateWindowWithContent(@"
 <Grid>
-  <TextBox x:Name=""MyTextBox"" AcceptsReturn=""True"" MinWidth=""280"" Height=""80"" />
+  <TextBox x:Name=""MyTextBox"" AcceptsReturn=""True"" MinWidth=""280"" Height=""80"" VerticalAlignment=""Center"" HorizontalAlignment=""Center"" />
 </Grid>");
             IVisualElement element = await window.GetElement("/Grid~MyTextBox");
             await element.MoveKeyboardFocus();
 
-            await element.SendInput("Line 1");
-            await element.SendInput(Key.Enter);
-            await element.SendInput("Line 2");
+            await element.SendInput($"First Line{Key.Enter}Second Line");
 
+            Assert.AreEqual($"First Line{Environment.NewLine}Second Line", await element.GetText());
 
-            Assert.AreEqual($"Line 1{Environment.NewLine}Line 2", await element.GetText());
+            recorder.Success();
         }
     }
 }

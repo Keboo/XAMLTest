@@ -8,8 +8,8 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -21,9 +21,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Markup;
 using System.Windows.Media;
-using System.Windows.Threading;
-using WindowsInput;
-using WindowsInput.Native;
+using XamlTest.Input;
 using XamlTest.Internal;
 using Brush = System.Windows.Media.Brush;
 using Color = System.Windows.Media.Color;
@@ -32,6 +30,7 @@ using Window = System.Windows.Window;
 
 namespace XamlTest
 {
+
     internal class VisualTreeService : Protocol.ProtocolBase
     {
         private static Guid Initialized { get; } = Guid.NewGuid();
@@ -95,6 +94,9 @@ namespace XamlTest
 
                     if (searchRoot is null) return;
 
+                    var window = searchRoot as Window ?? Window.GetWindow(searchRoot);
+                    window.LogMessage("Getting element");
+
                     if (!string.IsNullOrWhiteSpace(request.Query))
                     {
                         if (!(EvaluateQuery(searchRoot, request.Query) is DependencyObject element))
@@ -105,6 +107,8 @@ namespace XamlTest
 
                         string id = DependencyObjectTracker.GetOrSetId(element, KnownElements);
                         reply.ElementIds.Add(id);
+
+                        window.LogMessage("Got element");
                         return;
                     }
 
@@ -466,38 +470,63 @@ namespace XamlTest
                 {
                     reply.WindowsId = DependencyObjectTracker.GetOrSetId(window, KnownElements);
                     window.Show();
+
+                    if (request.FitToScreen)
+                    {
+                        var windowRect = new Rect(window.Left, window.Top, window.Width, window.Height);
+                        Screen screen = Screen.FromRect(windowRect);
+                        window.LogMessage($"Fitting window {windowRect} to screen {screen.WorkingArea}");
+                        if (!screen.WorkingArea.Contains(windowRect))
+                        {
+                            window.Left = Math.Max(window.Left, screen.WorkingArea.Left);
+                            window.Left = Math.Max(screen.WorkingArea.Left, window.Left + window.Width - screen.WorkingArea.Right - window.Width);
+
+                            window.Top = Math.Max(window.Top, screen.WorkingArea.Top);
+                            window.Top = Math.Max(screen.WorkingArea.Top, window.Top + window.Height - screen.WorkingArea.Top - window.Height);
+
+                            window.Width = Math.Min(window.Width, screen.WorkingArea.Width);
+                            window.Height = Math.Min(window.Height, screen.WorkingArea.Height);
+
+                            window.LogMessage($"Window's new size and location {new Rect(window.Left, window.Top, window.Width, window.Height)}");
+                        }
+                    }
+
+                    if (window.ShowActivated && !ActivateWindow(window))
+                    {
+                        reply.ErrorMessages.Add("Failed to activate window");
+                        return;
+                    }
+
+                    reply.LogMessages.AddRange(window.GetLogMessages());
                 }
                 else
                 {
                     reply.ErrorMessages.Add("Failed to load window");
                 }
+
             });
+
             return reply;
         }
 
-        public override async Task<ImageResult> GetImage(ImageQuery request, ServerCallContext context)
+        public override async Task<ImageResult> GetScreenshot(ImageQuery request, ServerCallContext context)
         {
             var reply = new ImageResult();
             await Application.Dispatcher.InvokeAsync(async () =>
             {
-                FrameworkElement? element = GetCachedElement<FrameworkElement>(request.ElementId);
-                if (element is null)
+                Window mainWindow = Application.MainWindow;
+                if (mainWindow is null)
                 {
-                    reply.ErrorMessages.Add("Could not find element");
+                    reply.ErrorMessages.Add("Could not find main window");
                     return;
                 }
+                Point topLeft = mainWindow.PointToScreen(new Point(0, 0));
 
-                Point topLeft = element.PointToScreen(new Point(0, 0));
-                Point bottomRight = element.PointToScreen(new Point(element.ActualWidth, element.ActualHeight));
+                var screen = Screen.FromRect(new Rect(topLeft.X, topLeft.Y, mainWindow.ActualWidth, mainWindow.ActualHeight));
 
-                int left = (int)Math.Floor(topLeft.X);
-                int top = (int)Math.Floor(topLeft.Y);
-                int width = (int)Math.Ceiling(bottomRight.X - topLeft.X);
-                int height = (int)Math.Ceiling(bottomRight.Y - topLeft.Y);
-
-                using var screenBmp = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                using var screenBmp = new Bitmap((int)screen.Bounds.Width, (int)screen.Bounds.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
                 using var bmpGraphics = Graphics.FromImage(screenBmp);
-                bmpGraphics.CopyFromScreen(left, top, 0, 0, new System.Drawing.Size(width, height));
+                bmpGraphics.CopyFromScreen(0, 0, 0, 0, new System.Drawing.Size((int)screen.Bounds.Width, (int)screen.Bounds.Height));
                 using var ms = new MemoryStream();
                 screenBmp.Save(ms, ImageFormat.Bmp);
                 ms.Position = 0;
@@ -516,9 +545,27 @@ namespace XamlTest
                     reply.ErrorMessages.Add("Could not find element");
                     return;
                 }
+                if (element is DependencyObject @do &&
+                    Window.GetWindow(@do) is Window window)
+                {
+                    if (!ActivateWindow(window))
+                    {
+                        reply.ErrorMessages.Add($"Failed to activate window.");
+                        return;
+                    }
+                }
+                else
+                {
+                    reply.ErrorMessages.Add($"Failed to find parent window.");
+                }
+
                 if (Keyboard.Focus(element) != element)
                 {
                     reply.ErrorMessages.Add($"Failed to move focus to element {element}");
+                }
+                if (element is UIElement uIElement)
+                {
+                    uIElement.Focus();
                 }
             });
             return reply;
@@ -527,11 +574,7 @@ namespace XamlTest
         public override async Task<InputResponse> SendInput(InputRequest request, ServerCallContext context)
         {
             var reply = new InputResponse();
-            int keyDowns = 0;
-            int keyUps = 0;
-            int expectedKeyPresses = 0;
-            var hook = new HwndSourceHook(WndProc);
-            HwndSource? source = null;
+            IntPtr windowHandle = IntPtr.Zero;
             await Application.Dispatcher.InvokeAsync(() =>
             {
                 try
@@ -541,18 +584,6 @@ namespace XamlTest
                         reply.ErrorMessages.Add("Could not find element");
                         return;
                     }
-                    if (Keyboard.Focus(element) != element)
-                    {
-                        reply.ErrorMessages.Add($"Failed to move focus to element {element}");
-                        return;
-                    }
-
-                    IKeyboardSimulator? keyboard = new InputSimulator().Keyboard;
-                    if (keyboard is null)
-                    {
-                        reply.ErrorMessages.Add("Could not get keybaord device");
-                        return;
-                    }
 
                     Window window = Window.GetWindow((DependencyObject)element);
                     if (window is null)
@@ -560,24 +591,18 @@ namespace XamlTest
                         reply.ErrorMessages.Add("Failed to find parent window");
                         return;
                     }
-                    source = HwndSource.FromHwnd(new WindowInteropHelper(window).Handle);
-                    source.AddHook(hook);
+                    windowHandle = new WindowInteropHelper(window).EnsureHandle();
 
-                    if (!string.IsNullOrEmpty(request.TextInput))
+                    if (!ActivateWindow(window))
                     {
-                        expectedKeyPresses += request.TextInput.Length;
-                        keyboard.TextEntry(request.TextInput);
+                        reply.ErrorMessages.Add($"Failed to active window");
+                        return;
                     }
 
-                    VirtualKeyCode[]? vKeys = request.Keys
-                                               .Cast<Key>()
-                                               .Select(KeyInterop.VirtualKeyFromKey)
-                                               .Cast<VirtualKeyCode>()
-                                               .ToArray();
-                    if (vKeys.Any())
+                    if (Keyboard.Focus(element) != element)
                     {
-                        expectedKeyPresses += vKeys.Length;
-                        keyboard.KeyPress(vKeys);
+                        reply.ErrorMessages.Add($"Failed to move focus to element {element}");
+                        return;
                     }
 
                 }
@@ -587,40 +612,51 @@ namespace XamlTest
                 }
             });
 
-            using var cts = new CancellationTokenSource();
-            //Only wait for 1 second for the key presses to be processed by the window.
-            cts.CancelAfter(TimeSpan.FromSeconds(1));
-            
-            await Task.Run(() =>
+            if (reply.ErrorMessages.Any())
             {
-                CancellationToken token = cts.Token;
-                while(expectedKeyPresses != keyDowns && expectedKeyPresses!= keyUps && !token.IsCancellationRequested)
-                { }
-            });
-
-            //Wait for input to be processed
-            if (source != null && hook != null)
-            {
-                source.RemoveHook(hook);
+                return reply;
             }
 
-            return reply;
-
-            IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+            try
             {
-                switch ((WindowMessage)msg)
+                if (windowHandle != IntPtr.Zero)
                 {
-                    case WindowMessage.WM_KEYDOWN:
-                    case WindowMessage.WM_IME_KEYDOWN:
-                        Interlocked.Increment(ref keyDowns);
-                        break;
-                    case WindowMessage.WM_KEYUP:
-                    case WindowMessage.WM_IME_KEYUP:
-                        Interlocked.Increment(ref keyUps);
-                        break;
+                    foreach (KeyboardData keyboardData in request.KeyboardData)
+                    {
+                        if (!string.IsNullOrEmpty(keyboardData.TextInput))
+                        {
+                            Input.KeyboardInput.SendKeysForText(windowHandle, keyboardData.TextInput);
+                        }
+                        if (keyboardData.Keys.Any())
+                        {
+                            Input.KeyboardInput.SendKeys(windowHandle, keyboardData.Keys.Cast<Key>().ToArray());
+                        }
+                        await Task.Delay(10);
+                    }
                 }
-                return IntPtr.Zero;
             }
+            catch (Exception e)
+            {
+                reply.ErrorMessages.Add(e.ToString());
+            }
+            return reply;
+        }
+
+        public override Task<ShutdownResponse> Shutdown(ShutdownRequest request, ServerCallContext context)
+        {
+            var reply = new ShutdownResponse();
+            try
+            {
+                Application.Dispatcher.InvokeAsync(() =>
+                {
+                    Application.Shutdown(request.ExitCode);
+                });
+            }
+            catch (Exception e)
+            {
+                reply.ErrorMessages.Add(e.ToString());
+            }
+            return Task.FromResult(reply);
         }
 
         private Assembly? CurrentDomain_AssemblyResolve(object? sender, ResolveEventArgs args)
@@ -854,6 +890,55 @@ namespace XamlTest
                 }
             }
             return null;
+        }
+
+        private static bool ActivateWindow(Window window)
+        {
+            window.LogMessage("Activating window");
+
+            if (window.IsActive)
+            {
+                window.LogMessage("Window already active");
+                return true;
+            }
+
+            if (window.Activate())
+            {
+                return true;
+            }
+
+            window.LogMessage("Using mouse to activate Window");
+
+            //Fall back, attempt to click on the window to activate it
+            foreach (Point clickPoint in GetClickPoints(window))
+            {
+                MouseInput.MoveCursor(clickPoint);
+                MouseInput.LeftClick();
+
+                if (window.IsActive)
+                {
+                    return true;
+                }
+            }
+
+            return window.IsActive;
+
+            static IEnumerable<Point> GetClickPoints(Window window)
+            {
+                //Skip top right and that could cause the window to close
+
+                // Top left
+                yield return new Point(window.Left + 1, window.Top + 1);
+
+                // Bottom right
+                yield return new Point(window.Left + window.Width - 1, window.Top + window.Height - 1);
+
+                // Bottom left
+                yield return new Point(window.Left + 1, window.Top + window.Height - 1);
+
+                // Center
+                yield return new Point(window.Left + window.Width / 2, window.Top + window.Height / 2);
+            }
         }
     }
 }
