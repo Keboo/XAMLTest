@@ -205,6 +205,13 @@ namespace XamlTest.Internal
             LogMessage?.Invoke($"{nameof(SendInput)}({keyboardInput})");
             if (await Client.SendInputAsync(request) is { } reply)
             {
+                if (reply.LogMessages.Any() && LogMessage is { } logMessage)
+                {
+                    foreach(var message in reply.LogMessages)
+                    {
+                        logMessage(message);
+                    }
+                }
                 if (reply.ErrorMessages.Any())
                 {
                     throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));

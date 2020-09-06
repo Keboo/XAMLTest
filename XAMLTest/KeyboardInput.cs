@@ -22,7 +22,7 @@ namespace XamlTest
             : this(new KeysInput(keys))
         { }
 
-        public override string ToString() => $"{{{string.Join(",", Inputs)}}}";
+        public override string ToString() => $"{{{string.Join(";", Inputs)}}}";
     }
 
     internal interface IInput

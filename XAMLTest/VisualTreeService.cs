@@ -631,6 +631,7 @@ namespace XamlTest
                         {
                             Input.KeyboardInput.SendKeys(windowHandle, keyboardData.Keys.Cast<Key>().ToArray());
                         }
+                        await Task.Delay(10);
                     }
                 }
             }
