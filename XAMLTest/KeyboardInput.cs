@@ -27,7 +27,7 @@ namespace XamlTest
             {
                 return $"{{Keys:{string.Join(",", Keys)}}}";
             }
-            return $"{{{Text}}}";
+            return $"{{Text:{Text}}}";
         }
     }
 }

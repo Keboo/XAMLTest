@@ -596,6 +596,9 @@ namespace XamlTest
                         reply.ErrorMessages.Add("Failed to find parent window");
                         return;
                     }
+                    source = HwndSource.FromHwnd(new WindowInteropHelper(window).EnsureHandle());
+                    source.AddHook(hook);
+                    
                     if (!ActivateWindow(window))
                     {
                         reply.ErrorMessages.Add($"Failed to active window");
@@ -608,8 +611,6 @@ namespace XamlTest
                         return;
                     }
 
-                    source = HwndSource.FromHwnd(new WindowInteropHelper(window).EnsureHandle());
-                    source.AddHook(hook);
                 }
                 catch (Exception e)
                 {
@@ -624,40 +625,32 @@ namespace XamlTest
 
             try
             {
-                if (!string.IsNullOrEmpty(request.TextInput))
+                if (source != null)
                 {
-                    expectedKeyPresses += request.TextInput.Length;
-                    Input.KeyboardInput.SendKeysForText(request.TextInput);
+                    if (!string.IsNullOrEmpty(request.TextInput))
+                    {
+                        expectedKeyPresses += request.TextInput.Length;
+                        Input.KeyboardInput.SendKeysForText(source.Handle, request.TextInput);
+                    }
+                    if (request.Keys.Any())
+                    {
+                        expectedKeyPresses += request.Keys.Count;
+                        Input.KeyboardInput.SendKeys(source.Handle, request.Keys.Cast<Key>().ToArray());
+
+                    }
                 }
-                if (request.Keys.Any())
-                {
-                    expectedKeyPresses += request.Keys.Count;
-                    Input.KeyboardInput.SendKeys(request.Keys.Cast<Key>().ToArray());
-
-                }
-
-                using var cts = new CancellationTokenSource();
-                //Only wait for 1 second for the key presses to be processed by the window.
-                cts.CancelAfter(TimeSpan.FromSeconds(1));
-
-                await Task.Run(() =>
-                {
-                    CancellationToken token = cts.Token;
-                    while (expectedKeyPresses != upKeys.Count && !token.IsCancellationRequested)
-                    { }
-                });
 
                 if (source != null && hook != null)
                 {
                     source.RemoveHook(hook);
                 }
 
-                if (expectedKeyPresses != upKeys.Count)
-                {
-                    reply.ErrorMessages.Add($"Failed to send keys to expected window. Expected {expectedKeyPresses}, Keys {upKeys.Count}");
-                    reply.ErrorMessages.Add($"Keys: {string.Join(",", upKeys)}");
-                    reply.ErrorMessages.Add($"Messages: {string.Join(",", messages)}");
-                }
+                //if (expectedKeyPresses != upKeys.Count)
+                //{
+                //    reply.ErrorMessages.Add($"Failed to send keys to expected window. Expected {expectedKeyPresses}, Keys {upKeys.Count}");
+                //    reply.ErrorMessages.Add($"Keys: {string.Join(",", upKeys)}");
+                //    reply.ErrorMessages.Add($"Messages: {string.Join(",", messages)}");
+                //}
             }
             catch (Exception e)
             {
@@ -670,7 +663,7 @@ namespace XamlTest
                 messages.Add((WindowMessage)msg);
                 switch ((WindowMessage)msg)
                 {
-                    /*
+                    
                     //NB: Currently sending the Enter key only appears to trigger WM_KEYUP
                     case WindowMessage.WM_SYSKEYDOWN:
                     case WindowMessage.WM_KEYDOWN:
@@ -680,13 +673,12 @@ namespace XamlTest
                         // posted before a WM_KEYUP message is posted. The previous key state (bit 30) 
                         // can be used to determine whether the WM_KEYDOWN message indicates the first 
                         // down transition or a repeated down transition.
-                        downKeys.Add((ulong)wParam.ToInt64());
+                        //downKeys.Add((ulong)wParam.ToInt64());
                         if ((wParam.ToInt32() & 0x0400_0000) == 0)
                         {
-                            Interlocked.Increment(ref keyDowns);
+                            //Interlocked.Increment(ref keyDowns);
                         }
                         break;
-                    */
                     case WindowMessage.WM_SYSKEYUP:
                     case WindowMessage.WM_KEYUP:
                     case WindowMessage.WM_IME_KEYUP:
