@@ -575,11 +575,7 @@ namespace XamlTest
         public override async Task<InputResponse> SendInput(InputRequest request, ServerCallContext context)
         {
             var reply = new InputResponse();
-            int expectedKeyPresses = 0;
-            var upKeys = new List<ulong>();
-            var messages = new List<WindowMessage>();
-            var hook = new HwndSourceHook(WndProc);
-            HwndSource? source = null;
+            IntPtr windowHandle = IntPtr.Zero;
             await Application.Dispatcher.InvokeAsync(() =>
             {
                 try
@@ -596,8 +592,7 @@ namespace XamlTest
                         reply.ErrorMessages.Add("Failed to find parent window");
                         return;
                     }
-                    source = HwndSource.FromHwnd(new WindowInteropHelper(window).EnsureHandle());
-                    source.AddHook(hook);
+                    windowHandle = new WindowInteropHelper(window).EnsureHandle();
                     
                     if (!ActivateWindow(window))
                     {
@@ -625,68 +620,23 @@ namespace XamlTest
 
             try
             {
-                if (source != null)
+                if (windowHandle != IntPtr.Zero)
                 {
                     if (!string.IsNullOrEmpty(request.TextInput))
                     {
-                        expectedKeyPresses += request.TextInput.Length;
-                        Input.KeyboardInput.SendKeysForText(source.Handle, request.TextInput);
+                        Input.KeyboardInput.SendKeysForText(windowHandle, request.TextInput);
                     }
                     if (request.Keys.Any())
                     {
-                        expectedKeyPresses += request.Keys.Count;
-                        Input.KeyboardInput.SendKeys(source.Handle, request.Keys.Cast<Key>().ToArray());
-
+                        Input.KeyboardInput.SendKeys(windowHandle, request.Keys.Cast<Key>().ToArray());
                     }
                 }
-
-                if (source != null && hook != null)
-                {
-                    source.RemoveHook(hook);
-                }
-
-                //if (expectedKeyPresses != upKeys.Count)
-                //{
-                //    reply.ErrorMessages.Add($"Failed to send keys to expected window. Expected {expectedKeyPresses}, Keys {upKeys.Count}");
-                //    reply.ErrorMessages.Add($"Keys: {string.Join(",", upKeys)}");
-                //    reply.ErrorMessages.Add($"Messages: {string.Join(",", messages)}");
-                //}
             }
             catch (Exception e)
             {
                 reply.ErrorMessages.Add(e.ToString());
             }
             return reply;
-
-            IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
-            {
-                messages.Add((WindowMessage)msg);
-                switch ((WindowMessage)msg)
-                {
-                    
-                    //NB: Currently sending the Enter key only appears to trigger WM_KEYUP
-                    case WindowMessage.WM_SYSKEYDOWN:
-                    case WindowMessage.WM_KEYDOWN:
-                    case WindowMessage.WM_IME_KEYDOWN:
-                        // https://docs.microsoft.com/windows/win32/inputdev/wm-keydown#remarks
-                        // Because of the autorepeat feature, more than one WM_KEYDOWN message may be 
-                        // posted before a WM_KEYUP message is posted. The previous key state (bit 30) 
-                        // can be used to determine whether the WM_KEYDOWN message indicates the first 
-                        // down transition or a repeated down transition.
-                        //downKeys.Add((ulong)wParam.ToInt64());
-                        if ((wParam.ToInt32() & 0x0400_0000) == 0)
-                        {
-                            //Interlocked.Increment(ref keyDowns);
-                        }
-                        break;
-                    case WindowMessage.WM_SYSKEYUP:
-                    case WindowMessage.WM_KEYUP:
-                    case WindowMessage.WM_IME_KEYUP:
-                        upKeys.Add((ulong)wParam.ToInt64());
-                        break;
-                }
-                return IntPtr.Zero;
-            }
         }
 
         public override Task<ShutdownResponse> Shutdown(ShutdownRequest request, ServerCallContext context)
