@@ -1,33 +1,61 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Input;
 
 namespace XamlTest
 {
     public sealed class KeyboardInput
     {
-        public string Text { get; }
-        public IReadOnlyList<Key> Keys { get; }
+        internal IReadOnlyList<IInput> Inputs { get; }
 
-        public KeyboardInput(string text)
+        internal KeyboardInput(params IInput[] inputs)
         {
-            Text = text ?? throw new ArgumentNullException(nameof(text));
-            Keys = Array.Empty<Key>();
+            Inputs = inputs;
         }
 
+        public KeyboardInput(string text)
+            : this(new TextInput(text))
+        { }
+
         public KeyboardInput(params Key[] keys)
+            : this(new KeysInput(keys))
+        { }
+
+        public override string ToString() => $"{{{string.Join(",", Inputs)}}}";
+    }
+
+    internal interface IInput
+    { }
+
+    internal class TextInput : IInput
+    {
+        public string Text { get; }
+
+        public TextInput(string text)
         {
-            Text = "";
+            Text = text ?? throw new ArgumentNullException(nameof(text));
+        }
+
+        public override string ToString()
+            => $"Text:{Text}";
+    }
+
+    internal class KeysInput : IInput
+    {
+        public IReadOnlyList<Key> Keys { get; }
+
+        public KeysInput(IEnumerable<Key> keys)
+        {
+            Keys = keys.ToArray();
+        }
+
+        public KeysInput(params Key[] keys)
+        {
             Keys = keys;
         }
 
         public override string ToString()
-        {
-            if (string.IsNullOrEmpty(Text))
-            {
-                return $"{{Keys:{string.Join(",", Keys)}}}";
-            }
-            return $"{{Text:{Text}}}";
-        }
+            => $"Keys:{string.Join(",", Keys)}";
     }
 }

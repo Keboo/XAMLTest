@@ -184,10 +184,24 @@ namespace XamlTest.Internal
 
             var request = new InputRequest
             {
-                ElementId = Id,
-                TextInput = keyboardInput.Text
+                ElementId = Id
             };
-            request.Keys.AddRange(keyboardInput.Keys.Cast<int>());
+            request.KeyboardData.AddRange(keyboardInput.Inputs.Select(i => 
+            {
+                var rv = new KeyboardData();
+                switch(i)
+                {
+                    case KeysInput keysInput:
+                        rv.Keys.AddRange(keysInput.Keys.Cast<int>());
+                        break;
+                    case TextInput textInput:
+                        rv.TextInput = textInput.Text;
+                        break;
+                    default:
+                        throw new InvalidOperationException($"Unknown input type {i.GetType().FullName}");
+                }
+                return rv;
+            }));
             LogMessage?.Invoke($"{nameof(SendInput)}({keyboardInput})");
             if (await Client.SendInputAsync(request) is { } reply)
             {

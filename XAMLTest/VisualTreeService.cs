@@ -593,7 +593,7 @@ namespace XamlTest
                         return;
                     }
                     windowHandle = new WindowInteropHelper(window).EnsureHandle();
-                    
+
                     if (!ActivateWindow(window))
                     {
                         reply.ErrorMessages.Add($"Failed to active window");
@@ -622,13 +622,16 @@ namespace XamlTest
             {
                 if (windowHandle != IntPtr.Zero)
                 {
-                    if (!string.IsNullOrEmpty(request.TextInput))
+                    foreach (KeyboardData keyboardData in request.KeyboardData)
                     {
-                        Input.KeyboardInput.SendKeysForText(windowHandle, request.TextInput);
-                    }
-                    if (request.Keys.Any())
-                    {
-                        Input.KeyboardInput.SendKeys(windowHandle, request.Keys.Cast<Key>().ToArray());
+                        if (!string.IsNullOrEmpty(keyboardData.TextInput))
+                        {
+                            Input.KeyboardInput.SendKeysForText(windowHandle, keyboardData.TextInput);
+                        }
+                        if (keyboardData.Keys.Any())
+                        {
+                            Input.KeyboardInput.SendKeys(windowHandle, keyboardData.Keys.Cast<Key>().ToArray());
+                        }
                     }
                 }
             }
@@ -907,7 +910,7 @@ namespace XamlTest
             window.LogMessage("Using mouse to activate Window");
 
             //Fall back, attempt to click on the window to activate it
-            foreach(Point clickPoint in GetClickPoints(window))
+            foreach (Point clickPoint in GetClickPoints(window))
             {
                 MouseInput.MoveCursor(clickPoint);
                 MouseInput.LeftClick();

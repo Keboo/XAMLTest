@@ -170,12 +170,16 @@ message KeyboardFocusResult {
 
 message InputRequest {
   string elementId = 1;
-  string textInput = 2;
-  repeated int32 keys = 3;
+  repeated KeyboardData keyboardData = 2;
 }
 
 message InputResponse {
   repeated string errorMessages = 1;
+}
+
+message KeyboardData {
+  string textInput = 1;
+  repeated int32 keys = 2;
 }
 
 message ShutdownRequest {

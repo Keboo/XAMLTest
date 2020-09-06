@@ -13,32 +13,14 @@ namespace XamlTest.Input
     {
         public static void SendKeys(IntPtr windowHandle, params Key[] keys)
         {
-            var inputs =
-               keys.Select(k => (ushort)KeyInterop.VirtualKeyFromKey(k))
-                   .SelectMany(k => GetKeyPress(k));
-
+            IEnumerable<WindowMessage> inputs = keys.SelectMany(k => GetKeyPress(k));
             SendInput(windowHandle, inputs);
         }
 
         public static void SendKeysForText(IntPtr windowHandle, string textInput)
         {
-            var inputs = textInput.SelectMany(c => GetKeyPress(c));
+            IEnumerable<WindowMessage> inputs = textInput.SelectMany(c => GetKeyPress(c));
             SendInput(windowHandle, inputs);
-        }
-
-        private class WindowMessage
-        {
-
-            public WindowMessage(User32.WindowMessage message, IntPtr wParam, IntPtr lParam)
-            {
-                Message = message;
-                WParam = wParam;
-                LParam = lParam;
-            }
-
-            public User32.WindowMessage Message { get; }
-            public IntPtr WParam { get; }
-            public IntPtr LParam { get; }
         }
 
         private static void SendInput(IntPtr windowHandle, IEnumerable<WindowMessage> messages)
@@ -56,14 +38,26 @@ namespace XamlTest.Input
             yield return new WindowMessage(User32.WindowMessage.WM_CHAR, wParam, lParam);
         }
 
-        private static IEnumerable<WindowMessage> GetKeyPress(ushort keyCode)
+        private static IEnumerable<WindowMessage> GetKeyPress(Key key)
         {
-            var wParam = new IntPtr(keyCode);
+            var wParam = new IntPtr(KeyInterop.VirtualKeyFromKey(key));
             var lParam = new IntPtr(0x0000_0000);
             yield return new WindowMessage(User32.WindowMessage.WM_KEYDOWN, wParam, lParam);
             yield return new WindowMessage(User32.WindowMessage.WM_KEYUP, wParam, lParam);
-
         }
 
+        private class WindowMessage
+        {
+            public WindowMessage(User32.WindowMessage message, IntPtr wParam, IntPtr lParam)
+            {
+                Message = message;
+                WParam = wParam;
+                LParam = lParam;
+            }
+
+            public User32.WindowMessage Message { get; }
+            public IntPtr WParam { get; }
+            public IntPtr LParam { get; }
+        }
     }
 }

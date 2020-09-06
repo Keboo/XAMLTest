@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -38,10 +40,42 @@ namespace XamlTest
             MouseInput.LeftClick();
         }
 
-        public static async Task SendInput(this IVisualElement element, string textInput) 
-            => await element.SendInput(new KeyboardInput(textInput));
+        public static async Task SendInput(this IVisualElement element, FormattableString input)
+        {
+            var placeholder = Guid.NewGuid().ToString("N");
+            string formatted = string.Format(input.Format, Enumerable.Repeat(placeholder, input.ArgumentCount).Cast<object>().ToArray());
+            string[] textParts = formatted.Split(placeholder);
 
-        public static async Task SendInput(this IVisualElement element, params Key[] keys) 
-            => await element.SendInput(new KeyboardInput(keys));
+            var inputs = new List<IInput>();
+            int argumentIndex = 0;
+            foreach (string? part in textParts)
+            {
+                if (!string.IsNullOrEmpty(part))
+                {
+                    inputs.Add(new TextInput(part));
+                }
+                if (argumentIndex < input.ArgumentCount)
+                {
+                    object? argument = input.GetArgument(argumentIndex++);
+                    switch (argument)
+                    {
+                        case Key key:
+                            inputs.Add(new KeysInput(key));
+                            break;
+                        case IEnumerable<Key> keys:
+                            inputs.Add(new KeysInput(keys));
+                            break;
+                        default:
+                            string? stringArgument = argument?.ToString();
+                            if (!string.IsNullOrEmpty(stringArgument))
+                            {
+                                inputs.Add(new TextInput(stringArgument));
+                            }
+                            break;
+                    }
+                }
+            }
+            await element.SendInput(new KeyboardInput(inputs.ToArray()));
+        }
     }
 }
