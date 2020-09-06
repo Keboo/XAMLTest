@@ -8,6 +8,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>XamlTest</RootNamespace>
     <EmbedUntrackedSource>true</EmbedUntrackedSource>
+    <WarningsAsErrors>true</WarningsAsErrors>
   </PropertyGroup>
 
   <PropertyGroup>

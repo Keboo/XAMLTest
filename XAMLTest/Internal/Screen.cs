@@ -28,7 +28,7 @@ namespace XamlTest.Internal
 
             [DllImport(User32, ExactSpelling = true)]
             [ResourceExposure(ResourceScope.None)]
-            public static extern bool EnumDisplayMonitors(HandleRef hdc, COMRECT rcClip, MonitorEnumProc lpfnEnum, IntPtr dwData);
+            public static extern bool EnumDisplayMonitors(HandleRef hdc, COMRECT? rcClip, MonitorEnumProc lpfnEnum, IntPtr dwData);
 
             [DllImport(User32, ExactSpelling = true)]
             [ResourceExposure(ResourceScope.None)]
@@ -117,7 +117,7 @@ namespace XamlTest.Internal
         private const int MONITORINFOF_PRIMARY = 0x00000001;
 
         private static readonly bool _multiMonitorSupport = NativeMethods.GetSystemMetrics(NativeMethods.SM_CMONITORS) != 0;
-        private static Screen[] _screens;
+        private static Screen[]? _screens;
 
         private Screen(IntPtr monitor)
         {
@@ -153,7 +153,7 @@ namespace XamlTest.Internal
         {
             get
             {
-                if (_screens == null)
+                if (_screens is null)
                 {
                     if (_multiMonitorSupport)
                     {
@@ -174,7 +174,14 @@ namespace XamlTest.Internal
                     }
                     else
                     {
-                        _screens = new[] { PrimaryScreen };
+                        if (PrimaryScreen is { } pScreen)
+                        {
+                            _screens = new Screen[] { pScreen };
+                        }
+                        else
+                        {
+                            _screens = Array.Empty<Screen>();
+                        }
                     }
 
                     // Now that we have our screens, attach a display setting changed
@@ -204,7 +211,7 @@ namespace XamlTest.Internal
         /// <summary>
         /// Gets the primary display.
         /// </summary>
-        public static Screen PrimaryScreen
+        public static Screen? PrimaryScreen
         {
             get
             {
@@ -289,7 +296,7 @@ namespace XamlTest.Internal
         /// <summary>
         /// Specifies a value that indicates whether the specified object is equal to this one.
         /// </summary>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is Screen comp && _hmonitor == comp._hmonitor;
         }
@@ -365,7 +372,7 @@ namespace XamlTest.Internal
         /// changing.  We cache screen information and at this point we must
         /// invalidate our cache.
         /// </summary>
-        private static void OnDisplaySettingsChanging(object sender, EventArgs e)
+        private static void OnDisplaySettingsChanging(object? sender, EventArgs e)
         {
             // Now that we've responded to this event, we don't need it again until
             // someone re-queries. We will re-add the event at that time.
