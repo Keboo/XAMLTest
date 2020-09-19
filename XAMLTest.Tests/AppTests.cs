@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Media;
+using XamlTest.Tests.TestControls;
 
 namespace XamlTest.Tests
 {
@@ -22,6 +23,21 @@ namespace XamlTest.Tests
             IWindow window = await app.CreateWindowWithContent("", title: "Test Window Title");
 
             Assert.AreEqual("Test Window Title", await window.GetTitle());
+
+            recorder.Success();
+        }
+
+        [TestMethod]
+        public async Task OnCreateWindow_CanUseCustomWindow()
+        {
+            await using var app = App.StartRemote();
+            await using var recorder = new TestRecorder(app);
+
+            await app.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
+
+            IWindow window = await app.CreateWindow<TestWindow>();
+
+            Assert.AreEqual("Custom Test Window", await window.GetTitle());
 
             recorder.Success();
         }

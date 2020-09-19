@@ -142,7 +142,8 @@ message ApplicationResult {
 
 message WindowConfiguration {
   string xaml = 1;
-  bool fitToScreen = 2;
+  string windowType = 2;
+  bool fitToScreen = 3;
 }
 
 message WindowResult {

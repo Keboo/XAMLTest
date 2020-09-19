@@ -100,6 +100,32 @@ namespace XamlTest.Internal
             throw new Exception("Failed to get a reply");
         }
 
+        public async Task<IWindow> CreateWindow<TWindow>() where TWindow : System.Windows.Window
+        {
+            var request = new WindowConfiguration()
+            {
+                WindowType = typeof(TWindow).AssemblyQualifiedName,
+                FitToScreen = true
+            };
+            LogMessage?.Invoke($"{nameof(IApp)}.{nameof(CreateWindow)}(...)");
+            if (await Client.CreateWindowAsync(request) is { } reply)
+            {
+                if (LogMessage is { })
+                {
+                    foreach (string logsMessage in reply.LogMessages)
+                    {
+                        LogMessage(logsMessage);
+                    }
+                }
+                if (reply.ErrorMessages.Any())
+                {
+                    throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
+                }
+                return new Window(Client, reply.WindowsId, LogMessage);
+            }
+            throw new Exception("Failed to get a reply");
+        }
+
         public async Task<IWindow?> GetMainWindow()
         {
             LogMessage?.Invoke($"{nameof(IApp)}.{nameof(GetMainWindow)}()");
@@ -158,6 +184,5 @@ namespace XamlTest.Internal
             }
             throw new Exception("Failed to receive a reply");
         }
-
     }
 }
