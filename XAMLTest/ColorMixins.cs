@@ -1,4 +1,5 @@
-﻿using System.Windows.Media;
+﻿using System;
+using System.Windows.Media;
 
 namespace XamlTest
 {
@@ -14,22 +15,19 @@ namespace XamlTest
         /// RsRGB = R8bit/255
         /// GsRGB = G8bit/255
         /// BsRGB = B8bit/255
-        /// Based on https://www.w3.org/TR/2008/REC-WCAG20-20081211/#relativeluminancedef
+        /// Based on https://www.w3.org/TR/WCAG21/#dfn-relative-luminance
         /// </summary>
         /// <param name="color"></param>
         /// <returns></returns>
         public static float RelativeLuninance(this Color color)
         {
             return
-                0.2126f * Calc(color.ScR) +
-                0.7152f * Calc(color.ScG) +
-                0.0722f * Calc(color.ScB);
+                0.2126f * Calc(color.R / 255f) +
+                0.7152f * Calc(color.G / 255f) +
+                0.0722f * Calc(color.B / 255f);
 
             static float Calc(float colorValue)
-                => colorValue <= 0.03928f ? colorValue / 12.92f : Square((colorValue + 0.055f) / 1.055f);
-
-            static float Square(float value)
-                => value * value;
+                => colorValue <= 0.03928f ? colorValue / 12.92f : (float)Math.Pow((colorValue + 0.055f) / 1.055f, 2.4);
         }
 
         /// <summary>
