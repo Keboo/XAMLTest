@@ -458,13 +458,27 @@ namespace XamlTest
             await Application.Dispatcher.InvokeAsync(() =>
             {
                 Window? window = null;
-                try
+                if (!string.IsNullOrEmpty(request.WindowType))
                 {
-                    window = LoadXaml<Window>(request.Xaml);
+                    if (Type.GetType(request.WindowType) is Type windowType)
+                    {
+                        window = (Window?)Activator.CreateInstance(windowType);
+                    }
+                    else
+                    {
+                        reply.ErrorMessages.Add($"Error loading window type '{request.WindowType}'");
+                    }
                 }
-                catch (Exception e)
+                else
                 {
-                    reply.ErrorMessages.Add($"Error loading window{Environment.NewLine}{e}");
+                    try
+                    {
+                        window = LoadXaml<Window>(request.Xaml);
+                    }
+                    catch (Exception e)
+                    {
+                        reply.ErrorMessages.Add($"Error loading window{Environment.NewLine}{e}");
+                    }
                 }
                 if (window is { })
                 {
