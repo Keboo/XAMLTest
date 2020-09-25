@@ -414,11 +414,11 @@ namespace XamlTest
                         {
                             if (assembly is string)
                             {
-                                LoadedAssemblies.Add(Assembly.LoadFile(assembly));
+                                LoadedAssemblies.Add(Assembly.LoadFrom(assembly));
                             }
                             else
                             {
-                                reply.ErrorMessages.Add("Assemblies names must not be null");
+                                reply.ErrorMessages.Add("Assembly name must not be null");
                                 break;
                             }
                         }
@@ -682,7 +682,7 @@ namespace XamlTest
             string likelyAssemblyPath = Path.GetFullPath($"{assemblyName.Name}.dll");
             try
             {
-                if (File.Exists(likelyAssemblyPath) && Assembly.LoadFile(likelyAssemblyPath) is Assembly localAssemby)
+                if (File.Exists(likelyAssemblyPath) && Assembly.LoadFrom(likelyAssemblyPath) is Assembly localAssemby)
                 {
                     LoadedAssemblies.Add(localAssemby);
                     return localAssemby;
