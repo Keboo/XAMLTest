@@ -21,7 +21,6 @@ namespace XamlTest
         {
             App = app ?? throw new ArgumentNullException(nameof(app));
 
-            //"C:\\Dev\\MaterialDesignInXamlToolkit\\MaterialDesignThemes.UITests\\WPF\\TextBox\\TextBoxTests.cs"
             var callingAssembly = Assembly.GetCallingAssembly();
             var assemblyName = callingAssembly.GetName().Name!;
             int assemblyNameIndex = callerFilePath.IndexOf(assemblyName);
@@ -34,7 +33,7 @@ namespace XamlTest
                 Directory = Path.GetFileName(callerFilePath);
             }
             Directory = Path.ChangeExtension(Directory, "").TrimEnd('.');
-            var rootDirectory = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location) ?? Path.GetFullPath(".");
+            var rootDirectory = Path.GetDirectoryName(callingAssembly.Location) ?? Path.GetFullPath(".");
             Directory = Path.Combine(rootDirectory, "Screenshots", Directory);
 
             System.IO.Directory.CreateDirectory(Directory);
@@ -53,6 +52,9 @@ namespace XamlTest
 
         public async Task SaveScreenshot([CallerLineNumber] int? lineNumber = null)
             => await SaveScreenshot(lineNumber?.ToString() ?? "");
+
+        public async Task SaveScreenshot(string suffix, [CallerLineNumber] int? lineNumber = null)
+            => await SaveScreenshot($"{suffix}{lineNumber?.ToString() ?? ""}");
 
         private async Task SaveScreenshot(string suffix)
         {
