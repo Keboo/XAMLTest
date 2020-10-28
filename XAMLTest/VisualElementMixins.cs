@@ -115,9 +115,7 @@ namespace XamlTest
             IValue newValue = await element.SetProperty(propertyName, value?.ToString() ?? "", typeof(T).AssemblyQualifiedName, ownerType);
             if (newValue is { })
             {
-#pragma warning disable CS8603 // Possible null reference return.
-                return newValue.GetValueAs<T>();
-#pragma warning restore CS8603 // Possible null reference return.
+                return newValue.GetAs<T>();
             }
 #pragma warning disable CS8603 // Possible null reference return.
             return default;
