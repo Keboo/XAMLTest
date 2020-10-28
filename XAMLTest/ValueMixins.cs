@@ -7,6 +7,7 @@ namespace XamlTest
 {
     public static class ValueMixins
     {
+        [Obsolete("Use GetAs")]
         [return:MaybeNull]
         public static T GetValueAs<T>(this IValue value)
         {

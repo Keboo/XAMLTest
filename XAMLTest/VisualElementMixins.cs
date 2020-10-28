@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
-using static PInvoke.User32;
 
 namespace XamlTest
 {
@@ -43,9 +42,8 @@ namespace XamlTest
             }
 
             IValue value = await element.GetProperty(propertyName);
-#pragma warning disable CS8603 // Possible null reference return.
-            return value.GetValueAs<T>();
-#pragma warning restore CS8603 // Possible null reference return.
+
+            return value.GetAs<T>();
         }
 
         public static async Task<T> GetProperty<T>(this IVisualElement element, DependencyProperty dependencyProperty)
@@ -61,9 +59,7 @@ namespace XamlTest
             }
 
             IValue value = await element.GetProperty(dependencyProperty.Name, dependencyProperty.OwnerType.AssemblyQualifiedName);
-#pragma warning disable CS8603 // Possible null reference return.
-            return value.GetValueAs<T>();
-#pragma warning restore CS8603 // Possible null reference return.
+            return value.GetAs<T>();
         }
 
         public static async Task<string> GetText(this IVisualElement element)
