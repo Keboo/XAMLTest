@@ -100,7 +100,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             Assert.AreEqual(0.1, Math.Round(newCoordinates.Top - initialCoordinates.Top, 5));
         }
 
-
         [TestMethod]
         public async Task OnGetEffectiveBackground_ReturnsFirstOpaqueColor()
         {

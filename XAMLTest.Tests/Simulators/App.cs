@@ -5,7 +5,6 @@ using System.Windows;
 
 namespace XamlTest.Tests.Simulators
 {
-
     public class App : IApp
     {
         public Task<IWindow> CreateWindow(string xaml)
@@ -40,6 +39,7 @@ namespace XamlTest.Tests.Simulators
 
         public Task<IImage> GetScreenshot()
             => Task.FromResult<IImage>(new Image());
+        public Task<IReadOnlyList<ISerializer>> GetSerializers() => throw new NotImplementedException();
 
         public Task<IReadOnlyList<IWindow>> GetWindows()
         {
@@ -50,5 +50,7 @@ namespace XamlTest.Tests.Simulators
         {
             throw new NotImplementedException();
         }
+
+        public Task RegisterSerializer<T>(int insertIndex = 0) where T : ISerializer, new() => throw new NotImplementedException();
     }
 }

@@ -196,6 +196,7 @@ message ShutdownResponse {
 
 message SerializerRequest {
   string serializerType = 1;
+  int32 insertIndex = 2;
 }
 
 message SerializerResponse {

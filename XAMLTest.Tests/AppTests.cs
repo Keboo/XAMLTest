@@ -119,5 +119,36 @@ namespace XamlTest.Tests
             Assert.AreEqual(Colors.Red.ToString(), resource.Value);
             Assert.AreEqual(typeof(Color).AssemblyQualifiedName, resource.ValueType);
         }
+
+        [TestMethod]
+        public async Task OnRegisterSerializer_RegistersCustomSerializer()
+        {
+            await using var app = App.StartRemote();
+            await using var recorder = new TestRecorder(app);
+
+            await app.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
+            IWindow window = await app.CreateWindowWithContent("", title: "Test Window Title");
+
+            await app.RegisterSerializer<CustomSerializer>();
+
+            Assert.AreEqual("In-Test Window Title-Out", await window.GetTitle());
+
+            recorder.Success();
+        }
+
+        private class CustomSerializer : ISerializer
+        {
+            public bool CanSerialize(Type type) => type == typeof(string);
+
+            public object? Deserialize(Type type, string value)
+            {
+                return $"{value}-Out";
+            }
+
+            public string Serialize(Type type, object? value)
+            {
+                return $"In-{value}";
+            }
+        }
     }
 }

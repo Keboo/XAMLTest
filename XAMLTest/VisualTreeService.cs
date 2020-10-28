@@ -665,15 +665,42 @@ namespace XamlTest
             return reply;
         }
 
-        public override Task<ShutdownResponse> Shutdown(ShutdownRequest request, ServerCallContext context)
+        public override async Task<ShutdownResponse> Shutdown(ShutdownRequest request, ServerCallContext context)
         {
             var reply = new ShutdownResponse();
             try
             {
-                Application.Dispatcher.InvokeAsync(() =>
+                await Application.Dispatcher.InvokeAsync(() =>
                 {
                     Application.Shutdown(request.ExitCode);
                 });
+            }
+            catch (Exception e)
+            {
+                reply.ErrorMessages.Add(e.ToString());
+            }
+            return reply;
+        }
+
+        public override Task<SerializerResponse> RegisterSerializer(SerializerRequest request, ServerCallContext context)
+        {
+            var reply = new SerializerResponse();
+            try
+            {
+                if (string.IsNullOrWhiteSpace(request.SerializerType))
+                {
+                    reply.ErrorMessages.Add("Serializer type must be specified");
+                    return Task.FromResult(reply);
+                }
+                if (Type.GetType(request.SerializerType) is { } serializerType &&
+                    Activator.CreateInstance(serializerType) is ISerializer serializer)
+                {
+                    Serializer.AddSerializer(serializer, request.InsertIndex);
+                }
+                else
+                {
+                    reply.ErrorMessages.Add($"Failed to resolve serializer type '{request.SerializerType}'");
+                }
             }
             catch (Exception e)
             {

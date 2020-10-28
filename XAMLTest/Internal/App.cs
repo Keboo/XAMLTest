@@ -190,12 +190,19 @@ namespace XamlTest.Internal
         {
             var request = new SerializerRequest
             {
-                SerializerType = typeof(T).AssemblyQualifiedName
+                SerializerType = typeof(T).AssemblyQualifiedName,
+                InsertIndex = insertIndex
             };
             if (await Client.RegisterSerializerAsync(request) is { } reply)
             {
-                if (repy)
+                if (reply.ErrorMessages.Any())
+                {
+                    throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
+                }
+                Serializer.AddSerializer(new T(), insertIndex);
+                return;
             }
+            throw new Exception("Failed to receive a reply");
         }
 
         public Task<IReadOnlyList<ISerializer>> GetSerializers() 
