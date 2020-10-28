@@ -43,7 +43,7 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 3.1.101
+        dotnet-version: 5.0.0-rc.2
         source-url: https://nuget.pkg.github.com/keboo/index.json
       env:
         NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
@@ -66,7 +66,7 @@ jobs:
       run: (New-Object -ComObject "Shell.Application").minimizeall()
 
     - name: Test
-      run: dotnet test --no-build --verbosity normal --configuration ${{ env.configuration }} --logger "console"
+      run: dotnet test --no-build --blame-hang --blame-hang-timeout 30s --verbosity normal --configuration ${{ env.configuration }} --logger "console"
 
     - name: Upload Screenshots
       if: ${{ always() }}
