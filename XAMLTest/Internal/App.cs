@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 
 namespace XamlTest.Internal
 {
-
     internal class App : IApp
     {
         public App(Protocol.ProtocolClient client, Action<string>? logMessage)
@@ -185,5 +184,21 @@ namespace XamlTest.Internal
             }
             throw new Exception("Failed to receive a reply");
         }
+
+        public async Task RegisterSerializer<T>(int insertIndex = 0)
+            where T : ISerializer, new()
+        {
+            var request = new SerializerRequest
+            {
+                SerializerType = typeof(T).AssemblyQualifiedName
+            };
+            if (await Client.RegisterSerializerAsync(request) is { } reply)
+            {
+                if (repy)
+            }
+        }
+
+        public Task<IReadOnlyList<ISerializer>> GetSerializers() 
+            => Task.FromResult<IReadOnlyList<ISerializer>>(Serializer.Serializers.AsReadOnly());
     }
 }

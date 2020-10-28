@@ -7,7 +7,7 @@ namespace XamlTest.Internal
 {
     internal class Serializer
     {
-        private List<ISerializer> Serializers { get; } = new List<ISerializer>();
+        public List<ISerializer> Serializers { get; } = new List<ISerializer>();
 
         public Serializer()
         {
@@ -15,6 +15,9 @@ namespace XamlTest.Internal
             Serializers.Add(new SolidColorBrushSerializer());
             Serializers.Add(new DefaultSerializer());
         }
+
+        public void AddSerializer(ISerializer serializer, int index) 
+            => Serializers.Insert(index, serializer);
 
         public string? Serialize(Type type, object? value)
         {

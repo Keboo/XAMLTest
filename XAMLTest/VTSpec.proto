@@ -48,6 +48,9 @@ service Protocol {
 
   //Request an application shutdown
   rpc Shutdown (ShutdownRequest) returns (ShutdownResponse);
+
+  //Register a new serializer
+  rpc RegisterSerializer (SerializerRequest) returns (SerializerResponse);
 }
 
 message GetWindowsQuery {
@@ -188,5 +191,13 @@ message ShutdownRequest {
 }
 
 message ShutdownResponse {
+  repeated string errorMessages = 1;
+}
+
+message SerializerRequest {
+  string serializerType = 1;
+}
+
+message SerializerResponse {
   repeated string errorMessages = 1;
 }
