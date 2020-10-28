@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using XamlTest.Tests.TestControls;
+using XamlTest.Transport;
 
 namespace XamlTest.Tests
 {
@@ -134,6 +135,34 @@ namespace XamlTest.Tests
             Assert.AreEqual("In-Test Window Title-Out", await window.GetTitle());
 
             recorder.Success();
+        }
+
+        [TestMethod]
+        public async Task OnGetSerializers_ReturnsDefaultSerializers()
+        {
+            await using var app = App.StartRemote();
+
+            var serializers = await app.GetSerializers();
+
+            Assert.AreEqual(2, serializers.Count);
+            Assert.IsInstanceOfType(serializers[0], typeof(SolidColorBrushSerializer));
+            Assert.IsInstanceOfType(serializers[1], typeof(DefaultSerializer));
+        }
+
+        [TestMethod]
+        public async Task OnGetSerializers_IncludesCustomSerializers()
+        {
+            await using var app = App.StartRemote();
+            await app.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
+
+            await app.RegisterSerializer<CustomSerializer>(1);
+
+            var serializers = await app.GetSerializers();
+
+            Assert.AreEqual(3, serializers.Count);
+            Assert.IsInstanceOfType(serializers[0], typeof(SolidColorBrushSerializer));
+            Assert.IsInstanceOfType(serializers[1], typeof(CustomSerializer));
+            Assert.IsInstanceOfType(serializers[2], typeof(DefaultSerializer));
         }
 
         private class CustomSerializer : ISerializer
