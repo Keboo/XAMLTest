@@ -141,6 +141,7 @@ namespace XamlTest.Tests
         public async Task OnGetSerializers_ReturnsDefaultSerializers()
         {
             await using var app = App.StartRemote();
+            await app.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
 
             var serializers = await app.GetSerializers();
 
