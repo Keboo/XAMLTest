@@ -94,7 +94,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: Test Results
-        path: ${{ github.workspace }}\TestResults
+        path: ${{ github.workspace }}\XAMLTest.Tests\TestResults
 
 
     - name: Pack
