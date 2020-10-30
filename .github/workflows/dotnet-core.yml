@@ -43,6 +43,14 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
+        dotnet-version: "3.1.101"
+        source-url: https://nuget.pkg.github.com/keboo/index.json
+      env:
+        NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
         dotnet-version: "5.0.100-rc.2.20479.15"
         source-url: https://nuget.pkg.github.com/keboo/index.json
       env:
