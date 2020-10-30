@@ -62,10 +62,10 @@ jobs:
     - name: Change Screen Resolution
       run: changescreenresolution 1920 1080
 
-    - name: Install Screen Resolution Tool
+    - name: Install Procdump
       uses: crazy-max/ghaction-chocolatey@v1
       with:
-        args: install -y procdump
+        args: install --ignore-checksums -y procdump
     
     - name: Minimize all windows
       run: (New-Object -ComObject "Shell.Application").minimizeall()
