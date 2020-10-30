@@ -62,11 +62,17 @@ jobs:
     - name: Change Screen Resolution
       run: changescreenresolution 1920 1080
 
+    - name: Install Screen Resolution Tool
+      uses: crazy-max/ghaction-chocolatey@v1
+      with:
+        args: install -y procdump
+    
     - name: Minimize all windows
       run: (New-Object -ComObject "Shell.Application").minimizeall()
 
+
     - name: Test
-      run: dotnet test --no-build --blame-hang --blame-hang-timeout 30s --verbosity normal --configuration ${{ env.configuration }} --logger "console"
+      run: dotnet test --no-build --blame-crash --blame-hang --blame-hang-timeout 30s --verbosity normal --configuration ${{ env.configuration }} --logger "console"
 
     - name: Upload Screenshots
       if: ${{ always() }}
@@ -74,6 +80,14 @@ jobs:
       with:
         name: Test Images
         path: ${{ github.workspace }}\XAMLTest.Tests\bin\${{ env.configuration }}\netcoreapp3.1\Screenshots
+
+    - name: Upload Test Results
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: Test Results
+        path: ${{ github.workspace }}\TestResults
+
 
     - name: Pack
       if: ${{ github.event_name != 'pull_request' }}
