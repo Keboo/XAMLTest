@@ -9,13 +9,16 @@ namespace XamlTest.Internal
 {
     internal class VisualElement : IVisualElement
     {
-        public VisualElement(Protocol.ProtocolClient client, string id, Action<string>? logMessage)
+        public VisualElement(Protocol.ProtocolClient client, string id, 
+            Serializer serializer, Action<string>? logMessage)
         {
             Client = client ?? throw new ArgumentNullException(nameof(client));
             Id = id ?? throw new ArgumentNullException(nameof(id));
+            Serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
             LogMessage = logMessage;
         }
 
+        private Serializer Serializer { get; }
         private Protocol.ProtocolClient Client { get; }
 
         protected string Id { get; }
@@ -33,7 +36,7 @@ namespace XamlTest.Internal
                 }
                 if (reply.ElementIds.Count == 1)
                 {
-                    return new VisualElement(Client, reply.ElementIds[0], LogMessage);
+                    return new VisualElement(Client, reply.ElementIds[0], Serializer, LogMessage);
                 }
                 throw new Exception($"Found {reply.ElementIds.Count} elements");
             }
@@ -58,7 +61,7 @@ namespace XamlTest.Internal
                 }
                 if (reply.PropertyType is { } propertyType)
                 {
-                    return new Property(propertyType, reply.ValueType, reply.Value);
+                    return new Property(propertyType, reply.ValueType, reply.Value, Serializer);
                 }
                 throw new Exception("Property does not have a type specified");
             }
@@ -84,7 +87,7 @@ namespace XamlTest.Internal
                 }
                 if (reply.PropertyType is { } propertyType)
                 {
-                    return new Property(propertyType, reply.ValueType, reply.Value);
+                    return new Property(propertyType, reply.ValueType, reply.Value, Serializer);
                 }
                 throw new Exception("Property reply does not have a type specified");
             }
@@ -107,7 +110,7 @@ namespace XamlTest.Internal
                 }
                 if (!string.IsNullOrWhiteSpace(reply.ValueType))
                 {
-                    return new Resource(reply.Key, reply.ValueType, reply.Value);
+                    return new Resource(reply.Key, reply.ValueType, reply.Value, Serializer);
                 }
                 throw new Exception($"Resource with key '{reply.Key}' not found");
             }

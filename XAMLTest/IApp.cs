@@ -15,5 +15,9 @@ namespace XamlTest
 
         Task<IResource> GetResource(string key);
         Task<IImage> GetScreenshot();
+
+        Task RegisterSerializer<T>(int insertIndex = 0)
+            where T : ISerializer, new();
+        Task<IReadOnlyList<ISerializer>> GetSerializers(); 
     }
 }

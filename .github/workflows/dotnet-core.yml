@@ -43,7 +43,7 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 3.1.101
+        dotnet-version: "3.1.101"
         source-url: https://nuget.pkg.github.com/keboo/index.json
       env:
         NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
@@ -62,8 +62,14 @@ jobs:
     - name: Change Screen Resolution
       run: changescreenresolution 1920 1080
 
+    - name: Install Procdump
+      uses: crazy-max/ghaction-chocolatey@v1
+      with:
+        args: install --ignore-checksums -y procdump
+    
     - name: Minimize all windows
       run: (New-Object -ComObject "Shell.Application").minimizeall()
+
 
     - name: Test
       run: dotnet test --no-build --verbosity normal --configuration ${{ env.configuration }} --logger "console"

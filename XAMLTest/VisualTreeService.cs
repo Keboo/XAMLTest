@@ -30,7 +30,6 @@ using Window = System.Windows.Window;
 
 namespace XamlTest
 {
-
     internal class VisualTreeService : Protocol.ProtocolBase
     {
         private static Guid Initialized { get; } = Guid.NewGuid();
@@ -38,6 +37,8 @@ namespace XamlTest
         private List<Assembly> LoadedAssemblies { get; } = new List<Assembly>();
 
         private Application Application { get; }
+
+        private Serializer Serializer { get; } = new Serializer();
 
         private IDictionary<string, WeakReference<DependencyObject>> KnownElements { get; }
             = new Dictionary<string, WeakReference<DependencyObject>>();
@@ -163,9 +164,8 @@ namespace XamlTest
                     if (DependencyPropertyHelper.TryGetDependencyProperty(request.Name, request.OwnerType,
                         out DependencyProperty? dependencyProperty))
                     {
-                        object value = element.GetValue(dependencyProperty);
-                        reply.PropertyType = dependencyProperty.PropertyType.AssemblyQualifiedName;
-                        SetValue(reply, value);
+                        object? value = element.GetValue(dependencyProperty);
+                        SetValue(reply, dependencyProperty.PropertyType, value);
                     }
                     else
                     {
@@ -182,10 +182,8 @@ namespace XamlTest
                         reply.ErrorMessages.Add($"Could not find property with name '{request.Name}' on element '{element.GetType().FullName}'");
                         return;
                     }
-
-                    object value = foundProperty.GetValue(element);
-                    reply.PropertyType = foundProperty.PropertyType.AssemblyQualifiedName;
-                    SetValue(reply, value);
+                    object? value = foundProperty.GetValue(element);
+                    SetValue(reply, foundProperty.PropertyType, value);
                 }
             });
             return reply;
@@ -271,6 +269,7 @@ namespace XamlTest
                 }
 
                 object? value;
+                Type propertyType;
                 if (!string.IsNullOrWhiteSpace(request.OwnerType))
                 {
                     if (DependencyPropertyHelper.TryGetDependencyProperty(request.Name, request.OwnerType,
@@ -283,7 +282,7 @@ namespace XamlTest
 
                         //Re-retrive the value in case the dependency property coalesced it
                         value = element.GetValue(dependencyProperty);
-                        reply.PropertyType = dependencyProperty.PropertyType.AssemblyQualifiedName;
+                        propertyType = dependencyProperty.PropertyType;
                     }
                     else
                     {
@@ -310,10 +309,10 @@ namespace XamlTest
 
                     //Re-retrive the value in case the dependency property coalesced it
                     value = foundProperty.GetValue(element);
-                    reply.PropertyType = foundProperty.PropertyType.AssemblyQualifiedName;
+                    propertyType = foundProperty.PropertyType;
                 }
 
-                SetValue(reply, value);
+                SetValue(reply, propertyType, value);
             });
             return reply;
 
@@ -327,11 +326,21 @@ namespace XamlTest
             }
         }
 
-        // assume that reply.PropertyType is already set.
-        private static void SetValue(PropertyResult reply, object value)
+        private void SetValue(PropertyResult reply, Type propertyType, object? value)
         {
-            reply.ValueType = value?.GetType().AssemblyQualifiedName ?? reply.PropertyType;
-            reply.Value = value?.ToString() ?? string.Empty;
+            reply.PropertyType = propertyType.AssemblyQualifiedName;
+            Type valueType = value?.GetType() ?? propertyType;
+            reply.ValueType = valueType.AssemblyQualifiedName;
+
+            string? serializedValue = Serializer.Serialize(valueType, value);
+            if (serializedValue is null)
+            {
+                reply.ErrorMessages.Add($"Failed to serialize object of type '{propertyType.AssemblyQualifiedName}'");
+            }
+            else
+            {
+                reply.Value = serializedValue;
+            }
         }
 
         public override async Task<ResourceResult> GetResource(ResourceQuery request, ServerCallContext context)
@@ -661,10 +670,37 @@ namespace XamlTest
             var reply = new ShutdownResponse();
             try
             {
-                Application.Dispatcher.InvokeAsync(() =>
+                _ = Application.Dispatcher.InvokeAsync(() =>
+                  {
+                      Application.Shutdown(request.ExitCode);
+                  });
+            }
+            catch (Exception e)
+            {
+                reply.ErrorMessages.Add(e.ToString());
+            }
+            return Task.FromResult(reply);
+        }
+
+        public override Task<SerializerResponse> RegisterSerializer(SerializerRequest request, ServerCallContext context)
+        {
+            var reply = new SerializerResponse();
+            try
+            {
+                if (string.IsNullOrWhiteSpace(request.SerializerType))
                 {
-                    Application.Shutdown(request.ExitCode);
-                });
+                    reply.ErrorMessages.Add("Serializer type must be specified");
+                    return Task.FromResult(reply);
+                }
+                if (Type.GetType(request.SerializerType) is { } serializerType &&
+                    Activator.CreateInstance(serializerType) is ISerializer serializer)
+                {
+                    Serializer.AddSerializer(serializer, request.InsertIndex);
+                }
+                else
+                {
+                    reply.ErrorMessages.Add($"Failed to resolve serializer type '{request.SerializerType}'");
+                }
             }
             catch (Exception e)
             {

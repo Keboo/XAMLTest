@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 
 namespace XamlTest.Internal
 {
-
     internal class App : IApp
     {
         public App(Protocol.ProtocolClient client, Action<string>? logMessage)
@@ -16,6 +15,7 @@ namespace XamlTest.Internal
 
         protected Protocol.ProtocolClient Client { get; }
         protected Action<string>? LogMessage { get; }
+        protected Serializer Serializer { get; } = new Serializer();
 
         public virtual void Dispose()
         {
@@ -95,7 +95,7 @@ namespace XamlTest.Internal
                 {
                     throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
                 }
-                return new Window(Client, reply.WindowsId, LogMessage);
+                return new Window(Client, reply.WindowsId, Serializer, LogMessage);
             }
             throw new Exception("Failed to get a reply");
         }
@@ -121,7 +121,7 @@ namespace XamlTest.Internal
                 {
                     throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
                 }
-                return new Window(Client, reply.WindowsId, LogMessage);
+                return new Window(Client, reply.WindowsId, Serializer, LogMessage);
             }
             throw new Exception("Failed to get a reply");
         }
@@ -132,7 +132,7 @@ namespace XamlTest.Internal
             if (await Client.GetMainWindowAsync(new GetWindowsQuery()) is { } reply &&
                 reply.WindowIds.Count == 1)
             {
-                return new Window(Client, reply.WindowIds[0], LogMessage);
+                return new Window(Client, reply.WindowIds[0], Serializer, LogMessage);
             }
             return null;
         }
@@ -152,7 +152,7 @@ namespace XamlTest.Internal
                 }
                 if (!string.IsNullOrWhiteSpace(reply.ValueType))
                 {
-                    return new Resource(reply.Key, reply.ValueType, reply.Value);
+                    return new Resource(reply.Key, reply.ValueType, reply.Value, Serializer);
                 }
                 throw new Exception($"Resource with key '{reply.Key}' not found");
             }
@@ -165,7 +165,7 @@ namespace XamlTest.Internal
             LogMessage?.Invoke($"{nameof(IApp)}.{nameof(GetWindows)}()");
             if (await Client.GetWindowsAsync(new GetWindowsQuery()) is { } reply)
             {
-                return reply.WindowIds.Select(x => new Window(Client, x, LogMessage)).ToList();
+                return reply.WindowIds.Select(x => new Window(Client, x, Serializer, LogMessage)).ToList();
             }
             return Array.Empty<IWindow>();
         }
@@ -184,5 +184,28 @@ namespace XamlTest.Internal
             }
             throw new Exception("Failed to receive a reply");
         }
+
+        public async Task RegisterSerializer<T>(int insertIndex = 0)
+            where T : ISerializer, new()
+        {
+            var request = new SerializerRequest
+            {
+                SerializerType = typeof(T).AssemblyQualifiedName,
+                InsertIndex = insertIndex
+            };
+            if (await Client.RegisterSerializerAsync(request) is { } reply)
+            {
+                if (reply.ErrorMessages.Any())
+                {
+                    throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
+                }
+                Serializer.AddSerializer(new T(), insertIndex);
+                return;
+            }
+            throw new Exception("Failed to receive a reply");
+        }
+
+        public Task<IReadOnlyList<ISerializer>> GetSerializers() 
+            => Task.FromResult<IReadOnlyList<ISerializer>>(Serializer.Serializers.AsReadOnly());
     }
 }

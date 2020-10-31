@@ -100,7 +100,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             Assert.AreEqual(0.1, Math.Round(newCoordinates.Top - initialCoordinates.Top, 5));
         }
 
-
         [TestMethod]
         public async Task OnGetEffectiveBackground_ReturnsFirstOpaqueColor()
         {
@@ -203,6 +202,22 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             IVisualElement element = await window.GetElement("MyGrid");
 
             Assert.AreEqual(Colors.Red, await element.GetBackgroundColor());
+        }
+
+        [TestMethod]
+        public async Task OnGetProperty_CanRetrieveBrush()
+        {
+            IWindow window = await App.CreateWindowWithContent(@"
+<Grid x:Name=""MyGrid"">
+    <Grid.Background>
+        <SolidColorBrush Color=""Red"" Opacity=""0.5"" />
+    </Grid.Background>
+</Grid>");
+            IVisualElement element = await window.GetElement("MyGrid");
+
+            var brush = await element.GetProperty<SolidColorBrush>("Background");
+            Assert.AreEqual(Colors.Red, brush.Color);
+            Assert.AreEqual(0.5, brush.Opacity);
         }
 
         [TestMethod]

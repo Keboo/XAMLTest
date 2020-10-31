@@ -7,6 +7,7 @@
     <UseWPF>true</UseWPF>
     <Nullable>enable</Nullable>
     <RootNamespace>XamlTest.Tests</RootNamespace>
+    <WarningsAsErrors>true</WarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>

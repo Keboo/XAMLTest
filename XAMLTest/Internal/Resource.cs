@@ -2,19 +2,14 @@
 
 namespace XamlTest.Internal
 {
-    internal class Resource : IResource
+    internal class Resource : BaseValue, IResource
     {
         public string Key { get; }
 
-        public string Value { get; }
-
-        public string ValueType { get; }
-
-        public Resource(string key, string valueType, string value)
+        public Resource(string key, string valueType, string value, Serializer serializer)
+            : base(valueType, value, serializer)
         {
             Key = key ?? throw new ArgumentNullException(nameof(key));
-            ValueType = valueType;
-            Value = value;
         }
     }
 }

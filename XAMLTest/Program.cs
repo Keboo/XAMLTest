@@ -1,7 +1,5 @@
 ﻿using System;
-using System.IO;
 using System.Windows;
-using System.Windows.Controls;
 
 namespace XamlTest
 {
@@ -12,7 +10,7 @@ namespace XamlTest
         {
             Application application = new CustomApplication
             {
-                ShutdownMode = ShutdownMode.OnExplicitShutdown
+                ShutdownMode = ShutdownMode.OnLastWindowClose
             };
             application.Run();
         }
