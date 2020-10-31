@@ -665,21 +665,21 @@ namespace XamlTest
             return reply;
         }
 
-        public override async Task<ShutdownResponse> Shutdown(ShutdownRequest request, ServerCallContext context)
+        public override Task<ShutdownResponse> Shutdown(ShutdownRequest request, ServerCallContext context)
         {
             var reply = new ShutdownResponse();
             try
             {
-                await Application.Dispatcher.InvokeAsync(() =>
-                {
-                    Application.Shutdown(request.ExitCode);
-                });
+                _ = Application.Dispatcher.InvokeAsync(() =>
+                  {
+                      Application.Shutdown(request.ExitCode);
+                  });
             }
             catch (Exception e)
             {
                 reply.ErrorMessages.Add(e.ToString());
             }
-            return reply;
+            return Task.FromResult(reply);
         }
 
         public override Task<SerializerResponse> RegisterSerializer(SerializerRequest request, ServerCallContext context)
