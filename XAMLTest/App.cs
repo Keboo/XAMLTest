@@ -9,20 +9,36 @@ namespace XamlTest
 {
     public static class App
     {
-        public static IApp StartRemote(string? path = null, Action<string>? logMessage = null)
+        public static IApp StartRemote<TApp>(
+            string? xamlTestPath = null,
+            Action<string>? logMessage = null)
         {
-            path ??= Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".exe");
-            path = Path.GetFullPath(path);
-            if (!File.Exists(path))
+            string location = typeof(TApp).Assembly.Location;
+            return StartRemote(location, xamlTestPath, logMessage);
+        }
+
+        public static IApp StartRemote(
+            string? remoteApp = null,
+            string ? xamlTestPath = null, 
+            Action<string>? logMessage = null)
+        {
+            xamlTestPath ??= Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".exe");
+            xamlTestPath = Path.GetFullPath(xamlTestPath);
+            if (!File.Exists(xamlTestPath))
             {
-                throw new Exception($"Could not find test app '{path}'");
+                throw new Exception($"Could not find test app '{xamlTestPath}'");
             }
 
-            var startInfo = new ProcessStartInfo(path)
+            var startInfo = new ProcessStartInfo(xamlTestPath)
             {
-                WorkingDirectory = Path.GetDirectoryName(path) + Path.DirectorySeparatorChar,
+                WorkingDirectory = Path.GetDirectoryName(xamlTestPath) + Path.DirectorySeparatorChar,
                 UseShellExecute = true
             };
+            if (!string.IsNullOrWhiteSpace(remoteApp))
+            {
+                startInfo.Arguments = remoteApp;
+            }
+
             Process process = Process.Start(startInfo);
             var channel = new NamedPipeChannel(".", Server.PipePrefix + process.Id);
             var client = new Protocol.ProtocolClient(channel);
