@@ -538,14 +538,22 @@ namespace XamlTest
             await Application.Dispatcher.InvokeAsync(async () =>
             {
                 Window mainWindow = Application.MainWindow;
+                Screen? screen;
                 if (mainWindow is null)
                 {
-                    reply.ErrorMessages.Add("Could not find main window");
+                    screen = Screen.PrimaryScreen;
+                }
+                else
+                {
+                    Point topLeft = mainWindow.PointToScreen(new Point(0, 0));
+                    screen = Screen.FromRect(new Rect(topLeft.X, topLeft.Y, mainWindow.ActualWidth, mainWindow.ActualHeight));
+                }
+
+                if (screen is null)
+                {
+                    reply.ErrorMessages.Add("Fail to find screen");
                     return;
                 }
-                Point topLeft = mainWindow.PointToScreen(new Point(0, 0));
-
-                var screen = Screen.FromRect(new Rect(topLeft.X, topLeft.Y, mainWindow.ActualWidth, mainWindow.ActualHeight));
 
                 using var screenBmp = new Bitmap((int)screen.Bounds.Width, (int)screen.Bounds.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
                 using var bmpGraphics = Graphics.FromImage(screenBmp);

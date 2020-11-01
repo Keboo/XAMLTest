@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\XAMLTest.TestApp\XAMLTest.TestApp.csproj" />
     <ProjectReference Include="..\XAMLTest\XAMLTest.csproj" />
   </ItemGroup>
 
