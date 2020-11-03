@@ -127,8 +127,24 @@ namespace XamlTest.Tests
             IResource resource = await app.GetResource("TestResource");
 
             Assert.AreEqual("TestResource", resource.Key);
-            Assert.AreEqual(Colors.Red.ToString(), resource.Value);
+            Assert.AreEqual(Colors.Red, resource.GetAs<Color>());
             Assert.AreEqual(typeof(Color).AssemblyQualifiedName, resource.ValueType);
+        }
+
+        [TestMethod]
+        public async Task OnGetResource_ReturnsColorForBrushResource()
+        {
+            await using var app = App.StartRemote();
+
+            await app.InitializeWithResources(
+                "<SolidColorBrush x:Key=\"TestResource\" Color=\"#FF0000\" />",
+                Assembly.GetExecutingAssembly().Location);
+
+            IResource resource = await app.GetResource("TestResource");
+
+            Assert.AreEqual("TestResource", resource.Key);
+            Color? color = resource.GetAs<Color?>();
+            Assert.AreEqual(Colors.Red, color);
         }
 
         [TestMethod]

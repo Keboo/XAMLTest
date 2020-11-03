@@ -358,8 +358,24 @@ namespace XamlTest
                         Application.TryFindResource(request.Key) :
                         element.TryFindResource(request.Key);
 
-                    reply.Value = resourceValue?.ToString() ?? "";
-                    reply.ValueType = resourceValue?.GetType().AssemblyQualifiedName ?? "";
+                    reply.Value = "";
+                    reply.ValueType = "";
+                    
+                    if (resourceValue?.GetType() is { } type)
+                    {
+                        string? serializedValue = Serializer.Serialize(type, resourceValue);
+                        if (serializedValue is null)
+                        {
+                            reply.ErrorMessages.Add($"Failed to serialize object of type '{type.AssemblyQualifiedName}'");
+                        }
+                        else
+                        {
+                            reply.ValueType = type.AssemblyQualifiedName;
+                            reply.Value = serializedValue;
+                        }
+                    }
+
+
                 }
                 catch (Exception ex)
                 {

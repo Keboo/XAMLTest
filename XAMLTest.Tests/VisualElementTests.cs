@@ -56,7 +56,7 @@ namespace XamlTest.Tests
             IResource resource = await element.GetResource("TestResource");
 
             Assert.AreEqual("TestResource", resource.Key);
-            Assert.AreEqual(Colors.Red.ToString(), resource.Value);
+            Assert.AreEqual(Colors.Red, resource.GetAs<Color>());
             Assert.AreEqual(typeof(Color).AssemblyQualifiedName, resource.ValueType);
         }
 
