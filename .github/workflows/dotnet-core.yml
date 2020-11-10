@@ -40,10 +40,18 @@ jobs:
           Write-Host "::set-env name=nugetVersion::${{ env.baseVersion }}-ci${{ github.run_number }}"
         }
     
-    - name: Setup .NET Core
+    - name: Setup .NET Core 3.1
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: "3.1.101"
+        source-url: https://nuget.pkg.github.com/keboo/index.json
+      env:
+        NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+    - name: Setup .NET 5.0
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: "5.0.100"
         source-url: https://nuget.pkg.github.com/keboo/index.json
       env:
         NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
@@ -69,7 +77,6 @@ jobs:
     
     - name: Minimize all windows
       run: (New-Object -ComObject "Shell.Application").minimizeall()
-
 
     - name: Test
       run: dotnet test --no-build --verbosity normal --configuration ${{ env.configuration }} --logger "console"
