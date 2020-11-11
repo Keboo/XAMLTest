@@ -40,7 +40,10 @@ namespace XamlTest
             }
 
             Process process = Process.Start(startInfo);
-            var channel = new NamedPipeChannel(".", Server.PipePrefix + process.Id);
+            var channel = new NamedPipeChannel(".", Server.PipePrefix + process.Id, new NamedPipeChannelOptions
+            {
+                ConnectionTimeout = 1000
+            });
             var client = new Protocol.ProtocolClient(channel);
 
             return new ManagedApp(process, client, logMessage);

@@ -68,7 +68,7 @@ namespace XamlTest.Tests
             string directory;
             var assembly = typeof(TestRecorderTests).Assembly;
             var assemblyName = assembly.GetName().Name;
-            int assemblyNameIndex = callerFilePath.IndexOf(assemblyName!);
+            int assemblyNameIndex = callerFilePath.IndexOf(assemblyName!, StringComparison.Ordinal);
             if (assemblyNameIndex >= 0)
             {
                 directory = callerFilePath[(assemblyNameIndex + assemblyName!.Length + 1)..];
