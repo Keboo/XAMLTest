@@ -2,12 +2,9 @@
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.1;net5.0-windows</TargetFrameworks>
-    <LangVersion>8.0</LangVersion>
     <IsPackable>false</IsPackable>
     <UseWPF>true</UseWPF>
-    <Nullable>enable</Nullable>
     <RootNamespace>XamlTest.Tests</RootNamespace>
-    <WarningsAsErrors>true</WarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,7 +16,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <!--<PackageReference Include="XAMLTest" Version="0.0.1" />-->
   </ItemGroup>
 
   <ItemGroup>

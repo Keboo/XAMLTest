@@ -39,14 +39,17 @@ namespace XamlTest
                 startInfo.Arguments = remoteApp;
             }
 
-            Process process = Process.Start(startInfo);
-            var channel = new NamedPipeChannel(".", Server.PipePrefix + process.Id, new NamedPipeChannelOptions
+            if (Process.Start(startInfo) is Process process)
             {
-                ConnectionTimeout = 1000
-            });
-            var client = new Protocol.ProtocolClient(channel);
+                var channel = new NamedPipeChannel(".", Server.PipePrefix + process.Id, new NamedPipeChannelOptions
+                {
+                    ConnectionTimeout = 1000
+                });
+                var client = new Protocol.ProtocolClient(channel);
 
-            return new ManagedApp(process, client, logMessage);
+                return new ManagedApp(process, client, logMessage);
+            }
+            throw new Exception("Failed t ");
         }
     }
 }

@@ -4,23 +4,9 @@
     <OutputType>WinExe</OutputType>
     <TargetFrameworks>netcoreapp3.1;net5.0-windows</TargetFrameworks>
     <UseWPF>true</UseWPF>
-    <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>XamlTest</RootNamespace>
     <EmbedUntrackedSource>true</EmbedUntrackedSource>
-    <WarningsAsErrors>true</WarningsAsErrors>
-    <LangVersion>9.0</LangVersion>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <Title>XAML UI Testing Library</Title>
-    <Description>A library that allows unit tests to be written again WPF XAML.</Description>
-    <Copyright>Copyright 2020</Copyright>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <IncludeSymbols>True</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <RepositoryUrl>https://github.com/Keboo/XamlTest</RepositoryUrl>
-    <Authors>Keboo</Authors>
   </PropertyGroup>
   
   <ItemGroup>
@@ -33,11 +19,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="PInvoke.User32" Version="0.6.49" />
-    <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
-    <ProjectReference Include="..\XAMLTest.Generator\XAMLTest.Generator.csproj" 
-                      OutputItemType="Analyzer"
-                      ReferenceOutputAssembly="false" />
+    <PackageReference Include="PInvoke.User32" Version="0.7.78" />
+    <PackageReference Include="System.Drawing.Common" Version="5.0.0" />
     
     <Protobuf Include="VTspec.proto" GrpcServices="Both" />
   </ItemGroup>
@@ -56,14 +39,14 @@
   <Target Name="IncludeExeInPackage">
     <ItemGroup>
       <TfmSpecificPackageFile Include="$(TargetDir)$(TargetName).exe">
-        <PackagePath>build</PackagePath>
+        <PackagePath>build\$(TargetFramework)</PackagePath>
       </TfmSpecificPackageFile>
       <TfmSpecificPackageFile Include="$(TargetDir)$(TargetName).runtimeconfig.json">
-        <PackagePath>build</PackagePath>
+        <PackagePath>build\$(TargetFramework)</PackagePath>
       </TfmSpecificPackageFile>
 
       <TfmSpecificPackageFile Include="$(ProjectDir)Build\*.targets">
-        <PackagePath>build</PackagePath>
+        <PackagePath>build\$(TargetFramework)</PackagePath>
       </TfmSpecificPackageFile>
     </ItemGroup>
   </Target>

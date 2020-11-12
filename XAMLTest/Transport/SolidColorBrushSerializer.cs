@@ -15,17 +15,27 @@ namespace XamlTest.Transport
         {
             if (type == typeof(SolidColorBrush))
             {
-                if (string.IsNullOrWhiteSpace(value)) return null;
-                return (SolidColorBrush)JsonSerializer.Deserialize<BrushData>(value);
+                if (!string.IsNullOrWhiteSpace(value) &&
+                    JsonSerializer.Deserialize<BrushData>(value) is { } brushData)
+                {
+                    return (SolidColorBrush)brushData;
+                }
             }
             else if (type == typeof(Color))
             {
-                return (Color)JsonSerializer.Deserialize<BrushData>(value);
+                if (JsonSerializer.Deserialize<BrushData>(value) is { } brushData)
+                {
+                    return (Color)brushData;
+                }
+                return default(Color);
             }
             else if (type == typeof(Color?))
             {
-                if (string.IsNullOrWhiteSpace(value)) return null;
-                return (Color)JsonSerializer.Deserialize<BrushData>(value);
+                if (!string.IsNullOrWhiteSpace(value) &&
+                    JsonSerializer.Deserialize<BrushData>(value) is { } brushData)
+                {
+                    return (Color)brushData;
+                }
             }
             return null;
         }
@@ -45,11 +55,11 @@ namespace XamlTest.Transport
             public Color Color { get; set; }
             public double Opacity { get; set; }
 
-            public static implicit operator SolidColorBrush(BrushData data) 
+            public static implicit operator SolidColorBrush(BrushData data)
                 => new SolidColorBrush(data.Color)
-                   {
-                       Opacity = data.Opacity
-                   };
+                {
+                    Opacity = data.Opacity
+                };
 
             public static implicit operator Color(BrushData data)
                 => data.Color;

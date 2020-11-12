@@ -828,7 +828,7 @@ namespace XamlTest
                 return rv;
             }
 
-            static object EvaluateNameQuery(DependencyObject root, string name)
+            static object? EvaluateNameQuery(DependencyObject root, string name)
             {
                 return Decendants<FrameworkElement>(root).FirstOrDefault(x => x.Name == name);
             }

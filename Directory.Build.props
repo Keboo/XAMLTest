@@ -1,0 +1,20 @@
+<Project>
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <WarningsAsErrors>true</WarningsAsErrors>
+	<AnalysisLevel>5</AnalysisLevel>
+	<LangVersion>9.0</LangVersion>
+	<TargetPlatformMoniker>windows</TargetPlatformMoniker>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Title>XAML UI Testing Library</Title>
+    <Description>A library that allows unit tests to be written again WPF XAML.</Description>
+    <Copyright>Copyright 2020</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <IncludeSymbols>True</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <RepositoryUrl>https://github.com/Keboo/XamlTest</RepositoryUrl>
+    <Authors>Keboo</Authors>
+  </PropertyGroup>
+</Project>
