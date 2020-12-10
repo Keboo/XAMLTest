@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -344,7 +345,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             IWindow window = await App.CreateWindowWithContent(
                 @"<TextBlock x:Name=""MyTextblock"" />");
             IVisualElement element = await window.GetElement("MyTextblock");
-            
+
             Assert.AreEqual(2, await element.SetProperty(Grid.RowProperty, 2));
         }
 
@@ -488,6 +489,38 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             await element.SendInput($"First Line{Key.Enter}Second Line");
 
             Assert.AreEqual($"First Line{Environment.NewLine}Second Line", await element.GetText());
+
+            recorder.Success();
+        }
+
+        [TestMethod]
+        public async Task OnRegisterForEvent_EventsAreRaised()
+        {
+            // Arrange
+            await using var recorder = new TestRecorder(App);
+
+            IWindow window = await App.CreateWindowWithContent(@"
+<Grid>
+  <Button x:Name=""MyButton"" Content=""Click Event"" VerticalAlignment=""Center"" HorizontalAlignment=""Center"" />
+</Grid>");
+            IVisualElement element = await window.GetElement("MyButton");
+            await using IEventRegistration clickEvent = await element.RegisterForEvent(nameof(Button.Click));
+
+            // Act
+            await element.Click();
+            await Task.Delay(500);
+
+            //Assert
+            var invocations = await Wait.For(async () =>
+            {
+                var i = await clickEvent.GetInvocations();    
+                Assert.AreEqual(1, i.Count);
+                return i;
+            });
+
+            Assert.AreEqual(2, invocations[0].Parameters.Count);
+            Assert.AreEqual($"{typeof(Button).FullName}: Click Event", invocations[0].Parameters[0].ToString());
+            Assert.AreEqual(typeof(RoutedEventArgs).FullName, invocations[0].Parameters[1].ToString());
 
             recorder.Success();
         }

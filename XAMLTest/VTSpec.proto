@@ -51,6 +51,15 @@ service Protocol {
 
   //Register a new serializer
   rpc RegisterSerializer (SerializerRequest) returns (SerializerResponse);
+
+  //Register for an event
+  rpc RegisterForEvent(EventRegistrationRequest) returns (EventRegistrationResponse);
+
+  //Un-register for an event
+  rpc UnregisterForEvent(EventUnregisterRequest) returns (EventUnregisterResponse);
+
+  //Get invocations for an event
+  rpc GetEventInvocations(EventInvocationsQuery) returns (EventInvocationsResponse);
 }
 
 message GetWindowsQuery {
@@ -201,4 +210,36 @@ message SerializerRequest {
 
 message SerializerResponse {
   repeated string errorMessages = 1;
+}
+
+message EventRegistrationRequest {
+  string elementId = 1;
+  string eventName = 2;
+}
+
+message EventRegistrationResponse {
+  repeated string errorMessages = 1;
+  string eventId = 2;
+}
+
+message EventUnregisterRequest {
+  string eventId = 1;
+}
+
+message EventUnregisterResponse {
+  repeated string errorMessages = 1;
+}
+
+message EventInvocationsQuery {
+  string eventId = 1;
+}
+
+message EventInvocation {
+  repeated string parameters = 1;
+}
+
+message EventInvocationsResponse {
+  repeated string errorMessages = 1;
+  string eventId = 2;
+  repeated EventInvocation eventInvocations = 3;
 }

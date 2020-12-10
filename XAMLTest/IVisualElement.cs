@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
@@ -16,6 +17,9 @@ namespace XamlTest
 
         Task<Color> GetEffectiveBackground(IVisualElement? toElement);
         Task<Rect> GetCoordinates();
+
+        Task<IEventRegistration> RegisterForEvent(string name);
+        Task UnregisterEvent(IEventRegistration eventRegistration);
 
         Task MoveKeyboardFocus();
 

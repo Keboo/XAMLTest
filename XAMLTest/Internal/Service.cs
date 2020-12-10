@@ -17,7 +17,7 @@ namespace XamlTest.Internal
             }
 
             Server = new NamedPipeServer(XamlTest.Server.PipePrefix + id);
-
+            
             Protocol.BindService(Server.ServiceBinder, new VisualTreeService(application));
             Server.Start();
         }

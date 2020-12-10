@@ -225,6 +225,60 @@ namespace XamlTest.Internal
             throw new Exception("Failed to receive a reply");
         }
 
+        public async Task<IEventRegistration> RegisterForEvent(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            EventRegistrationRequest request = new()
+            {
+                ElementId = Id,
+                EventName = name
+            };
+
+            LogMessage?.Invoke($"{nameof(RegisterForEvent)}({name})");
+            if (await Client.RegisterForEventAsync(request) is { } reply)
+            {
+                if (reply.ErrorMessages.Any())
+                {
+                    throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
+                }
+                return new EventRegistration(Client, reply.EventId, name, Serializer, LogMessage);
+            }
+
+            throw new Exception("Failed to receive a reply");
+        }
+        public async Task UnregisterEvent(IEventRegistration eventRegistration)
+        {
+            if (eventRegistration is null)
+            {
+                throw new ArgumentNullException(nameof(eventRegistration));
+            }
+            if (eventRegistration is not EventRegistration registration)
+            {
+                throw new ArgumentException($"Registration is not an {nameof(EventRegistration)}", nameof(eventRegistration));
+            }
+
+            EventUnregisterRequest request = new()
+            {
+                EventId = registration.EventId
+            };
+
+            LogMessage?.Invoke($"{nameof(UnregisterEvent)}({eventRegistration})");
+            if (await Client.UnregisterForEventAsync(request) is { } reply)
+            {
+                if (reply.ErrorMessages.Any())
+                {
+                    throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
+                }
+                return;
+            }
+
+            throw new Exception("Failed to receive a reply");
+        }
+
         protected virtual ElementQuery GetFindElementQuery(string query)
             => new ElementQuery
             {
@@ -248,6 +302,6 @@ namespace XamlTest.Internal
 
         public override int GetHashCode()
             => Id.GetHashCode();
-
+        
     }
 }
