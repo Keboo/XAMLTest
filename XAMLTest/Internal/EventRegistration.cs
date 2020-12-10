@@ -7,8 +7,6 @@ namespace XamlTest.Internal
 {
     internal class EventRegistration : IEventRegistration
     {
-        private bool _DisposedValue;
-
         public Protocol.ProtocolClient Client { get; }
         public string EventId { get; }
         public string EventName { get; }

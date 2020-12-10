@@ -78,13 +78,14 @@ namespace XamlTest.Event
                 throw new ArgumentNullException(nameof(eventInfo));
             }
 
-            Type tDelegate = eventInfo.EventHandlerType;
+            Type delegateType = eventInfo.EventHandlerType ??
+                throw new InvalidOperationException($"Could not determine Event Handler Type for event '{eventInfo.Name}'");
             
-            Type returnType = GetDelegateReturnType(tDelegate);
+            Type returnType = GetDelegateReturnType(delegateType);
             if (returnType != typeof(void))
                 throw new Exception("Delegate has a return type.");
 
-            var delegateParameterTypes = GetDelegateParameterTypes(tDelegate);
+            var delegateParameterTypes = GetDelegateParameterTypes(delegateType);
 
             DynamicMethod handler =
                 new DynamicMethod("",
@@ -98,8 +99,9 @@ namespace XamlTest.Event
             // return type), and returns.
             //
             ILGenerator ilgen = handler.GetILGenerator();
-            var method = typeof(EventRegistrar)
-                .GetMethod(nameof(EventRegistrar.AddInvocation));
+            MethodInfo method = typeof(EventRegistrar)
+                .GetMethod(nameof(EventRegistrar.AddInvocation))
+                ?? throw new InvalidOperationException("Failed to find method");
             int foo = 0;
             string bar = "";
             object[] array = new object[] { foo, bar };
@@ -126,8 +128,9 @@ namespace XamlTest.Event
             // method. Use the "add" accessor to add the delegate to
             // the invocation list for the event.
             //
-            MethodInfo addHandler = eventInfo.GetAddMethod();
-            Delegate dEmitted = handler.CreateDelegate(tDelegate);
+            MethodInfo addHandler = eventInfo.GetAddMethod() ?? 
+                throw new InvalidOperationException($"Could not find add method for event '{eventInfo.Name}'");
+            Delegate dEmitted = handler.CreateDelegate(delegateType);
             addHandler.Invoke(source, new object[] { dEmitted });
 
             lock(RegisteredEvents)
@@ -136,14 +139,13 @@ namespace XamlTest.Event
             }
         }
 
-        private static Type[] GetDelegateParameterTypes(Type d)
+        private static Type[] GetDelegateParameterTypes(Type delegateType)
         {
-            if (d.BaseType != typeof(MulticastDelegate))
+            if (delegateType.BaseType != typeof(MulticastDelegate))
                 throw new Exception("Not a delegate.");
 
-            MethodInfo invoke = d.GetMethod("Invoke");
-            if (invoke is null)
-                throw new Exception("Not a delegate.");
+            MethodInfo invoke = delegateType.GetMethod("Invoke")
+                ?? throw new Exception("Could not find delegate Invoke method");
 
             ParameterInfo[] parameters = invoke.GetParameters();
             Type[] typeParameters = new Type[parameters.Length];
@@ -154,14 +156,14 @@ namespace XamlTest.Event
             return typeParameters;
         }
 
-        private static Type GetDelegateReturnType(Type d)
+        private static Type GetDelegateReturnType(Type delegateType)
         {
-            if (d.BaseType != typeof(MulticastDelegate))
+            if (delegateType.BaseType != typeof(MulticastDelegate))
                 throw new Exception("Not a delegate.");
 
-            MethodInfo? invoke = d.GetMethod(nameof(Action.Invoke));
+            MethodInfo? invoke = delegateType.GetMethod(nameof(Action.Invoke));
             if (invoke is null)
-                throw new Exception($"Could not find {nameof(Action.Invoke)} method on delegate {d.FullName}");
+                throw new Exception($"Could not find {nameof(Action.Invoke)} method on delegate {delegateType.FullName}");
 
             return invoke.ReturnType;
         }
