@@ -17,7 +17,7 @@ defaults:
 
 env:
   configuration: Release
-  baseVersion: 0.0.8
+  baseVersion: 0.0.10
   preRelease: true
 
 jobs:
@@ -32,12 +32,12 @@ jobs:
       run: |
         if ("${{ github.ref }}".startsWith("refs/tags/v")) {
           $tagVersion = "${{ github.ref }}".substring(11)
-          Write-Host "::set-env name=buildVersion::$tagVersion.${{ github.run_number }}"
-          Write-Host "::set-env name=nugetVersion::$tagVersion"
-          Write-Host "::set-env name=preRelease::false"
+          echo "buildVersion=$tagVersion.${{ github.run_number }}" >> $GITHUB_ENV
+          echo "nugetVersion=$tagVersion" >> $GITHUB_ENV
+          echo "preRelease=false" >> $GITHUB_ENV
         } else {
-          Write-Host "::set-env name=buildVersion::${{ env.baseVersion }}.${{ github.run_number }}"
-          Write-Host "::set-env name=nugetVersion::${{ env.baseVersion }}-ci${{ github.run_number }}"
+          echo "buildVersion=${{ env.baseVersion }}.${{ github.run_number }}" >> $GITHUB_ENV
+          echo "nugetVersion=${{ env.baseVersion }}-ci${{ github.run_number }}" >> $GITHUB_ENV
         }
     
     - name: Setup .NET Core 3.1
