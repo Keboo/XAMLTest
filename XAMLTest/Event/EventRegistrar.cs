@@ -87,19 +87,10 @@ namespace XamlTest.Event
 
             var delegateParameterTypes = GetDelegateParameterTypes(delegateType);
 
-            DynamicMethod handler =
-                new DynamicMethod("",
-                                  null,
-                                  delegateParameterTypes,
-                                  typeof(EventRegistrar));
+            DynamicMethod handler = new ("", null, delegateParameterTypes, typeof(EventRegistrar));
 
-            // Generate a method body. This method loads a string, calls
-            // the Show method overload that takes a string, pops the
-            // return value off the stack (because the handler has no
-            // return type), and returns.
-            //
             ILGenerator ilgen = handler.GetILGenerator();
-            MethodInfo method = typeof(EventRegistrar)
+            MethodInfo addInvocationMethod = typeof(EventRegistrar)
                 .GetMethod(nameof(EventRegistrar.AddInvocation))
                 ?? throw new InvalidOperationException("Failed to find method");
             int foo = 0;
@@ -121,13 +112,9 @@ namespace XamlTest.Event
                 }
                 ilgen.Emit(OpCodes.Stelem_Ref);
             }
-            ilgen.Emit(OpCodes.Call, method);
+            ilgen.Emit(OpCodes.Call, addInvocationMethod);
             ilgen.Emit(OpCodes.Ret);
 
-            // Complete the dynamic method by calling its CreateDelegate
-            // method. Use the "add" accessor to add the delegate to
-            // the invocation list for the event.
-            //
             MethodInfo addHandler = eventInfo.GetAddMethod() ?? 
                 throw new InvalidOperationException($"Could not find add method for event '{eventInfo.Name}'");
             Delegate dEmitted = handler.CreateDelegate(delegateType);
