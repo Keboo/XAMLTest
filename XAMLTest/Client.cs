@@ -19,8 +19,8 @@ namespace XamlTest
                 throw new ArgumentNullException(nameof(process));
             }
 
-            var channel = new NamedPipeChannel(".", Server.PipePrefix + process.Id);
-            var client = new Protocol.ProtocolClient(channel);
+            NamedPipeChannel channel = new(".", Server.PipePrefix + process.Id);
+            Protocol.ProtocolClient client = new(channel);
 
             return new Internal.App(client, logMessage);
         }

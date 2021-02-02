@@ -11,7 +11,7 @@ namespace XamlTest
         internal static IService Start(Application? app = null)
         {
             var process = Process.GetCurrentProcess();
-            var service = new Service(process.Id.ToString(), app ?? Application.Current);
+            Service service = new(process.Id.ToString(), app ?? Application.Current);
             return service;
         }
     }

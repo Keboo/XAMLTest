@@ -19,7 +19,7 @@ namespace XamlTest.Internal
 
         public virtual void Dispose()
         {
-            var request = new ShutdownRequest
+            ShutdownRequest request = new()
             {
                 ExitCode = 0
             };
@@ -38,7 +38,7 @@ namespace XamlTest.Internal
 
         public virtual async ValueTask DisposeAsync()
         {
-            var request = new ShutdownRequest
+            ShutdownRequest request = new()
             {
                 ExitCode = 0
             };
@@ -56,7 +56,7 @@ namespace XamlTest.Internal
 
         public async Task Initialize(string applicationResourceXaml, params string[] assemblies)
         {
-            var request = new ApplicationConfiguration
+            ApplicationConfiguration request = new()
             {
                 ApplicationResourceXaml = applicationResourceXaml
             };
@@ -76,7 +76,7 @@ namespace XamlTest.Internal
 
         public async Task<IWindow> CreateWindow(string windowXaml)
         {
-            var request = new WindowConfiguration()
+            WindowConfiguration request = new()
             {
                 Xaml = windowXaml,
                 FitToScreen = true
@@ -102,7 +102,7 @@ namespace XamlTest.Internal
 
         public async Task<IWindow> CreateWindow<TWindow>() where TWindow : System.Windows.Window
         {
-            var request = new WindowConfiguration()
+            WindowConfiguration request = new()
             {
                 WindowType = typeof(TWindow).AssemblyQualifiedName,
                 FitToScreen = true
@@ -139,7 +139,7 @@ namespace XamlTest.Internal
 
         public async Task<IResource> GetResource(string key)
         {
-            var query = new ResourceQuery
+            ResourceQuery query = new()
             {
                 Key = key
             };
@@ -172,7 +172,7 @@ namespace XamlTest.Internal
 
         public async Task<IImage> GetScreenshot()
         {
-            var imageQuery = new ImageQuery();
+            ImageQuery imageQuery = new();
             LogMessage?.Invoke($"{nameof(GetScreenshot)}()");
             if (await Client.GetScreenshotAsync(imageQuery) is { } reply)
             {
@@ -188,7 +188,7 @@ namespace XamlTest.Internal
         public async Task RegisterSerializer<T>(int insertIndex = 0)
             where T : ISerializer, new()
         {
-            var request = new SerializerRequest
+            SerializerRequest request = new()
             {
                 SerializerType = typeof(T).AssemblyQualifiedName,
                 InsertIndex = insertIndex

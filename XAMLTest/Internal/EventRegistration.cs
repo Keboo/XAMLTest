@@ -28,7 +28,7 @@ namespace XamlTest.Internal
 
         public async Task<IList<IEventInvocation>> GetInvocations()
         {
-            var eventInvocationQuery = new EventInvocationsQuery
+            EventInvocationsQuery eventInvocationQuery = new()
             {
                 EventId = EventId
             };
@@ -51,7 +51,7 @@ namespace XamlTest.Internal
 
         public async ValueTask DisposeAsync()
         {
-            var eventInvocationQuery = new EventUnregisterRequest
+            EventUnregisterRequest eventInvocationQuery = new()
             {
                 EventId = EventId
             };

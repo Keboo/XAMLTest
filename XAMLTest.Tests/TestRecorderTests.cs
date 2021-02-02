@@ -34,7 +34,7 @@ namespace XamlTest.Tests
         public async Task SaveScreenshot_SavesImage()
         {
             var app = new Simulators.App();
-            var testRecorder = new TestRecorder(app);
+            TestRecorder testRecorder = new(app);
 
             await testRecorder.SaveScreenshot();
 
@@ -48,7 +48,7 @@ namespace XamlTest.Tests
         public async Task SaveScreenshot_WithSuffix_SavesImage()
         {
             var app = new Simulators.App();
-            var testRecorder = new TestRecorder(app);
+            TestRecorder testRecorder = new(app);
 
             await testRecorder.SaveScreenshot("MySuffix");
 

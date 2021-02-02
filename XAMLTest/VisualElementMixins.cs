@@ -129,6 +129,6 @@ namespace XamlTest
         }
 
         public static async Task<string> SetText(this IVisualElement element, string text)
-            => await element.SetProperty<string>("Text", text);
+            => await element.SetProperty("Text", text);
     }
 }

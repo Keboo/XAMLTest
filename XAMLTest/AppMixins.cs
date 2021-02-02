@@ -35,6 +35,7 @@ xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
             string title = "Test Window",
             string background = "White",
             WindowStartupLocation startupLocation = WindowStartupLocation.CenterScreen,
+            string windowAttributes = "",
             params string[] additionalXmlNamespaces)
         {
             if (app is null)
@@ -57,7 +58,8 @@ Height=""{windowSize?.Height ?? 800}""
 Width=""{windowSize?.Width ?? 1100}""
 Title=""{title}""
 Background=""{background}""
-WindowStartupLocation=""{startupLocation}"">
+WindowStartupLocation=""{startupLocation}""
+{windowAttributes}>
 {xamlContent}
 </Window>";
 

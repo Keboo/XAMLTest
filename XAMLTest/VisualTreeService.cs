@@ -57,7 +57,7 @@ namespace XamlTest
                     .ToList();
             });
 
-            var reply = new GetWindowsResult();
+            GetWindowsResult reply = new();
             reply.WindowIds.AddRange(ids);
             return reply;
         }
@@ -77,7 +77,7 @@ namespace XamlTest
                 }
             });
 
-            var reply = new GetWindowsResult();
+            GetWindowsResult reply = new();
             if (!string.IsNullOrWhiteSpace(id))
             {
                 reply.WindowIds.Add(id);
@@ -87,7 +87,9 @@ namespace XamlTest
 
         public override async Task<ElementResult> GetElement(ElementQuery request, ServerCallContext context)
         {
-            var reply = new ElementResult();
+            ElementResult reply = new();
+            Debugger.Launch();
+
             await Application.Dispatcher.InvokeAsync(() =>
             {
                 try
@@ -150,7 +152,7 @@ namespace XamlTest
 
         public override async Task<PropertyResult> GetProperty(PropertyQuery request, ServerCallContext context)
         {
-            var reply = new PropertyResult();
+            PropertyResult reply = new();
             await Application.Dispatcher.InvokeAsync(() =>
             {
                 DependencyObject? element = GetCachedElement<DependencyObject>(request.ElementId);
@@ -192,7 +194,7 @@ namespace XamlTest
 
         public override async Task<EffectiveBackgroundResult> GetEffectiveBackground(EffectiveBackgroundQuery request, ServerCallContext context)
         {
-            var reply = new EffectiveBackgroundResult();
+            EffectiveBackgroundResult reply = new();
             await Application.Dispatcher.InvokeAsync(() =>
             {
                 DependencyObject? element = GetCachedElement<DependencyObject>(request.ElementId);
@@ -259,7 +261,7 @@ namespace XamlTest
 
         public override async Task<PropertyResult> SetProperty(SetPropertyRequest request, ServerCallContext context)
         {
-            var reply = new PropertyResult();
+            PropertyResult reply = new();
             await Application.Dispatcher.InvokeAsync(() =>
             {
                 DependencyObject? element = GetCachedElement<DependencyObject>(request.ElementId);
@@ -389,7 +391,7 @@ namespace XamlTest
 
         public override async Task<CoordinatesResult> GetCoordinates(CoordinatesQuery request, ServerCallContext context)
         {
-            var reply = new CoordinatesResult();
+            CoordinatesResult reply = new();
             await Application.Dispatcher.InvokeAsync(() =>
             {
                 DependencyObject? dependencyObject = GetCachedElement<DependencyObject>(request.ElementId);
@@ -421,7 +423,7 @@ namespace XamlTest
 
         public override async Task<ApplicationResult> InitializeApplication(ApplicationConfiguration request, ServerCallContext context)
         {
-            var reply = new ApplicationResult();
+            ApplicationResult reply = new();
             await Application.Dispatcher.InvokeAsync(() =>
             {
                 if (Application.Resources[Initialized] is Guid value &&
@@ -480,7 +482,7 @@ namespace XamlTest
 
         public override async Task<WindowResult> CreateWindow(WindowConfiguration request, ServerCallContext context)
         {
-            var reply = new WindowResult();
+            WindowResult reply = new();
             await Application.Dispatcher.InvokeAsync(() =>
             {
                 Window? window = null;
@@ -513,7 +515,7 @@ namespace XamlTest
 
                     if (request.FitToScreen)
                     {
-                        var windowRect = new Rect(window.Left, window.Top, window.Width, window.Height);
+                        Rect windowRect = new(window.Left, window.Top, window.Width, window.Height);
                         Screen screen = Screen.FromRect(windowRect);
                         window.LogMessage($"Fitting window {windowRect} to screen {screen.WorkingArea}");
                         if (!screen.WorkingArea.Contains(windowRect))
@@ -551,7 +553,7 @@ namespace XamlTest
 
         public override async Task<ImageResult> GetScreenshot(ImageQuery request, ServerCallContext context)
         {
-            var reply = new ImageResult();
+            ImageResult reply = new();
             await Application.Dispatcher.InvokeAsync(async () =>
             {
                 Window mainWindow = Application.MainWindow;
@@ -572,10 +574,10 @@ namespace XamlTest
                     return;
                 }
 
-                using var screenBmp = new Bitmap((int)screen.Bounds.Width, (int)screen.Bounds.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                using Bitmap screenBmp = new((int)screen.Bounds.Width, (int)screen.Bounds.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
                 using var bmpGraphics = Graphics.FromImage(screenBmp);
                 bmpGraphics.CopyFromScreen(0, 0, 0, 0, new System.Drawing.Size((int)screen.Bounds.Width, (int)screen.Bounds.Height));
-                using var ms = new MemoryStream();
+                using MemoryStream ms = new();
                 screenBmp.Save(ms, ImageFormat.Bmp);
                 ms.Position = 0;
                 reply.Data = await ByteString.FromStreamAsync(ms);
@@ -585,7 +587,7 @@ namespace XamlTest
 
         public override async Task<KeyboardFocusResult> MoveKeyboardFocus(KeyboardFocusRequest request, ServerCallContext context)
         {
-            var reply = new KeyboardFocusResult();
+            KeyboardFocusResult reply = new();
             await Application.Dispatcher.InvokeAsync(() =>
             {
                 if (!(GetCachedElement<DependencyObject>(request.ElementId) is IInputElement element))
@@ -621,7 +623,7 @@ namespace XamlTest
 
         public override async Task<InputResponse> SendInput(InputRequest request, ServerCallContext context)
         {
-            var reply = new InputResponse();
+            InputResponse reply = new();
             IntPtr windowHandle = IntPtr.Zero;
             await Application.Dispatcher.InvokeAsync(() =>
             {
@@ -709,7 +711,7 @@ namespace XamlTest
 
         public override Task<SerializerResponse> RegisterSerializer(SerializerRequest request, ServerCallContext context)
         {
-            var reply = new SerializerResponse();
+            SerializerResponse reply = new();
             try
             {
                 if (string.IsNullOrWhiteSpace(request.SerializerType))
@@ -782,9 +784,9 @@ namespace XamlTest
             {
                 reply.EventInvocations.AddRange(
                     invocations.Select(
-                        array => 
+                        array =>
                         {
-                            var rv = new EventInvocation();
+                            EventInvocation rv = new();
                             rv.Parameters.AddRange(array.Select(item => GetItemString(item)));
                             return rv;
                         }));
@@ -807,7 +809,7 @@ namespace XamlTest
             Assembly? found = LoadedAssemblies.FirstOrDefault(x => x.GetName().FullName == args.Name);
             if (found is { }) return found;
 
-            var assemblyName = new AssemblyName(args.Name!);
+            AssemblyName assemblyName = new(args.Name!);
             string likelyAssemblyPath = Path.GetFullPath($"{assemblyName.Name}.dll");
             try
             {
@@ -827,7 +829,7 @@ namespace XamlTest
         private static object? EvaluateQuery(DependencyObject root, string query)
         {
             object? result = null;
-            List<string> errorParts = new List<string>();
+            List<string> errorParts = new();
             DependencyObject? current = root;
 
             while (query.Length > 0)
@@ -848,6 +850,9 @@ namespace XamlTest
                     case QueryPartType.ChildType:
                         result = EvaluateChildTypeQuery(current, value);
                         break;
+                    case QueryPartType.PropertyExpression:
+                        result = EvaluatePropertyExpressionQuery(current, value);
+                        break;
                 }
                 current = result as DependencyObject;
             }
@@ -856,7 +861,7 @@ namespace XamlTest
 
             static QueryPartType GetNextQueryType(ref string query, out string value)
             {
-                var regex = new Regex(@"(?<=.)[\.\/\~]");
+                Regex regex = new(@"(?<=.)[\.\/\~\[\]]");
 
                 Match match = regex.Match(query);
 
@@ -872,7 +877,12 @@ namespace XamlTest
                 }
 
                 QueryPartType rv;
-                if (currentQuery.StartsWith('.'))
+                if (currentQuery.StartsWith('[') && currentQuery.EndsWith(']'))
+                {
+                    value = currentQuery[1..^1];
+                    rv = QueryPartType.PropertyExpression;
+                }
+                else if (currentQuery.StartsWith('.'))
                 {
                     value = currentQuery[1..];
                     rv = QueryPartType.Property;
@@ -914,7 +924,7 @@ namespace XamlTest
 
             static object EvaluateChildTypeQuery(DependencyObject root, string childTypeQuery)
             {
-                var indexerRegex = new Regex(@"\[(?<Index>\d+)]$");
+                Regex indexerRegex = new(@"\[(?<Index>\d+)]$");
 
                 int index = 0;
                 Match match = indexerRegex.Match(childTypeQuery);
@@ -937,6 +947,26 @@ namespace XamlTest
                 }
                 throw new Exception($"Failed to find child of type '{childTypeQuery}'");
             }
+
+            static object EvaluatePropertyExpressionQuery(DependencyObject root, string propertyExpression)
+            {
+                var parts = propertyExpression.Split('=');
+                string property = parts[0].TrimEnd();
+                string propertyValueString = parts[1];
+
+                foreach (DependencyObject child in Decendants<DependencyObject>(root))
+                {
+                    if (child.GetType().Name == childTypeQuery)
+                    {
+                        if (index == 0)
+                        {
+                            return child;
+                        }
+                        index--;
+                    }
+                }
+                throw new Exception($"Failed to find child of type '{childTypeQuery}'");
+            }
         }
 
         private enum QueryPartType
@@ -944,12 +974,13 @@ namespace XamlTest
             None,
             Name,
             Property,
-            ChildType
+            ChildType,
+            PropertyExpression
         }
 
         private static T LoadXaml<T>(string xaml) where T : class
         {
-            using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(xaml));
+            using MemoryStream memoryStream = new(Encoding.UTF8.GetBytes(xaml));
             return (T)XamlReader.Load(memoryStream);
         }
 
