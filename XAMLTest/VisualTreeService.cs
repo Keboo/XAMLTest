@@ -9,11 +9,8 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -861,12 +858,18 @@ namespace XamlTest
 
             static QueryPartType GetNextQueryType(ref string query, out string value)
             {
+                Regex propertyExpressionRegex = new(@"(?<=^\[[^\]]+)\]");
                 Regex regex = new(@"(?<=.)[\.\/\~\[\]]");
 
-                Match match = regex.Match(query);
-
                 string currentQuery = query;
-                if (match.Success)
+                if (propertyExpressionRegex.Match(query) is { } propertyExpressionMatch &&
+                    propertyExpressionMatch.Success)
+                {
+                    currentQuery = query.Substring(0, propertyExpressionMatch.Index + 1);
+                    query = query[(propertyExpressionMatch.Index + 1)..];
+                }
+                else if (regex.Match(query) is { } match &&
+                    match.Success)
                 {
                     currentQuery = query.Substring(0, match.Index);
                     query = query[match.Index..];
@@ -952,20 +955,22 @@ namespace XamlTest
             {
                 var parts = propertyExpression.Split('=');
                 string property = parts[0].TrimEnd();
-                string propertyValueString = parts[1];
+                string propertyValueString = parts[1].Trim('"');
 
                 foreach (DependencyObject child in Decendants<DependencyObject>(root))
                 {
-                    if (child.GetType().Name == childTypeQuery)
+                    var properties = TypeDescriptor.GetProperties(child);
+                    if (properties.Find(property, false) is PropertyDescriptor propertyDescriptor)
                     {
-                        if (index == 0)
+                        var value = propertyDescriptor.GetValue(child)?.ToString();
+                        //TODO: More advanced comparison
+                        if (string.Equals(value, propertyValueString))
                         {
                             return child;
                         }
-                        index--;
                     }
                 }
-                throw new Exception($"Failed to find child of type '{childTypeQuery}'");
+                throw new Exception($"Failed to find child with property expression '{propertyExpression}'");
             }
         }
 

@@ -21,17 +21,17 @@ namespace XamlTest
         public static async Task<bool> GetAreAnyTouchesOver(this IVisualElement element)
             => await element.GetProperty<bool>(nameof(UIElement.AreAnyTouchesOver));
 
-        public static async Task<CacheMode> GetCacheMode(this IVisualElement element)
-            => await element.GetProperty<CacheMode>(nameof(UIElement.CacheMode));
+        public static async Task<CacheMode?> GetCacheMode(this IVisualElement element)
+            => await element.GetProperty<CacheMode?>(nameof(UIElement.CacheMode));
 
-        public static async Task<Geometry> GetClip(this IVisualElement element)
-            => await element.GetProperty<Geometry>(nameof(UIElement.Clip));
+        public static async Task<Geometry?> GetClip(this IVisualElement element)
+            => await element.GetProperty<Geometry?>(nameof(UIElement.Clip));
 
         public static async Task<bool> GetClipToBounds(this IVisualElement element)
             => await element.GetProperty<bool>(nameof(UIElement.ClipToBounds));
 
-        public static async Task<DependencyObjectType> GetDependencyObjectType(this IVisualElement element)
-            => await element.GetProperty<DependencyObjectType>(nameof(UIElement.DependencyObjectType));
+        public static async Task<DependencyObjectType?> GetDependencyObjectType(this IVisualElement element)
+            => await element.GetProperty<DependencyObjectType?>(nameof(UIElement.DependencyObjectType));
 
         public static async Task<Size> GetDesiredSize(this IVisualElement element)
             => await element.GetProperty<Size>(nameof(UIElement.DesiredSize));
@@ -102,14 +102,14 @@ namespace XamlTest
         public static async Task<double> GetOpacity(this IVisualElement element)
             => await element.GetProperty<double>(nameof(UIElement.Opacity));
 
-        public static async Task<Brush> GetOpacityMask(this IVisualElement element)
-            => await element.GetProperty<Brush>(nameof(UIElement.OpacityMask));
+        public static async Task<Brush?> GetOpacityMask(this IVisualElement element)
+            => await element.GetProperty<Brush?>(nameof(UIElement.OpacityMask));
 
         public static async Task<Size> GetRenderSize(this IVisualElement element)
             => await element.GetProperty<Size>(nameof(UIElement.RenderSize));
 
-        public static async Task<Transform> GetRenderTransform(this IVisualElement element)
-            => await element.GetProperty<Transform>(nameof(UIElement.RenderTransform));
+        public static async Task<Transform?> GetRenderTransform(this IVisualElement element)
+            => await element.GetProperty<Transform?>(nameof(UIElement.RenderTransform));
 
         public static async Task<Point> GetRenderTransformOrigin(this IVisualElement element)
             => await element.GetProperty<Point>(nameof(UIElement.RenderTransformOrigin));
@@ -117,8 +117,8 @@ namespace XamlTest
         public static async Task<bool> GetSnapsToDevicePixels(this IVisualElement element)
             => await element.GetProperty<bool>(nameof(UIElement.SnapsToDevicePixels));
 
-        public static async Task<string> GetUid(this IVisualElement element)
-            => await element.GetProperty<string>(nameof(UIElement.Uid));
+        public static async Task<string?> GetUid(this IVisualElement element)
+            => await element.GetProperty<string?>(nameof(UIElement.Uid));
 
         public static async Task<Visibility> GetVisibility(this IVisualElement element)
             => await element.GetProperty<Visibility>(nameof(UIElement.Visibility));
@@ -126,10 +126,10 @@ namespace XamlTest
         public static async Task<bool> SetAllowDrop(this IVisualElement element, bool value)
             => await element.SetProperty(nameof(UIElement.AllowDrop), value);
 
-        public static async Task<CacheMode> SetCacheMode(this IVisualElement element, CacheMode value)
+        public static async Task<CacheMode?> SetCacheMode(this IVisualElement element, CacheMode? value)
             => await element.SetProperty(nameof(UIElement.CacheMode), value);
 
-        public static async Task<Geometry> SetClip(this IVisualElement element, Geometry value)
+        public static async Task<Geometry?> SetClip(this IVisualElement element, Geometry? value)
             => await element.SetProperty(nameof(UIElement.Clip), value);
 
         public static async Task<bool> SetClipToBounds(this IVisualElement element, bool value)
@@ -150,13 +150,13 @@ namespace XamlTest
         public static async Task<double> SetOpacity(this IVisualElement element, double value)
             => await element.SetProperty(nameof(UIElement.Opacity), value);
 
-        public static async Task<Brush> SetOpacityMask(this IVisualElement element, Brush value)
+        public static async Task<Brush?> SetOpacityMask(this IVisualElement element, Brush? value)
             => await element.SetProperty(nameof(UIElement.OpacityMask), value);
 
         public static async Task<Size> SetRenderSize(this IVisualElement element, Size value)
             => await element.SetProperty(nameof(UIElement.RenderSize), value);
 
-        public static async Task<Transform> SetRenderTransform(this IVisualElement element, Transform value)
+        public static async Task<Transform?> SetRenderTransform(this IVisualElement element, Transform? value)
             => await element.SetProperty(nameof(UIElement.RenderTransform), value);
 
         public static async Task<Point> SetRenderTransformOrigin(this IVisualElement element, Point value)

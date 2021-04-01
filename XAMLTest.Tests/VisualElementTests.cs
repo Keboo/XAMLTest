@@ -217,8 +217,8 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             IVisualElement element = await window.GetElement("MyGrid");
 
             var brush = await element.GetProperty<SolidColorBrush>("Background");
-            Assert.AreEqual(Colors.Red, brush.Color);
-            Assert.AreEqual(0.5, brush.Opacity);
+            Assert.AreEqual(Colors.Red, brush?.Color);
+            Assert.AreEqual(0.5, brush?.Opacity);
         }
 
         [TestMethod]
