@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
@@ -15,7 +14,7 @@ namespace XamlTest.Tests
         [TestInitialize]
         public void TestInit()
         {
-            foreach(var file in GetScreenshots())
+            foreach(var file in GetScreenshots(new TestRecorder(new Simulators.App())))
             {
                 File.Delete(file);
             }
@@ -24,7 +23,7 @@ namespace XamlTest.Tests
         [TestCleanup]
         public void TestCleanup()
         {
-            foreach (var file in GetScreenshots())
+            foreach (var file in GetScreenshots(new TestRecorder(new Simulators.App())))
             {
                 File.Delete(file);
             }
@@ -36,9 +35,9 @@ namespace XamlTest.Tests
             var app = new Simulators.App();
             TestRecorder testRecorder = new(app);
 
-            Assert.IsTrue(await testRecorder.SaveScreenshot());
+            Assert.IsNotNull(await testRecorder.SaveScreenshot());
 
-            var file = GetScreenshots().Single();
+            var file = GetScreenshots(testRecorder).Single();
 
             var fileName = Path.GetFileName(file);
             Assert.AreEqual($"{nameof(SaveScreenshot_SavesImage)}{GetLineNumber(-5)}-win1.jpg", fileName);
@@ -50,9 +49,9 @@ namespace XamlTest.Tests
             var app = new Simulators.App();
             TestRecorder testRecorder = new(app);
 
-            Assert.IsTrue(await testRecorder.SaveScreenshot("MySuffix"));
+            Assert.IsNotNull(await testRecorder.SaveScreenshot("MySuffix"));
 
-            var file = GetScreenshots().Single();
+            var file = GetScreenshots(testRecorder).Single();
 
             var fileName = Path.GetFileName(file);
             Assert.AreEqual($"{nameof(SaveScreenshot_WithSuffix_SavesImage)}MySuffix{GetLineNumber(-5)}-win1.jpg", fileName);
@@ -62,36 +61,13 @@ namespace XamlTest.Tests
             => lineNumber.GetValueOrDefault() + offset;
 
         private static IEnumerable<string> GetScreenshots(
-            [CallerFilePath] string callerFilePath = "",
-            [CallerMemberName] string unitTestMethod = "")
+            TestRecorder testRecorder)
         {
-            string directory;
-            var assembly = typeof(TestRecorderTests).Assembly;
-            var assemblyName = assembly.GetName().Name;
-            int assemblyNameIndex = callerFilePath.IndexOf(assemblyName!, StringComparison.Ordinal);
-            if (assemblyNameIndex >= 0)
-            {
-                directory = callerFilePath[(assemblyNameIndex + assemblyName!.Length + 1)..];
-            }
-            else
-            {
-                directory = Path.GetFileName(callerFilePath);
-            }
-            directory = Path.ChangeExtension(directory, "").TrimEnd('.');
-            var rootDirectory = Path.GetDirectoryName(assembly.Location) ?? Path.GetFullPath(".");
-            directory = Path.Combine(rootDirectory, "Screenshots", directory);
-
-            var baseFileName = unitTestMethod;
-            foreach (char invalidChar in Path.GetInvalidFileNameChars())
-            {
-                baseFileName = baseFileName.Replace($"{invalidChar}", "");
-            }
-
-            if (!Directory.Exists(directory))
+            if (!Directory.Exists(testRecorder.Directory))
             {
                 return Array.Empty<string>();
             }
-            return Directory.EnumerateFiles(directory, "*.jpg", SearchOption.AllDirectories);
+            return Directory.EnumerateFiles(testRecorder.Directory, "*.jpg", SearchOption.AllDirectories);
         }
     }
 }
