@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -11,6 +12,10 @@ namespace XamlTest.Tests
     [TestClass]
     public class TestRecorderTests
     {
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+        public TestContext TestContext { get; set; }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
         [TestInitialize]
         public void TestInit()
         {
@@ -39,8 +44,10 @@ namespace XamlTest.Tests
 
             var file = GetScreenshots(testRecorder).Single();
 
+            TestContext.WriteLine($"Full path {file}");
             var fileName = Path.GetFileName(file);
-            Assert.AreEqual($"{nameof(SaveScreenshot_SavesImage)}{GetLineNumber(-5)}-win1.jpg", fileName);
+            Assert.AreEqual(nameof(TestRecorderTests), Path.GetFileName(Path.GetDirectoryName(file)));
+            Assert.AreEqual($"{nameof(SaveScreenshot_SavesImage)}{GetLineNumber(-7)}-win1.jpg", fileName);
         }
 
         [TestMethod]
@@ -53,12 +60,14 @@ namespace XamlTest.Tests
 
             var file = GetScreenshots(testRecorder).Single();
 
+            TestContext.WriteLine($"Full path {file}");
             var fileName = Path.GetFileName(file);
-            Assert.AreEqual($"{nameof(SaveScreenshot_WithSuffix_SavesImage)}MySuffix{GetLineNumber(-5)}-win1.jpg", fileName);
+            Assert.AreEqual(nameof(TestRecorderTests), Path.GetFileName(Path.GetDirectoryName(file)));
+            Assert.AreEqual($"{nameof(SaveScreenshot_WithSuffix_SavesImage)}MySuffix{GetLineNumber(-7)}-win1.jpg", fileName);
         }
 
-        private static int GetLineNumber(int offset = 0, [CallerLineNumber] int? lineNumber = null)
-            => lineNumber.GetValueOrDefault() + offset;
+        private static int GetLineNumber(int offset = 0, [CallerLineNumber] int lineNumber = 0)
+            => lineNumber + offset;
 
         private static IEnumerable<string> GetScreenshots(
             TestRecorder testRecorder)
