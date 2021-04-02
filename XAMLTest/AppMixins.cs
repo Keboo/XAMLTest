@@ -80,7 +80,7 @@ WindowStartupLocation=""{startupLocation}""
             }
 
             return await app.CreateWindowWithContent($"<local:{typeof(TUserControl).Name} />",
-                windowSize, title, background, startupLocation, @$"local=""clr-namespace:{typeof(TUserControl).Namespace};assembly={typeof(TUserControl).Assembly.GetName().Name}""");
+                windowSize, title, background, startupLocation, additionalXmlNamespaces: @$"local=""clr-namespace:{typeof(TUserControl).Namespace};assembly={typeof(TUserControl).Assembly.GetName().Name}""");
         }
     }
 }

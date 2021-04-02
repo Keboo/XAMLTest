@@ -85,7 +85,6 @@ namespace XamlTest
         public override async Task<ElementResult> GetElement(ElementQuery request, ServerCallContext context)
         {
             ElementResult reply = new();
-            Debugger.Launch();
 
             await Application.Dispatcher.InvokeAsync(() =>
             {
@@ -858,8 +857,8 @@ namespace XamlTest
 
             static QueryPartType GetNextQueryType(ref string query, out string value)
             {
-                Regex propertyExpressionRegex = new(@"(?<=^\[[^\]]+)\]");
-                Regex regex = new(@"(?<=.)[\.\/\~\[\]]");
+                Regex propertyExpressionRegex = new(@"(?<=^\[[^=\]]+=[^=\]]+)\]");
+                Regex regex = new(@"(?<=.)[\.\/\~]");
 
                 string currentQuery = query;
                 if (propertyExpressionRegex.Match(query) is { } propertyExpressionMatch &&
