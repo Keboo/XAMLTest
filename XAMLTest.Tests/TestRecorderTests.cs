@@ -36,7 +36,7 @@ namespace XamlTest.Tests
             var app = new Simulators.App();
             TestRecorder testRecorder = new(app);
 
-            await testRecorder.SaveScreenshot();
+            Assert.IsTrue(await testRecorder.SaveScreenshot());
 
             var file = GetScreenshots().Single();
 
@@ -50,7 +50,7 @@ namespace XamlTest.Tests
             var app = new Simulators.App();
             TestRecorder testRecorder = new(app);
 
-            await testRecorder.SaveScreenshot("MySuffix");
+            Assert.IsTrue(await testRecorder.SaveScreenshot("MySuffix"));
 
             var file = GetScreenshots().Single();
 

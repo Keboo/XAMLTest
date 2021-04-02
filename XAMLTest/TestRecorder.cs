@@ -50,13 +50,13 @@ namespace XamlTest
         /// </summary>
         public void Success() => IsSuccess = true;
 
-        public async Task SaveScreenshot([CallerLineNumber] int? lineNumber = null)
+        public async Task<bool> SaveScreenshot([CallerLineNumber] int? lineNumber = null)
             => await SaveScreenshot(lineNumber?.ToString() ?? "");
 
-        public async Task SaveScreenshot(string suffix, [CallerLineNumber] int? lineNumber = null)
+        public async Task<bool> SaveScreenshot(string suffix, [CallerLineNumber] int? lineNumber = null)
             => await SaveScreenshot($"{suffix}{lineNumber?.ToString() ?? ""}");
 
-        private async Task SaveScreenshot(string suffix)
+        private async Task<bool> SaveScreenshot(string suffix)
         {
             int index = 1;
             string fileName = $"{BaseFileName}{suffix}-win{index++}.jpg";
@@ -66,7 +66,9 @@ namespace XamlTest
             if (await App.GetScreenshot() is IImage screenshot)
             {
                 await screenshot.Save(fullPath);
+                return true;
             }
+            return false;
         }
 
         #region IDisposable Support
