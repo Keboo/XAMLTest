@@ -1,7 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -19,7 +18,7 @@ namespace XamlTest.Tests
         [TestInitialize]
         public void TestInit()
         {
-            foreach(var file in GetScreenshots(new TestRecorder(new Simulators.App())))
+            foreach (var file in GetScreenshots(new TestRecorder(new Simulators.App())))
             {
                 File.Delete(file);
             }
@@ -37,30 +36,28 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task SaveScreenshot_SavesImage()
         {
-            var app = new Simulators.App();
-            TestRecorder testRecorder = new(app);
+            IApp app = new Simulators.App();
+            var testRecorder = new TestRecorder(app);
 
             Assert.IsNotNull(await testRecorder.SaveScreenshot());
 
-            var file = GetScreenshots(testRecorder).Single();
+            string? file = GetScreenshots(testRecorder).Single();
 
-            TestContext.WriteLine($"Full path {file}");
-            var fileName = Path.GetFileName(file);
+            string? fileName = Path.GetFileName(file);
             Assert.AreEqual(nameof(TestRecorderTests), Path.GetFileName(Path.GetDirectoryName(file)));
-            Assert.AreEqual($"{nameof(SaveScreenshot_SavesImage)}{GetLineNumber(-7)}-win1.jpg", fileName);
+            Assert.AreEqual($"{nameof(SaveScreenshot_SavesImage)}{GetLineNumber(-4)}-win1.jpg", fileName);
         }
 
         [TestMethod]
         public async Task SaveScreenshot_WithSuffix_SavesImage()
         {
             var app = new Simulators.App();
-            TestRecorder testRecorder = new(app);
+            var testRecorder = new TestRecorder(app);
 
             Assert.IsNotNull(await testRecorder.SaveScreenshot("MySuffix"));
 
             var file = GetScreenshots(testRecorder).Single();
 
-            TestContext.WriteLine($"Full path {file}");
             var fileName = Path.GetFileName(file);
             Assert.AreEqual(nameof(TestRecorderTests), Path.GetFileName(Path.GetDirectoryName(file)));
             Assert.AreEqual($"{nameof(SaveScreenshot_WithSuffix_SavesImage)}MySuffix{GetLineNumber(-7)}-win1.jpg", fileName);
