@@ -37,7 +37,7 @@ namespace XamlTest.Tests
         public async Task SaveScreenshot_SavesImage()
         {
             IApp app = new Simulators.App();
-            var testRecorder = new TestRecorder(app);
+            TestRecorder testRecorder = new(app);
 
             Assert.IsNotNull(await testRecorder.SaveScreenshot());
 
@@ -45,14 +45,14 @@ namespace XamlTest.Tests
 
             string? fileName = Path.GetFileName(file);
             Assert.AreEqual(nameof(TestRecorderTests), Path.GetFileName(Path.GetDirectoryName(file)));
-            Assert.AreEqual($"{nameof(SaveScreenshot_SavesImage)}{GetLineNumber(-4)}-win1.jpg", fileName);
+            Assert.AreEqual($"{nameof(SaveScreenshot_SavesImage)}{GetLineNumber(-6)}-win1.jpg", fileName);
         }
 
         [TestMethod]
         public async Task SaveScreenshot_WithSuffix_SavesImage()
         {
             var app = new Simulators.App();
-            var testRecorder = new TestRecorder(app);
+            TestRecorder testRecorder = new(app);
 
             Assert.IsNotNull(await testRecorder.SaveScreenshot("MySuffix"));
 
@@ -60,7 +60,7 @@ namespace XamlTest.Tests
 
             var fileName = Path.GetFileName(file);
             Assert.AreEqual(nameof(TestRecorderTests), Path.GetFileName(Path.GetDirectoryName(file)));
-            Assert.AreEqual($"{nameof(SaveScreenshot_WithSuffix_SavesImage)}MySuffix{GetLineNumber(-7)}-win1.jpg", fileName);
+            Assert.AreEqual($"{nameof(SaveScreenshot_WithSuffix_SavesImage)}MySuffix{GetLineNumber(-6)}-win1.jpg", fileName);
         }
 
         private static int GetLineNumber(int offset = 0, [CallerLineNumber] int lineNumber = 0)
