@@ -9,11 +9,11 @@ namespace XamlTest
     public sealed class TestRecorder : IAsyncDisposable
     {
         public IApp App { get; }
-        private string BaseFileName { get; }
-        private string Directory { get; }
+        public string BaseFileName { get; }
+        public string Directory { get; }
 
         private bool IsDisposed { get; set; }
-        private bool IsSuccess { get; set; }
+        public bool IsSuccess { get; private set; }
 
         public TestRecorder(IApp app,
             [CallerFilePath] string callerFilePath = "",
@@ -50,13 +50,13 @@ namespace XamlTest
         /// </summary>
         public void Success() => IsSuccess = true;
 
-        public async Task SaveScreenshot([CallerLineNumber] int? lineNumber = null)
+        public async Task<string?> SaveScreenshot([CallerLineNumber] int? lineNumber = null)
             => await SaveScreenshot(lineNumber?.ToString() ?? "");
 
-        public async Task SaveScreenshot(string suffix, [CallerLineNumber] int? lineNumber = null)
+        public async Task<string?> SaveScreenshot(string suffix, [CallerLineNumber] int? lineNumber = null)
             => await SaveScreenshot($"{suffix}{lineNumber?.ToString() ?? ""}");
 
-        private async Task SaveScreenshot(string suffix)
+        private async Task<string?> SaveScreenshot(string suffix)
         {
             int index = 1;
             string fileName = $"{BaseFileName}{suffix}-win{index++}.jpg";
@@ -66,7 +66,9 @@ namespace XamlTest
             if (await App.GetScreenshot() is IImage screenshot)
             {
                 await screenshot.Save(fullPath);
+                return fullPath;
             }
+            return null;
         }
 
         #region IDisposable Support

@@ -46,7 +46,7 @@ namespace XamlTest.Internal
 
         public async Task<IValue> GetProperty(string name, string? ownerType)
         {
-            var propertyQuery = new PropertyQuery
+            PropertyQuery propertyQuery = new()
             {
                 ElementId = Id,
                 Name = name,
@@ -70,7 +70,7 @@ namespace XamlTest.Internal
         
         public async Task<IValue> SetProperty(string name, string value, string? valueType, string? ownerType)
         {
-            var query = new SetPropertyRequest
+            SetPropertyRequest query = new()
             {
                 ElementId = Id,
                 Name = name,
@@ -96,7 +96,7 @@ namespace XamlTest.Internal
         
         public async Task<IResource> GetResource(string key)
         {
-            var query = new ResourceQuery
+            ResourceQuery query = new()
             {
                 ElementId = Id,
                 Key = key
@@ -122,7 +122,7 @@ namespace XamlTest.Internal
         {
             string? toElementId = (toElement as VisualElement)?.Id;
 
-            var propertyQuery = new EffectiveBackgroundQuery
+            EffectiveBackgroundQuery propertyQuery = new()
             {
                 ElementId = Id,
                 ToElementId = toElementId ?? ""
@@ -141,7 +141,7 @@ namespace XamlTest.Internal
 
         public async Task<Rect> GetCoordinates()
         {
-            var query = new CoordinatesQuery
+            CoordinatesQuery query = new()
             {
                 ElementId = Id
             };
@@ -160,7 +160,7 @@ namespace XamlTest.Internal
 
         public async Task MoveKeyboardFocus()
         {
-            var request = new KeyboardFocusRequest
+            KeyboardFocusRequest request = new()
             {
                 ElementId = Id
             };
@@ -185,13 +185,13 @@ namespace XamlTest.Internal
                 throw new ArgumentNullException(nameof(keyboardInput));
             }
 
-            var request = new InputRequest
+            InputRequest request = new()
             {
                 ElementId = Id
             };
             request.KeyboardData.AddRange(keyboardInput.Inputs.Select(i => 
             {
-                var rv = new KeyboardData();
+                KeyboardData rv = new();
                 switch(i)
                 {
                     case KeysInput keysInput:

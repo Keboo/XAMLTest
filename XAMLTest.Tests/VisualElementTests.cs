@@ -217,8 +217,8 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             IVisualElement element = await window.GetElement("MyGrid");
 
             var brush = await element.GetProperty<SolidColorBrush>("Background");
-            Assert.AreEqual(Colors.Red, brush.Color);
-            Assert.AreEqual(0.5, brush.Opacity);
+            Assert.AreEqual(Colors.Red, brush?.Color);
+            Assert.AreEqual(0.5, brush?.Opacity);
         }
 
         [TestMethod]
@@ -441,6 +441,18 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         }
 
         [TestMethod]
+        public async Task OnGetElement_ItRetrievesElementByAutomationIdValue()
+        {
+            IWindow window = await App.CreateWindowWithContent(@"
+<Grid>
+  <TextBox x:Name=""MyTextBox"" Text=""Text"" AutomationProperties.AutomationId=""TextBoxId""/>
+</Grid>");
+            IVisualElement element = await window.GetElement("[AutomationProperties.AutomationId=\"TextBoxId\"]");
+
+            Assert.AreEqual("MyTextBox", await element.GetName());
+        }
+
+        [TestMethod]
         public async Task OnMoveKeyboardFocus_ItReceivesKeyboardFocus()
         {
             IWindow window = await App.CreateWindowWithContent(@"
@@ -458,7 +470,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnSendTextInput_TextIsChanged()
         {
-            await using var recorder = new TestRecorder(App);
+            await using TestRecorder recorder = new(App);
 
             IWindow window = await App.CreateWindowWithContent(@"
 <Grid>
@@ -477,7 +489,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         [TestMethod]
         public async Task OnSendTextInput_ExplicitKeyIsSent()
         {
-            await using var recorder = new TestRecorder(App);
+            await using TestRecorder recorder = new(App);
 
             IWindow window = await App.CreateWindowWithContent(@"
 <Grid>
@@ -497,7 +509,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         public async Task OnRegisterForEvent_EventsAreRaised()
         {
             // Arrange
-            await using var recorder = new TestRecorder(App);
+            await using TestRecorder recorder = new(App);
 
             IWindow window = await App.CreateWindowWithContent(@"
 <Grid>

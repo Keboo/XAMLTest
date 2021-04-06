@@ -29,7 +29,7 @@ namespace XamlTest
                 throw new Exception($"Could not find test app '{xamlTestPath}'");
             }
 
-            var startInfo = new ProcessStartInfo(xamlTestPath)
+            ProcessStartInfo startInfo = new(xamlTestPath)
             {
                 WorkingDirectory = Path.GetDirectoryName(xamlTestPath) + Path.DirectorySeparatorChar,
                 UseShellExecute = true
@@ -41,11 +41,11 @@ namespace XamlTest
 
             if (Process.Start(startInfo) is Process process)
             {
-                var channel = new NamedPipeChannel(".", Server.PipePrefix + process.Id, new NamedPipeChannelOptions
+                NamedPipeChannel channel = new(".", Server.PipePrefix + process.Id, new NamedPipeChannelOptions
                 {
                     ConnectionTimeout = 1000
                 });
-                var client = new Protocol.ProtocolClient(channel);
+                Protocol.ProtocolClient client = new(channel);
 
                 return new ManagedApp(process, client, logMessage);
             }

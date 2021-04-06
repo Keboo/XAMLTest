@@ -33,15 +33,15 @@ namespace XamlTest.Input
 
         private static IEnumerable<WindowMessage> GetKeyPress(char character)
         {
-            var wParam = new IntPtr(character);
-            var lParam = new IntPtr(0x0000_0000);
+            IntPtr wParam = new(character);
+            IntPtr lParam = new(0x0000_0000);
             yield return new WindowMessage(User32.WindowMessage.WM_CHAR, wParam, lParam);
         }
 
         private static IEnumerable<WindowMessage> GetKeyPress(Key key)
         {
-            var wParam = new IntPtr(KeyInterop.VirtualKeyFromKey(key));
-            var lParam = new IntPtr(0x0000_0000);
+            IntPtr wParam = new(KeyInterop.VirtualKeyFromKey(key));
+            IntPtr lParam = new(0x0000_0000);
             yield return new WindowMessage(User32.WindowMessage.WM_KEYDOWN, wParam, lParam);
             yield return new WindowMessage(User32.WindowMessage.WM_KEYUP, wParam, lParam);
         }

@@ -4,7 +4,6 @@
     <WarningsAsErrors>true</WarningsAsErrors>
     <AnalysisLevel>5</AnalysisLevel>
     <LangVersion>9.0</LangVersion>
-    <TargetPlatformMoniker>windows</TargetPlatformMoniker>
   </PropertyGroup>
 
   <PropertyGroup>

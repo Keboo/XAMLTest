@@ -11,7 +11,7 @@ namespace XamlTest.Utility
     {
         public static void IncludeAssembliesIn(this AppDomain appDomain, string directory)
         {
-            var resolver = new AssemblyResolver();
+            AssemblyResolver resolver = new();
             resolver.IncludeFiles(Directory.EnumerateFiles(directory));
 
             appDomain.AssemblyResolve += AppDomainAssemblyResolve;
@@ -53,7 +53,7 @@ namespace XamlTest.Utility
 
             public Assembly? Resolve(string assemblyName)
             {
-                var name = new AssemblyName(assemblyName);
+                AssemblyName name = new(assemblyName);
 
                 var possible = Assemblies.Where(x => x.Name.Name == name.Name);
                 if (name.Version != null)

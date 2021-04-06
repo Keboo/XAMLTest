@@ -25,7 +25,7 @@ namespace XamlTest.Internal
                 return default;
             }
 
-            return (T)Serializer.Deserialize(typeof(T), Value);
+            return (T)Serializer.Deserialize(typeof(T), Value)!;
         }
     }
 }

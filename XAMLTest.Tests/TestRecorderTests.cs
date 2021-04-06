@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
@@ -12,10 +11,14 @@ namespace XamlTest.Tests
     [TestClass]
     public class TestRecorderTests
     {
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+        public TestContext TestContext { get; set; }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
         [TestInitialize]
         public void TestInit()
         {
-            foreach(var file in GetScreenshots())
+            foreach (var file in GetScreenshots(new TestRecorder(new Simulators.App())))
             {
                 File.Delete(file);
             }
@@ -24,7 +27,7 @@ namespace XamlTest.Tests
         [TestCleanup]
         public void TestCleanup()
         {
-            foreach (var file in GetScreenshots())
+            foreach (var file in GetScreenshots(new TestRecorder(new Simulators.App())))
             {
                 File.Delete(file);
             }
@@ -33,65 +36,44 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task SaveScreenshot_SavesImage()
         {
-            var app = new Simulators.App();
-            var testRecorder = new TestRecorder(app);
+            IApp app = new Simulators.App();
+            TestRecorder testRecorder = new(app);
 
-            await testRecorder.SaveScreenshot();
+            Assert.IsNotNull(await testRecorder.SaveScreenshot());
 
-            var file = GetScreenshots().Single();
+            string? file = GetScreenshots(testRecorder).Single();
 
-            var fileName = Path.GetFileName(file);
-            Assert.AreEqual($"{nameof(SaveScreenshot_SavesImage)}{GetLineNumber(-5)}-win1.jpg", fileName);
+            string? fileName = Path.GetFileName(file);
+            Assert.AreEqual(nameof(TestRecorderTests), Path.GetFileName(Path.GetDirectoryName(file)));
+            Assert.AreEqual($"{nameof(SaveScreenshot_SavesImage)}{GetLineNumber(-6)}-win1.jpg", fileName);
         }
 
         [TestMethod]
         public async Task SaveScreenshot_WithSuffix_SavesImage()
         {
             var app = new Simulators.App();
-            var testRecorder = new TestRecorder(app);
+            TestRecorder testRecorder = new(app);
 
-            await testRecorder.SaveScreenshot("MySuffix");
+            Assert.IsNotNull(await testRecorder.SaveScreenshot("MySuffix"));
 
-            var file = GetScreenshots().Single();
+            var file = GetScreenshots(testRecorder).Single();
 
             var fileName = Path.GetFileName(file);
-            Assert.AreEqual($"{nameof(SaveScreenshot_WithSuffix_SavesImage)}MySuffix{GetLineNumber(-5)}-win1.jpg", fileName);
+            Assert.AreEqual(nameof(TestRecorderTests), Path.GetFileName(Path.GetDirectoryName(file)));
+            Assert.AreEqual($"{nameof(SaveScreenshot_WithSuffix_SavesImage)}MySuffix{GetLineNumber(-6)}-win1.jpg", fileName);
         }
 
-        private static int GetLineNumber(int offset = 0, [CallerLineNumber] int? lineNumber = null)
-            => lineNumber.GetValueOrDefault() + offset;
+        private static int GetLineNumber(int offset = 0, [CallerLineNumber] int lineNumber = 0)
+            => lineNumber + offset;
 
         private static IEnumerable<string> GetScreenshots(
-            [CallerFilePath] string callerFilePath = "",
-            [CallerMemberName] string unitTestMethod = "")
+            TestRecorder testRecorder)
         {
-            string directory;
-            var assembly = typeof(TestRecorderTests).Assembly;
-            var assemblyName = assembly.GetName().Name;
-            int assemblyNameIndex = callerFilePath.IndexOf(assemblyName!, StringComparison.Ordinal);
-            if (assemblyNameIndex >= 0)
-            {
-                directory = callerFilePath[(assemblyNameIndex + assemblyName!.Length + 1)..];
-            }
-            else
-            {
-                directory = Path.GetFileName(callerFilePath);
-            }
-            directory = Path.ChangeExtension(directory, "").TrimEnd('.');
-            var rootDirectory = Path.GetDirectoryName(assembly.Location) ?? Path.GetFullPath(".");
-            directory = Path.Combine(rootDirectory, "Screenshots", directory);
-
-            var baseFileName = unitTestMethod;
-            foreach (char invalidChar in Path.GetInvalidFileNameChars())
-            {
-                baseFileName = baseFileName.Replace($"{invalidChar}", "");
-            }
-
-            if (!Directory.Exists(directory))
+            if (!Directory.Exists(testRecorder.Directory))
             {
                 return Array.Empty<string>();
             }
-            return Directory.EnumerateFiles(directory, "*.jpg", SearchOption.AllDirectories);
+            return Directory.EnumerateFiles(testRecorder.Directory, "*.jpg", SearchOption.AllDirectories);
         }
     }
 }
