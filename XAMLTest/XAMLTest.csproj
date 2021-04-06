@@ -8,7 +8,7 @@
     <RootNamespace>XamlTest</RootNamespace>
     <EmbedUntrackedSource>true</EmbedUntrackedSource>
   </PropertyGroup>
-  
+    
   <ItemGroup>
     <PackageReference Include="Grpc.Tools" Version="2.31.0">
       <PrivateAssets>all</PrivateAssets>
