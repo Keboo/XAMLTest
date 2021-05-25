@@ -102,6 +102,23 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         }
 
         [TestMethod]
+        public async Task OnGetCoordinate_ReturnsRotatedElementLocation()
+        {
+            IWindow window = await App.CreateWindowWithContent(@"
+<Border x:Name=""MyBorder"" Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"">
+    <Border.LayoutTransform>
+        <RotateTransform Angle=""90"" />
+    </Border.LayoutTransform>
+</Border>
+");
+            IVisualElement element = await window.GetElement("MyBorder");
+
+            Rect coordinates = await element.GetCoordinates();
+            Assert.AreEqual(40, Math.Round(coordinates.Width, 5));
+            Assert.AreEqual(30, Math.Round(coordinates.Height, 5));
+        }
+
+        [TestMethod]
         public async Task OnGetEffectiveBackground_ReturnsFirstOpaqueColor()
         {
             IWindow window = await App.CreateWindowWithContent(
@@ -525,7 +542,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             //Assert
             var invocations = await Wait.For(async () =>
             {
-                var i = await clickEvent.GetInvocations();    
+                var i = await clickEvent.GetInvocations();
                 Assert.AreEqual(1, i.Count);
                 return i;
             });
