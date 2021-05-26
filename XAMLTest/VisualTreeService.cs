@@ -106,7 +106,15 @@ namespace XamlTest
                         }
 
                         string id = DependencyObjectTracker.GetOrSetId(element, KnownElements);
-                        reply.ElementIds.Add(id);
+                        Element rv = new()
+                        {
+                            Id = id
+                        };
+                        for(Type? type = element.GetType(); type != null; type = type.BaseType)
+                        {
+                            rv.AllowedTypes.Add(type.AssemblyQualifiedName);
+                        }
+                        reply.Elements.Add(rv);
 
                         window.LogMessage("Got element");
                         return;

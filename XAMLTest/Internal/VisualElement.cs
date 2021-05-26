@@ -7,6 +7,18 @@ using System.Windows.Media;
 
 namespace XamlTest.Internal
 {
+    internal class VisualElement<T> : VisualElement, IVisualElement<T>
+    {
+        public VisualElement(
+            Protocol.ProtocolClient client, 
+            string id, 
+            Serializer serializer, 
+            Action<string>? logMessage) 
+            : base(client, id, serializer, logMessage)
+        {
+        }
+    }
+
     internal class VisualElement : IVisualElement
     {
         public VisualElement(Protocol.ProtocolClient client, string id, 
@@ -26,6 +38,11 @@ namespace XamlTest.Internal
 
         public async Task<IVisualElement> GetElement(string query)
         {
+            return await GetElement<object>(query);
+        }
+
+        public async Task<IVisualElement<TElement>> GetElement<TElement>(string query)
+        {
             ElementQuery elementQuery = GetFindElementQuery(query);
             LogMessage?.Invoke($"{nameof(GetElement)}({query})");
             if (await Client.GetElementAsync(elementQuery) is { } reply)
@@ -34,11 +51,16 @@ namespace XamlTest.Internal
                 {
                     throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
                 }
-                if (reply.ElementIds.Count == 1)
+                if (reply.Elements.Count == 1)
                 {
-                    return new VisualElement(Client, reply.ElementIds[0], Serializer, LogMessage);
+                    Element element = reply.Elements[0];
+                    if (!element.AllowedTypes.Contains(typeof(TElement).AssemblyQualifiedName))
+                    {
+                        throw new Exception($"Element of type '{element.AllowedTypes[0]}' does not match desired type '{typeof(TElement).AssemblyQualifiedName}'");
+                    }
+                    return new VisualElement<TElement>(Client, reply.Elements[0].Id, Serializer, LogMessage);
                 }
-                throw new Exception($"Found {reply.ElementIds.Count} elements");
+                throw new Exception($"Found {reply.Elements.Count} elements");
             }
 
             throw new Exception("Failed to receive a reply");

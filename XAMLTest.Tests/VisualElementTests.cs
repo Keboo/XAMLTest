@@ -553,5 +553,24 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
 
             recorder.Success();
         }
+
+        [TestMethod]
+        public async Task OnGetTypedElement_GetsTypedElement()
+        {
+            // Arrange
+            await using TestRecorder recorder = new(App);
+
+            IWindow window = await App.CreateWindowWithContent(@"
+<Grid>
+  <Button x:Name=""MyButton"" IsDefault=""True"" VerticalAlignment=""Center"" HorizontalAlignment=""Center"" />
+</Grid>");
+
+            //Act
+            IVisualElement<Button> button = await window.GetElement<Button>("MyButton");
+
+            //Assert
+            Assert.IsNotNull(button);
+            //Assert.IsTrue(await button.IsDefault());
+        }
     }
 }
