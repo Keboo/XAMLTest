@@ -404,10 +404,15 @@ namespace XamlTest
 
                     Point topLeft = element.TranslatePoint(new Point(0, 0), window);
                     Point bottomRight = element.TranslatePoint(new Point(element.ActualWidth, element.ActualHeight), window);
-                    reply.Left = windowOrigin.X + topLeft.X;
-                    reply.Top = windowOrigin.Y + topLeft.Y;
-                    reply.Right = windowOrigin.X + bottomRight.X;
-                    reply.Bottom = windowOrigin.Y + bottomRight.Y;
+                    double left = windowOrigin.X + topLeft.X;
+                    double top = windowOrigin.Y + topLeft.Y;
+                    double right = windowOrigin.X + bottomRight.X;
+                    double bottom = windowOrigin.Y + bottomRight.Y;
+
+                    reply.Left = Math.Min(left, right);
+                    reply.Top = Math.Min(top, bottom);
+                    reply.Right = Math.Max(left, right);
+                    reply.Bottom = Math.Max(top, bottom);
                 }
                 else
                 {
