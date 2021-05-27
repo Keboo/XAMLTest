@@ -21,6 +21,9 @@
     </PackageReference>
     <PackageReference Include="PInvoke.User32" Version="0.7.78" />
     <PackageReference Include="System.Drawing.Common" Version="5.0.0" />
+    <ProjectReference Include="..\XAMLTest.Generator\XAMLTest.Generator.csproj" 
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false"/>
     
     <Protobuf Include="VTspec.proto" GrpcServices="Both" />
   </ItemGroup>
