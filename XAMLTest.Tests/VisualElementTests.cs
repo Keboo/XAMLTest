@@ -8,7 +8,10 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using XamlTest;
 using XamlTest.Tests.TestControls;
+
+[assembly: GenerateHelpers(typeof(Button))]
 
 namespace XamlTest.Tests
 {
@@ -567,10 +570,11 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
 
             //Act
             IVisualElement<Button> button = await window.GetElement<Button>("MyButton");
-
             //Assert
             Assert.IsNotNull(button);
-            //Assert.IsTrue(await button.IsDefault());
+            
+            Assert.IsTrue(await button.GetIsDefault());
+            Assert.IsFalse(await button.GetIsPressed());
         }
     }
 }
