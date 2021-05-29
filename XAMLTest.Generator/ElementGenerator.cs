@@ -48,7 +48,7 @@ namespace XAMLTest.Generator
                 builder.AppendLine("}");
 
                 string fileName = $"XamlTest{type.Type.Name}GeneratedExtensions.g.cs";
-                File.WriteAllText(@"D:\Dev\XAMLTest\XAMLTest\obj\" + fileName, builder.ToString());
+                //File.WriteAllText(@"D:\Dev\XAMLTest\XAMLTest\obj\" + fileName, builder.ToString());
                 context.AddSource(fileName, builder.ToString());
             }
 
