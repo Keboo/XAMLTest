@@ -1,17 +1,15 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using XamlTest;
 using XamlTest.Tests.TestControls;
-
-[assembly: GenerateHelpers(typeof(Button))]
 
 namespace XamlTest.Tests
 {
