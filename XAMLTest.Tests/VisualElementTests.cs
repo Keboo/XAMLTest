@@ -1,12 +1,11 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using XamlTest.Tests.TestControls;
@@ -68,7 +67,7 @@ namespace XamlTest.Tests
             IWindow window = await App.CreateWindowWithContent(
                 @"<Border x:Name=""MyBorder"" 
 Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left""/>");
-            IVisualElement element = await window.GetElement("MyBorder");
+            IVisualElement<Border> element = await window.GetElement<Border>("MyBorder");
 
             Rect initialCoordinates = await element.GetCoordinates();
             await element.SetWidth(90);
@@ -88,7 +87,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             IWindow window = await App.CreateWindowWithContent(
                 @"<Border x:Name=""MyBorder"" 
 Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left""/>");
-            IVisualElement element = await window.GetElement("MyBorder");
+            IVisualElement<Border> element = await window.GetElement<Border>("MyBorder");
 
             Rect initialCoordinates = await element.GetCoordinates();
             await element.SetWidth(30.7);
@@ -208,7 +207,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         {
             IWindow window = await App.CreateWindowWithContent(
                 @"<Grid x:Name=""MyGrid"" Width=""25"" />");
-            IVisualElement element = await window.GetElement("MyGrid");
+            IVisualElement<Grid> element = await window.GetElement<Grid>("MyGrid");
 
             Assert.AreEqual(25.0, await element.GetWidth());
         }
@@ -218,7 +217,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         {
             IWindow window = await App.CreateWindowWithContent(
                 @"<Grid x:Name=""MyGrid"" Background=""Red"" />");
-            IVisualElement element = await window.GetElement("MyGrid");
+            IVisualElement<Grid> element = await window.GetElement<Grid>("MyGrid");
 
             Assert.AreEqual(Colors.Red, await element.GetBackgroundColor());
         }
@@ -244,7 +243,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         {
             IWindow window = await App.CreateWindowWithContent(
                 @"<TextBlock x:Name=""MyTextblock"" Text=""WPF"" />");
-            IVisualElement element = await window.GetElement("MyTextblock");
+            IVisualElement<TextBlock> element = await window.GetElement<TextBlock>("MyTextblock");
 
             Assert.AreEqual("WPF", await element.GetText());
         }
@@ -254,7 +253,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         {
             IWindow window = await App.CreateWindowWithContent(
                 @"<TextBlock x:Name=""MyTextblock"" Margin=""2,3,4,5"" />");
-            IVisualElement element = await window.GetElement("MyTextblock");
+            IVisualElement<TextBlock> element = await window.GetElement<TextBlock>("MyTextblock");
 
             Assert.AreEqual(new Thickness(2, 3, 4, 5), await element.GetMargin());
         }
@@ -302,7 +301,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         {
             IWindow window = await App.CreateWindowWithContent(
                 @"<Grid x:Name=""MyGrid"" />");
-            IVisualElement element = await window.GetElement("MyGrid");
+            IVisualElement<Grid> element = await window.GetElement<Grid>("MyGrid");
 
             Assert.AreEqual(25.0, await element.SetWidth(25));
         }
@@ -332,7 +331,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         {
             IWindow window = await App.CreateWindowWithContent(
                 @"<TextBlock x:Name=""MyTextblock"" />");
-            IVisualElement element = await window.GetElement("MyTextblock");
+            IVisualElement<TextBlock> element = await window.GetElement<TextBlock>("MyTextblock");
 
             Assert.AreEqual(new Thickness(2, 3, 4, 5), await element.SetMargin(new Thickness(2, 3, 4, 5)));
         }
@@ -386,7 +385,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
     <ListBoxItem Content=""Item3"" />
     <ListBoxItem Content=""Item4"" />
 </ListBox>");
-            IVisualElement element = await window.GetElement("/ListBoxItem");
+            IVisualElement<ListBoxItem> element = await window.GetElement<ListBoxItem>("/ListBoxItem");
 
             Assert.AreEqual("Item1", await element.GetContent());
         }
@@ -418,7 +417,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
     <ListBoxItem Content=""Item3"" />
     <ListBoxItem Content=""Item4"" />
 </ListBox>");
-            IVisualElement element = await window.GetElement("/ListBoxItem[2]");
+            IVisualElement<ListBoxItem> element = await window.GetElement<ListBoxItem>("/ListBoxItem[2]");
 
             Assert.AreEqual("Item3", await element.GetContent());
         }
@@ -430,7 +429,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
 <Border>
   <TextBlock Text=""Text"" />
 </Border>");
-            IVisualElement element = await window.GetElement("/Border.Child/TextBlock");
+            IVisualElement<TextBlock> element = await window.GetElement<TextBlock>("/Border.Child/TextBlock");
 
             Assert.AreEqual("Text", await element.GetText());
         }
@@ -442,7 +441,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
 <Grid>
   <TextBox x:Name=""MyTextBox"" Text=""Text"" />
 </Grid>");
-            IVisualElement element = await window.GetElement("/Grid~MyTextBox");
+            IVisualElement<TextBox> element = await window.GetElement<TextBox>("/Grid~MyTextBox");
 
             Assert.AreEqual("Text", await element.GetText());
         }
@@ -451,9 +450,9 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         public async Task OnGetElement_ItRetrieveElementFromAdornerLayer()
         {
             IWindow window = await App.CreateWindowWithUserControl<TextBox_ValidationError>();
-            IVisualElement textBox = await window.GetElement("/TextBox");
+            IVisualElement<TextBox> textBox = await window.GetElement<TextBox>("/TextBox");
 
-            IVisualElement validationMessage = await textBox.GetElement("ErrorMessageText");
+            IVisualElement<TextBlock> validationMessage = await textBox.GetElement<TextBlock>("ErrorMessageText");
 
             Assert.IsTrue(await validationMessage.GetIsVisible());
         }
@@ -465,7 +464,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
 <Grid>
   <TextBox x:Name=""MyTextBox"" Text=""Text"" AutomationProperties.AutomationId=""TextBoxId""/>
 </Grid>");
-            IVisualElement element = await window.GetElement("[AutomationProperties.AutomationId=\"TextBoxId\"]");
+            IVisualElement<TextBox> element = await window.GetElement<TextBox>("[AutomationProperties.AutomationId=\"TextBoxId\"]");
 
             Assert.AreEqual("MyTextBox", await element.GetName());
         }
@@ -477,7 +476,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
 <Grid>
   <TextBox x:Name=""MyTextBox"" />
 </Grid>");
-            IVisualElement element = await window.GetElement("/Grid~MyTextBox");
+            IVisualElement<TextBox> element = await window.GetElement<TextBox>("/Grid~MyTextBox");
             Assert.IsFalse(await element.GetIsKeyboardFocused());
 
             await element.MoveKeyboardFocus();
@@ -494,7 +493,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
 <Grid>
   <TextBox x:Name=""MyTextBox"" VerticalAlignment=""Center"" Margin=""40"" />
 </Grid>");
-            IVisualElement element = await window.GetElement("/Grid~MyTextBox");
+            IVisualElement<TextBox> element = await window.GetElement<TextBox>("/Grid~MyTextBox");
             await element.MoveKeyboardFocus();
 
             await element.SendInput($"Test Text!");
@@ -513,7 +512,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
 <Grid>
   <TextBox x:Name=""MyTextBox"" AcceptsReturn=""True"" MinWidth=""280"" Height=""80"" VerticalAlignment=""Center"" HorizontalAlignment=""Center"" />
 </Grid>");
-            IVisualElement element = await window.GetElement("/Grid~MyTextBox");
+            IVisualElement<TextBox> element = await window.GetElement<TextBox>("/Grid~MyTextBox");
             await element.MoveKeyboardFocus();
 
             await element.SendInput($"First Line{Key.Enter}Second Line");
@@ -570,9 +569,29 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             IVisualElement<Button> button = await window.GetElement<Button>("MyButton");
             //Assert
             Assert.IsNotNull(button);
-            
+
+            Assert.IsTrue(await button.GetActualWidth() > 0);
             Assert.IsTrue(await button.GetIsDefault());
             Assert.IsFalse(await button.GetIsPressed());
+        }
+
+        [TestMethod]
+        public async Task OnGetTypedElement_GetsTypedElementByBaseType()
+        {
+            // Arrange
+            await using TestRecorder recorder = new(App);
+
+            IWindow window = await App.CreateWindowWithContent(@"
+<Grid>
+  <Button x:Name=""MyButton"" IsDefault=""True"" VerticalAlignment=""Center"" HorizontalAlignment=""Center"" />
+</Grid>");
+
+            //Act
+            IVisualElement<ButtonBase> button = await window.GetElement<ButtonBase>("MyButton");
+            
+            //Assert
+            Assert.IsNotNull(button);
+            Assert.IsTrue(await button.GetActualWidth() > 0);
         }
     }
 }

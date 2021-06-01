@@ -41,9 +41,6 @@ namespace XAMLTest.Generator
                 builder.AppendLine("    {");
                 foreach (var property in type.DependencyProperties)
                 {
-                    /*
-                     * public static async Task<double> GetActualHeight(this IVisualElement element)
-                     */
                     builder.AppendLine();
                     if (property.CanRead)
                     {
@@ -52,6 +49,16 @@ namespace XAMLTest.Generator
                             .AppendLine($"public static async System.Threading.Tasks.Task<{property.TypeFullName}> Get{property.Name}(this IVisualElement<{type.Type.FullName}> element)")
                             .Append("            ")
                             .AppendLine($"=> await element.GetProperty<{property.TypeFullName}>(nameof({type.Type.FullName}.{property.Name}));");
+                        
+                        if (property.TypeFullName == "System.Windows.Media.SolidColorBrush" ||
+                            property.TypeFullName == "System.Windows.Media.Brush")
+                        {
+                            builder
+                            .Append("        ")
+                            .AppendLine($"public static async System.Threading.Tasks.Task<System.Windows.Media.Color> Get{property.Name}Color(this IVisualElement<{type.Type.FullName}> element)")
+                            .Append("            ")
+                            .AppendLine($"=> await element.GetProperty<System.Windows.Media.Color>(nameof({type.Type.FullName}.{property.Name}));");
+                        }
                     }
                     if (property.CanWrite)
                     {

@@ -4,6 +4,7 @@
     <WarningsAsErrors>true</WarningsAsErrors>
     <AnalysisLevel>5</AnalysisLevel>
     <LangVersion>9.0</LangVersion>
+    <Version>1.2.4</Version>
   </PropertyGroup>
 
   <PropertyGroup>

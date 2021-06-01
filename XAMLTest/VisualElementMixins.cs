@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Media;
-using XamlTest;
 
 namespace XamlTest
 {
-
     public static partial class VisualElementMixins
     {
         public static async Task<Color> GetEffectiveBackground(this IVisualElement element) 
@@ -64,18 +61,6 @@ namespace XamlTest
             IValue value = await element.GetProperty(dependencyProperty.Name, dependencyProperty.OwnerType.AssemblyQualifiedName);
             return value.GetAs<T?>();
         }
-
-        public static async Task<string?> GetText(this IVisualElement element)
-            => await element.GetProperty<string?>("Text");
-
-        public static async Task<Color> GetBackgroundColor(this IVisualElement element)
-            => await element.GetProperty<Color>("Background");
-
-        public static async Task<Color> GetForegroundColor(this IVisualElement element)
-            => await element.GetProperty<Color>("Foreground");
-
-        public static async Task<object?> GetContent(this IVisualElement element)
-            => await element.GetProperty<object?>("Content");
 
         public static async Task<IValue> SetProperty(this IVisualElement element, 
             string name, string value, string? valueType = null)
