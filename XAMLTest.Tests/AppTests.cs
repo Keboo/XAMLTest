@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Media;
 using XamlTest.Tests.TestControls;
 using XamlTest.Transport;
+using XamlTest;
 
 namespace XamlTest.Tests
 {
@@ -17,7 +18,7 @@ namespace XamlTest.Tests
         public async Task OnStartRemote_LaunchesRemoteApp()
         {
             await using var app = App.StartRemote<XAMLTest.TestApp.App>();
-            
+
             IWindow? window = await app.GetMainWindow();
 
             Assert.AreEqual("Test App Window", await window!.GetTitle());
@@ -62,7 +63,7 @@ namespace XamlTest.Tests
             await app.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
 
             IWindow? mainWindow = await app.GetMainWindow();
-            
+
             Assert.IsNull(mainWindow);
 
             recorder.Success();
@@ -80,7 +81,7 @@ namespace XamlTest.Tests
             IWindow window2 = await app.CreateWindowWithContent("");
 
             IWindow? mainWindow = await app.GetMainWindow();
-            
+
             Assert.AreEqual(window1, mainWindow);
 
             recorder.Success();
@@ -98,7 +99,7 @@ namespace XamlTest.Tests
             IWindow window2 = await app.CreateWindowWithContent("");
 
             IReadOnlyList<IWindow> windows = await app.GetWindows();
-            
+
             CollectionAssert.AreEqual(new[] { window1, window2 }, windows.ToArray());
 
             recorder.Success();
