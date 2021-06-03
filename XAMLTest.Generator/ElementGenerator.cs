@@ -18,7 +18,6 @@ namespace XAMLTest.Generator
                   DiagnosticSeverity.Warning,
                   isEnabledByDefault: true);
 
-
         public void Execute(GeneratorExecutionContext context)
         {
             SyntaxReceiver rx = (SyntaxReceiver)context.SyntaxContextReceiver!;
@@ -105,6 +104,11 @@ namespace XAMLTest.Generator
 
     public class SyntaxReceiver : ISyntaxContextReceiver
     {
+        private static HashSet<string> IgnoredTypes { get; } = new()
+        {
+            "System.Windows.TriggerCollection",
+            "System.Windows.Media.CacheMode"
+        };
         private List<VisualElement> Elements { get; } = new();
         public IReadOnlyList<VisualElement> GeneratedTypes => Elements;
 
@@ -130,7 +134,8 @@ namespace XAMLTest.Generator
                             property.CanBeReferencedByName &&
                             property.DeclaredAccessibility == Accessibility.Public &&
                             !property.GetAttributes().Any(x => x.AttributeClass.Name == "ObsoleteAttribute") &&
-                            !properties.ContainsKey(property.Name))
+                            !properties.ContainsKey(property.Name) &&
+                            !IgnoredTypes.Contains($"{property.Type}"))
                         {
                             properties[property.Name] = 
                                 new Property(

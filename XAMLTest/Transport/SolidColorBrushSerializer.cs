@@ -4,6 +4,7 @@ using System.Windows.Media;
 
 namespace XamlTest.Transport
 {
+
     public class SolidColorBrushSerializer : ISerializer
     {
         public bool CanSerialize(Type type)

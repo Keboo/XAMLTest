@@ -8,6 +8,7 @@ using System.Windows.Media;
 using XamlTest.Tests.TestControls;
 using XamlTest.Transport;
 using XamlTest;
+using System.Windows;
 
 namespace XamlTest.Tests
 {
@@ -18,9 +19,7 @@ namespace XamlTest.Tests
         public async Task OnStartRemote_LaunchesRemoteApp()
         {
             await using var app = App.StartRemote<XAMLTest.TestApp.App>();
-
             IWindow? window = await app.GetMainWindow();
-
             Assert.AreEqual("Test App Window", await window!.GetTitle());
         }
 
