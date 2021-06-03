@@ -40,7 +40,6 @@ namespace XamlTest.Tests
         {
             IWindow window = await App.CreateWindowWithContent(@"<Grid x:Name=""MyGrid"" />");
             IVisualElement element = await window.GetElement("MyGrid");
-
             await element.GetResource("TestResource");
         }
 
@@ -588,7 +587,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
 
             //Act
             IVisualElement<ButtonBase> button = await window.GetElement<ButtonBase>("MyButton");
-            
+
             //Assert
             Assert.IsNotNull(button);
             Assert.IsTrue(await button.GetActualWidth() > 0);

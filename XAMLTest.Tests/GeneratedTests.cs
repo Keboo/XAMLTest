@@ -48,6 +48,7 @@ namespace XamlTest.Tests
                     ?? targetAssembly.GetType($"System.Windows.Controls.Primatives.{typeName}");
 
                 if (targetType is null) continue;
+                if (targetType == typeof(AdornedElementPlaceholder)) continue;
                 if (!targetType.GetConstructors().Any(c => c.GetParameters().Length == 0)) continue;
 
                 IWindow window = await App.CreateWindowWithContent(@$"<{typeName} x:Name=""Thingy"" />");
@@ -56,7 +57,8 @@ namespace XamlTest.Tests
                 dynamic task = typedGetElement.Invoke(window, new object[] { "Thingy" })!;
                 var element = await task;
 
-                foreach(var getMethod in extensionClass.GetMethods().Where(x => x.Name.StartsWith("Get")))
+                foreach(var getMethod in extensionClass.GetMethods()
+                    .Where(x => x.Name.StartsWith("Get") && x.IsStatic))
                 {
                     //NB: Just validating we can invoke all get methods
                     //This ensures that all types can be serialized

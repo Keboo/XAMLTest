@@ -4,19 +4,20 @@ using System.Windows.Media;
 
 namespace XamlTest.Transport
 {
-
-    public class SolidColorBrushSerializer : ISerializer
+    public class BrushSerializer : ISerializer
     {
         public bool CanSerialize(Type type)
-            => type == typeof(SolidColorBrush) ||
+            => type == typeof(Brush) ||
+               type == typeof(SolidColorBrush) ||
                type == typeof(Color) ||
                type == typeof(Color?);
 
         public object? Deserialize(Type type, string value)
         {
-            if (type == typeof(SolidColorBrush))
+            if (type == typeof(SolidColorBrush) ||
+                type == typeof(Brush))
             {
-                if (!string.IsNullOrWhiteSpace(value) &&
+                if (!string.IsNullOrEmpty(value) &&
                     JsonSerializer.Deserialize<BrushData>(value) is { } brushData)
                 {
                     return (SolidColorBrush)brushData;
@@ -24,7 +25,8 @@ namespace XamlTest.Transport
             }
             else if (type == typeof(Color))
             {
-                if (JsonSerializer.Deserialize<BrushData>(value) is { } brushData)
+                if (!string.IsNullOrEmpty(value) &&
+                    JsonSerializer.Deserialize<BrushData>(value) is { } brushData)
                 {
                     return (Color)brushData;
                 }
@@ -32,7 +34,7 @@ namespace XamlTest.Transport
             }
             else if (type == typeof(Color?))
             {
-                if (!string.IsNullOrWhiteSpace(value) &&
+                if (!string.IsNullOrEmpty(value) &&
                     JsonSerializer.Deserialize<BrushData>(value) is { } brushData)
                 {
                     return (Color)brushData;

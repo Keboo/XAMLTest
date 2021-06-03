@@ -172,7 +172,7 @@ namespace XamlTest.Tests
             var serializers = await app.GetSerializers();
 
             Assert.AreEqual(2, serializers.Count);
-            Assert.IsInstanceOfType(serializers[0], typeof(SolidColorBrushSerializer));
+            Assert.IsInstanceOfType(serializers[0], typeof(BrushSerializer));
             Assert.IsInstanceOfType(serializers[1], typeof(DefaultSerializer));
         }
 
@@ -187,7 +187,7 @@ namespace XamlTest.Tests
             var serializers = await app.GetSerializers();
 
             Assert.AreEqual(3, serializers.Count);
-            Assert.IsInstanceOfType(serializers[0], typeof(SolidColorBrushSerializer));
+            Assert.IsInstanceOfType(serializers[0], typeof(BrushSerializer));
             Assert.IsInstanceOfType(serializers[1], typeof(CustomSerializer));
             Assert.IsInstanceOfType(serializers[2], typeof(DefaultSerializer));
         }

@@ -107,7 +107,27 @@ namespace XAMLTest.Generator
         private static HashSet<string> IgnoredTypes { get; } = new()
         {
             "System.Windows.TriggerCollection",
-            "System.Windows.Media.CacheMode"
+            "System.Windows.Media.CacheMode",
+            "System.Windows.Input.CommandBindingCollection",
+            "System.Windows.Media.Effects.Effect",
+            "System.Windows.Input.InputBindingCollection",
+            "System.Collections.Generic.IEnumerable<System.Windows.Input.TouchDevice>",
+            "System.Windows.DependencyObjectType",
+            "System.Windows.Threading.Dispatcher",
+            "System.Windows.TextDecorationCollection",
+            "System.Windows.Media.TextEffectCollection",
+            "System.Windows.Data.BindingGroup",
+            "System.Windows.Controls.ContextMenu", //This should be made into a IVisualElement<ContextMenu>
+            "System.Windows.Style",
+            "System.Windows.DependencyObject", //This should be IVisualElement
+            "System.Windows.ResourceDictionary",
+            "System.Windows.UIElement", //This should be IVisualElement
+            "System.Windows.IInputElement", //This should be IVisualElement
+            "System.Windows.DataTemplate",
+            "System.Windows.Controls.DataTemplateSelector",
+            "System.Windows.Controls.ControlTemplate",
+            "System.Windows.Controls.CalendarBlackoutDatesCollection",
+            "System.Windows.Controls.SelectedDatesCollection",
         };
         private List<VisualElement> Elements { get; } = new();
         public IReadOnlyList<VisualElement> GeneratedTypes => Elements;
