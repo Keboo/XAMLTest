@@ -27,7 +27,8 @@ namespace XAMLTest.UnitTestGenerator
                 string targetTypeFullName = $"{targetType.Type}";
                 string targetTypeName = targetType.Type!.Name;
                 var extensionClass = context.Compilation.GetTypeByMetadataName($"XamlTest.{targetTypeName}{suffix}");
-                
+                if (extensionClass is null) continue;
+
                 string variableTargetTypeName = 
                     char.ToLowerInvariant(targetType.Type.Name[0]) 
                     + targetType.Type.Name.Substring(1);
