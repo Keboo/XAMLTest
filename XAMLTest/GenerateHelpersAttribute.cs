@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Windows;
 using XamlTest;
 
 [assembly: GenerateHelpers(typeof(System.Windows.Window))]

@@ -572,6 +572,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             Assert.IsTrue(await button.GetActualWidth() > 0);
             Assert.IsTrue(await button.GetIsDefault());
             Assert.IsFalse(await button.GetIsPressed());
+            recorder.Success();
         }
 
         [TestMethod]
@@ -591,6 +592,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             //Assert
             Assert.IsNotNull(button);
             Assert.IsTrue(await button.GetActualWidth() > 0);
+            recorder.Success();
         }
     }
 }

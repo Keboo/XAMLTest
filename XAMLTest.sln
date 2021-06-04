@@ -18,7 +18,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XAMLTest.Tests", "XAMLTest.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XAMLTest.TestApp", "XAMLTest.TestApp\XAMLTest.TestApp.csproj", "{FA295C70-BF89-4727-8B39-AA1F2CB8E5DE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XAMLTest.Generator", "XAMLTest.Generator\XAMLTest.Generator.csproj", "{CBBE847F-498F-4E17-A437-9B02E6DB7398}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XAMLTest.Generator", "XAMLTest.Generator\XAMLTest.Generator.csproj", "{CBBE847F-498F-4E17-A437-9B02E6DB7398}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XAMLTest.UnitTestGenerator", "XAMLTest.UnitTestGenerator\XAMLTest.UnitTestGenerator.csproj", "{B320FF6B-1691-4BFB-821E-2DD89817AD98}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -42,6 +44,10 @@ Global
 		{CBBE847F-498F-4E17-A437-9B02E6DB7398}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CBBE847F-498F-4E17-A437-9B02E6DB7398}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CBBE847F-498F-4E17-A437-9B02E6DB7398}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B320FF6B-1691-4BFB-821E-2DD89817AD98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B320FF6B-1691-4BFB-821E-2DD89817AD98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B320FF6B-1691-4BFB-821E-2DD89817AD98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B320FF6B-1691-4BFB-821E-2DD89817AD98}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -74,7 +74,7 @@ namespace XamlTest.Internal
                 Name = name,
                 OwnerType = ownerType ?? ""
             };
-            LogMessage?.Invoke($"{nameof(GetProperty)}({name},{ownerType})");
+            LogMessage?.Invoke($"{nameof(GetProperty)}({name}{(!string.IsNullOrEmpty(ownerType) ? ",": "")}{ownerType})");
             if (await Client.GetPropertyAsync(propertyQuery) is { } reply)
             {
                 if (reply.ErrorMessages.Any())

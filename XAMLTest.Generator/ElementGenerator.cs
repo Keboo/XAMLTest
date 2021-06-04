@@ -128,6 +128,21 @@ namespace XAMLTest.Generator
             "System.Windows.Controls.ControlTemplate",
             "System.Windows.Controls.CalendarBlackoutDatesCollection",
             "System.Windows.Controls.SelectedDatesCollection",
+            "System.Windows.Controls.UIElementCollection",
+            "System.Collections.ObjectModel.ObservableCollection<System.Windows.Controls.GroupStyle>",
+            "System.Windows.Controls.GroupStyleSelector",
+            "System.Windows.Controls.ItemContainerGenerator",
+            "System.Windows.Controls.StyleSelector",
+            "System.Windows.Controls.ItemCollection",
+            "System.Windows.Controls.ItemsPanelTemplate",
+            "System.Collections.ObjectModel.ObservableCollection<System.Windows.Controls.DataGridColumn>",
+            "System.Windows.Controls.DataGridCellInfo",
+            "System.Windows.Controls.DataGridColumn",
+            "System.Collections.ObjectModel.ObservableCollection<System.Windows.Controls.ValidationRule>",
+            "System.Collections.Generic.IList<System.Windows.Controls.DataGridCellInfo>",
+            "System.Collections.IList",
+            "System.Windows.Controls.Primitives.IItemContainerGenerator",
+            "System.Windows.Documents.IDocumentPaginatorSource"
         };
         private List<VisualElement> Elements { get; } = new();
         public IReadOnlyList<VisualElement> GeneratedTypes => Elements;
@@ -152,6 +167,7 @@ namespace XAMLTest.Generator
                     {
                         if (member is IPropertySymbol property &&
                             property.CanBeReferencedByName &&
+                            !property.IsStatic &&
                             property.DeclaredAccessibility == Accessibility.Public &&
                             !property.GetAttributes().Any(x => x.AttributeClass.Name == "ObsoleteAttribute") &&
                             !properties.ContainsKey(property.Name) &&
