@@ -15,7 +15,7 @@ namespace XAMLTest.UnitTestGenerator
 #if DEBUG
             if (!Debugger.IsAttached)
             {
-                Debugger.Launch();
+                //Debugger.Launch();
             }
 #endif
             SyntaxReceiver rx = (SyntaxReceiver)context.SyntaxContextReceiver!;
@@ -24,8 +24,9 @@ namespace XAMLTest.UnitTestGenerator
             {
                 StringBuilder sb = new();
                 const string suffix = "GeneratedExtensions";
-                string targetTypeName = $"{targetType.Type}";
-                var extensionClass = context.Compilation.GetTypeByMetadataName($"XamlTest.{targetType.Type!.Name}{suffix}");
+                string targetTypeFullName = $"{targetType.Type}";
+                string targetTypeName = targetType.Type!.Name;
+                var extensionClass = context.Compilation.GetTypeByMetadataName($"XamlTest.{targetTypeName}{suffix}");
                 
                 string variableTargetTypeName = 
                     char.ToLowerInvariant(targetType.Type.Name[0]) 
@@ -76,10 +77,11 @@ namespace XamlTest.Tests.Generated
             IWindow appWindow = await App.CreateWindowWithContent(@$""<{targetTypeName} x:Name=""""Test{targetTypeName}"""" /> "");
 
             //Act
-            IVisualElement<{targetTypeName}> {variableTargetTypeName} = await appWindow.GetElement<{targetTypeName}>(""Test{targetTypeName}"");
+            IVisualElement<{targetTypeFullName}> {variableTargetTypeName} = await appWindow.GetElement<{targetTypeFullName}>(""Test{targetTypeName}"");
+            var actual = await {variableTargetTypeName}.{getMethod.Name}();
 
             //Assert
-            Assert.AreEqual(default({targetTypeName}), await {variableTargetTypeName}.{getMethod.Name}());
+            //{GetAssertion(getMethod.Name.Substring(3), methodReturnType)}
 
             recorder.Success();
         }}
@@ -95,11 +97,27 @@ namespace XamlTest.Tests.Generated
             }
         }
 
-
-
         public void Initialize(GeneratorInitializationContext context)
         {
             context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
+        }
+
+        private static string GetAssertion(string propertyName, string returnType)
+        {
+            switch(propertyName)
+            {
+                case "ActualHeight":
+                case "ActualWidth":
+                    return "Assert.IsTrue(actual > 0);";
+                case "Width":
+                case "Height":
+                    return "Assert.IsTrue(double.IsNaN(actual) || actual >= 0);";
+                case "VerticalAlignment":
+                case "HorizontalAlignment":
+                    
+                default:
+                    return $"Assert.AreEqual(default({returnType}), actual);";
+            }
         }
 
         public class SyntaxReceiver : ISyntaxContextReceiver

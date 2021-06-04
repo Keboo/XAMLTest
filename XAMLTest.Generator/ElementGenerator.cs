@@ -44,17 +44,33 @@ namespace XAMLTest.Generator
                     if (property.CanRead)
                     {
                         builder
-                            .Append("        ")
-                            .AppendLine($"public static async System.Threading.Tasks.Task<{property.TypeFullName}> Get{property.Name}(this IVisualElement<{type.Type.FullName}> element)")
-                            .Append("            ")
+                            .Append("        ");
+
+                        if (type.Type.IsFinal)
+                        {
+                            builder.AppendLine($"public static async System.Threading.Tasks.Task<{property.TypeFullName}> Get{property.Name}(this IVisualElement<{type.Type.FullName}> element)");
+                        }
+                        else
+                        {
+                            builder.AppendLine($"public static async System.Threading.Tasks.Task<{property.TypeFullName}> Get{property.Name}<T>(this IVisualElement<T> element) where T : {type.Type.FullName}");
+                        }
+                        builder.Append("            ")
                             .AppendLine($"=> await element.GetProperty<{property.TypeFullName}>(nameof({type.Type.FullName}.{property.Name}));");
                         
                         if (property.TypeFullName == "System.Windows.Media.SolidColorBrush" ||
                             property.TypeFullName == "System.Windows.Media.Brush")
                         {
                             builder
-                            .Append("        ")
-                            .AppendLine($"public static async System.Threading.Tasks.Task<System.Windows.Media.Color> Get{property.Name}Color(this IVisualElement<{type.Type.FullName}> element)")
+                            .Append("        ");
+                            if (type.Type.IsFinal)
+                            {
+                                builder.AppendLine($"public static async System.Threading.Tasks.Task<System.Windows.Media.Color> Get{property.Name}Color(this IVisualElement<{type.Type.FullName}> element)");
+                            }
+                            else
+                            {
+                                builder.AppendLine($"public static async System.Threading.Tasks.Task<System.Windows.Media.Color> Get{property.Name}Color<T>(this IVisualElement<T> element) where T : {type.Type.FullName}");
+                            }
+                            builder
                             .Append("            ")
                             .AppendLine($"=> await element.GetProperty<System.Windows.Media.Color>(nameof({type.Type.FullName}.{property.Name}));");
                         }
@@ -62,8 +78,17 @@ namespace XAMLTest.Generator
                     if (property.CanWrite)
                     {
                         builder
-                            .Append("        ")
-                            .AppendLine($"public static async System.Threading.Tasks.Task<{property.TypeFullName}> Set{property.Name}(this IVisualElement<{type.Type.FullName}> element, {property.TypeFullName} value)")
+                            .Append("        ");
+
+                        if (type.Type.IsFinal)
+                        {
+                            builder.AppendLine($"public static async System.Threading.Tasks.Task<{property.TypeFullName}> Set{property.Name}(this IVisualElement<{type.Type.FullName}> element, {property.TypeFullName} value)");
+                        }
+                        else
+                        {
+                            builder.AppendLine($"public static async System.Threading.Tasks.Task<{property.TypeFullName}> Set{property.Name}<T>(this IVisualElement<T> element, {property.TypeFullName} value) where T : {type.Type.FullName}");
+                        }
+                        builder
                             .Append("            ")
                             .AppendLine($"=> await element.SetProperty(nameof({type.Type.FullName}.{property.Name}), value);");
                     }
@@ -72,7 +97,7 @@ namespace XAMLTest.Generator
                 builder.AppendLine("}");
 
                 string fileName = $"XamlTest{type.Type.Name}GeneratedExtensions.g.cs";
-                //File.WriteAllText(@"D:\Dev\XAMLTest\XAMLTest\obj\" + fileName, builder.ToString());
+                System.IO.File.WriteAllText(@"D:\Dev\XAMLTest\XAMLTest\obj\" + fileName, builder.ToString());
                 context.AddSource(fileName, builder.ToString());
             }
 
@@ -96,7 +121,7 @@ namespace XAMLTest.Generator
         IReadOnlyList<Property> DependencyProperties)
     { }
 
-    public record VisualElementType(string Name, string FullName)
+    public record VisualElementType(string Name, string FullName, bool IsFinal)
     { }
 
     public record Property(string Name, string TypeFullName, bool CanRead, bool CanWrite)
@@ -154,40 +179,16 @@ namespace XAMLTest.Generator
                 && attrib.ArgumentList?.Arguments.Count >= 1
                 && context.SemanticModel.GetTypeInfo(attrib).Type?.Name == "GenerateHelpersAttribute")
             {
-                Dictionary<string, Property> properties = new();
                 TypeOfExpressionSyntax typeArgument = (TypeOfExpressionSyntax)attrib.ArgumentList.Arguments[0].Expression;
                 TypeInfo info = context.SemanticModel.GetTypeInfo(typeArgument.Type);
                 if (info.Type is null) return;
 
-                for (ITypeSymbol? type = info.Type;
-                    type is not null;
-                    type = type.BaseType)
-                {
-                    foreach (ISymbol member in type.GetMembers())
-                    {
-                        if (member is IPropertySymbol property &&
-                            property.CanBeReferencedByName &&
-                            !property.IsStatic &&
-                            property.DeclaredAccessibility == Accessibility.Public &&
-                            !property.GetAttributes().Any(x => x.AttributeClass.Name == "ObsoleteAttribute") &&
-                            !properties.ContainsKey(property.Name) &&
-                            !IgnoredTypes.Contains($"{property.Type}"))
-                        {
-                            properties[property.Name] = 
-                                new Property(
-                                    property.Name,
-                                    $"{property.Type}",
-                                    property.GetMethod is not null,
-                                    property.SetMethod is not null);
-                        }
-                    }
-                }
                 string? targetNamespace = null;
-                foreach(AttributeArgumentSyntax argumentExpression in attrib.ArgumentList.Arguments.Skip(1))
+                foreach (AttributeArgumentSyntax argumentExpression in attrib.ArgumentList.Arguments.Skip(1))
                 {
                     string? target = argumentExpression.NameEquals?.Name.Identifier.Value?.ToString();
 
-                    switch(target)
+                    switch (target)
                     {
                         case "Namespace":
                             switch (argumentExpression.Expression)
@@ -203,8 +204,37 @@ namespace XAMLTest.Generator
                     }
                 }
 
-                var visualElementType = new VisualElementType(info.Type.Name, $"{info.Type}");
-                Elements.Add(new VisualElement(targetNamespace ?? "XamlTest", visualElementType, properties.Values.ToList()));
+                for (ITypeSymbol? type = info.Type;
+                    type is not null;
+                    type = type.BaseType)
+                {
+                    List<Property> properties = new();
+
+                    if (Elements.Any(x => x.Type.FullName == $"{type}")) continue;
+                    
+                    foreach (ISymbol member in type.GetMembers())
+                    {
+                        if (member is IPropertySymbol property &&
+                            property.CanBeReferencedByName &&
+                            !property.IsStatic &&
+                            property.DeclaredAccessibility == Accessibility.Public &&
+                            !property.GetAttributes().Any(x => x.AttributeClass.Name == "ObsoleteAttribute") &&
+                            !IgnoredTypes.Contains($"{property.Type}"))
+                        {
+                            properties.Add( 
+                                new Property(
+                                    property.Name,
+                                    $"{property.Type}",
+                                    property.GetMethod is not null,
+                                    property.SetMethod is not null));
+                        }
+                    }
+                    if (properties.Any())
+                    {
+                        var visualElementType = new VisualElementType(type.Name, $"{type}", type.IsSealed || type.IsValueType);
+                        Elements.Add(new VisualElement(targetNamespace ?? "XamlTest", visualElementType, properties));
+                    }
+                }
             }
         }
     }

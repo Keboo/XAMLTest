@@ -159,7 +159,7 @@ namespace XamlTest.Tests
             App.Dispose();
         }
 
-        [TestMethod]
+        [TestMethod, Ignore]
         public async Task CanInvokeGeneratedHelperMethods()
         {
             var extensionMethods = typeof(IVisualElement).Assembly.GetExportedTypes()
