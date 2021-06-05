@@ -4,7 +4,7 @@ namespace XamlTest
 {
     public interface IValue
     {
-        string Value { get; }
+        object? Value { get; }
         string? ValueType { get; }
 
         [return: MaybeNull]

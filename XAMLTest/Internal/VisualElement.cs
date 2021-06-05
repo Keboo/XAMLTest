@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,8 +22,12 @@ namespace XamlTest.Internal
 
     internal class VisualElement : IVisualElement
     {
-        public VisualElement(Protocol.ProtocolClient client, string id, 
-            Serializer serializer, Action<string>? logMessage)
+        public VisualElement(
+            Protocol.ProtocolClient client,
+            string id,
+            IEnumerable<string> allowedTypes,
+            Serializer serializer,
+            Action<string>? logMessage)
         {
             Client = client ?? throw new ArgumentNullException(nameof(client));
             Id = id ?? throw new ArgumentNullException(nameof(id));
@@ -34,6 +39,7 @@ namespace XamlTest.Internal
         private Protocol.ProtocolClient Client { get; }
 
         protected string Id { get; }
+        private IReadOnlyList<string> AllowedTypes { get; }
         public Action<string>? LogMessage { get; }
 
         public async Task<IVisualElement> GetElement(string query)
@@ -58,7 +64,7 @@ namespace XamlTest.Internal
                     {
                         throw new Exception($"Element of type '{element.AllowedTypes[0]}' does not match desired type '{typeof(TElement).AssemblyQualifiedName}'");
                     }
-                    return new VisualElement<TElement>(Client, reply.Elements[0].Id, Serializer, LogMessage);
+                    return new VisualElement<TElement>(Client, element.Id, Serializer, LogMessage);
                 }
                 throw new Exception($"Found {reply.Elements.Count} elements");
             }
@@ -83,6 +89,15 @@ namespace XamlTest.Internal
                 }
                 if (reply.PropertyType is { } propertyType)
                 {
+                    if (reply.Element is { } element)
+                    {
+                        if (!element.AllowedTypes.Contains(typeof(TElement).AssemblyQualifiedName))
+                        {
+                            throw new Exception($"Element of type '{element.AllowedTypes[0]}' does not match desired type '{typeof(TElement).AssemblyQualifiedName}'");
+                        }
+                        var visualElement = new VisualElement(Client, element.Id, Serializer, LogMessage);
+                        return new Property(propertyType, BaseValue.VisualElementType, visualElement, Serializer);
+                    }
                     return new Property(propertyType, reply.ValueType, reply.Value, Serializer);
                 }
                 throw new Exception("Property does not have a type specified");

@@ -91,6 +91,14 @@ message PropertyQuery {
   string ownerType = 3;
 }
 
+message PropertyResult {
+  repeated string errorMessages = 1;
+  string value = 2;
+  string valueType = 3;
+  string propertyType = 4;
+  Element element = 5;
+}
+
 message EffectiveBackgroundQuery {
   string elementId = 1;
   string toElementId = 2;
@@ -110,13 +118,6 @@ message SetPropertyRequest {
   string value = 3;
   string valueType = 4;
   string ownerType = 5;
-}
-
-message PropertyResult {
-  repeated string errorMessages = 1;
-  string value = 2;
-  string valueType = 3;
-  string propertyType = 4;
 }
 
 message ResourceQuery {

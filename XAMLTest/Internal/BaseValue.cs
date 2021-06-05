@@ -5,12 +5,15 @@ namespace XamlTest.Internal
 {
     internal abstract class BaseValue : IValue
     {
+        public static string VisualElementType =
+            typeof(IVisualElement<>).AssemblyQualifiedName!;
+
         protected Serializer Serializer { get; }
 
-        public string Value { get; }
+        public object? Value { get; }
         public string? ValueType { get; }
 
-        protected BaseValue(string? valueType, string value, Serializer serializer)
+        protected BaseValue(string? valueType, object? value, Serializer serializer)
         {
             ValueType = valueType;
             Value = value;
@@ -25,7 +28,7 @@ namespace XamlTest.Internal
                 return default;
             }
 
-            return (T)Serializer.Deserialize(typeof(T), Value)!;
+            return (T)Serializer.Deserialize(typeof(T), Value?.ToString() ??)!;
         }
     }
 }

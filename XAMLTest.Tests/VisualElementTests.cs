@@ -594,5 +594,58 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             Assert.IsTrue(await button.GetActualWidth() > 0);
             recorder.Success();
         }
+
+        [TestMethod]
+        public async Task OnGetProperty_WhenPropertyIsDependencyObject_GetVisualElement()
+        {
+            // Arrange
+            await using TestRecorder recorder = new(App);
+
+            IWindow window = await App.CreateWindowWithContent(@"<StackPanel x:Name=""Panel"">");
+            IVisualElement<StackPanel> stackPanel = await window.GetElement<StackPanel>("Panel");
+
+            //Act
+            IVisualElement<ScrollViewer> scrollViewer = await stackPanel.GetScrollOwner();
+
+            //Assert
+            Assert.IsNotNull(scrollViewer);
+            recorder.Success();
+        }
+
+        [TestMethod]
+        public async Task OnGetElement_WithNonGenericReference_CanCastToGeneric()
+        {
+            // Arrange
+            await using TestRecorder recorder = new(App);
+
+            IWindow window = await App.CreateWindowWithContent(@"<StackPanel x:Name=""Panel"">");
+            IVisualElement panel = await window.GetElement("Panel");
+
+            //Act
+            IVisualElement<StackPanel> stackPanel = (IVisualElement<StackPanel>)panel;
+
+
+            //Assert
+            Assert.AreEqual("Panel", await stackPanel.GetName());
+            recorder.Success();
+        }
+
+        [TestMethod]
+        public async Task OnGetElement_WithNonGenericReference_CanCastToGenericBaseType()
+        {
+            // Arrange
+            await using TestRecorder recorder = new(App);
+
+            IWindow window = await App.CreateWindowWithContent(@"<StackPanel x:Name=""Panel"">");
+            IVisualElement panel = await window.GetElement("Panel");
+
+            //Act
+            IVisualElement<FrameworkElement> frameworkElement = (IVisualElement<FrameworkElement>)panel;
+
+
+            //Assert
+            Assert.AreEqual("Panel", await frameworkElement.GetName());
+            recorder.Success();
+        }
     }
 }

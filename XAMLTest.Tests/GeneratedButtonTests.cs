@@ -3,27 +3,30 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 
 namespace XamlTest.Tests
 {
     [TestClass]
     public class GeneratedButtonTests
     {
-        public TestContext TestContext { get; set; } = null!;
-
         [NotNull]
-        private IApp? App { get; set; }
+        private static IApp? App { get; set; }
+        [NotNull]
+        private static IWindow? Window { get; set; }
 
-        [TestInitialize]
-        public async Task TestInitialize()
+        [ClassInitialize]
+        public static async Task TestInitialize(TestContext context)
         {
-            App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
+            App = XamlTest.App.StartRemote(logMessage: msg => context.WriteLine(msg));
 
             await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
+            TextBoxBase tb;
+            Window = await App.CreateWindowWithContent(@$"<Button x:Name=""TestButton"" />");
         }
 
-        [TestCleanup]
-        public void TestCleanup()
+        [ClassCleanup]
+        public static void TestCleanup()
         {
             App.Dispose();
         }
@@ -35,10 +38,8 @@ namespace XamlTest.Tests
             // Arrange
             await using TestRecorder recorder = new(App);
 
-            IWindow window = await App.CreateWindowWithContent(@$"<Button x:Name=""TestButton"" />");
-
             //Act
-            IVisualElement<Button> button = await window.GetElement<Button>("TestButton");
+            IVisualElement<Button> button = await Window.GetElement<Button>("TestButton");
 
             //Assert
             Assert.AreEqual(false, await button.GetIsDefault());

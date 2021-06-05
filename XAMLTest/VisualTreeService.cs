@@ -104,16 +104,7 @@ namespace XamlTest
                             return;
                         }
 
-                        string id = DependencyObjectTracker.GetOrSetId(element, KnownElements);
-                        Element rv = new()
-                        {
-                            Id = id
-                        };
-                        for(Type? type = element.GetType(); type != null; type = type.BaseType)
-                        {
-                            rv.AllowedTypes.Add(type.AssemblyQualifiedName);
-                        }
-                        reply.Elements.Add(rv);
+                        reply.Elements.Add(GetElement(element));
 
                         window.LogMessage("Got element");
                         return;
@@ -338,14 +329,21 @@ namespace XamlTest
             Type valueType = value?.GetType() ?? propertyType;
             reply.ValueType = valueType.AssemblyQualifiedName;
 
-            string? serializedValue = Serializer.Serialize(valueType, value);
-            if (serializedValue is null)
+            if (propertyType.IsSubclassOf(typeof(DependencyObject)))
             {
-                reply.ErrorMessages.Add($"Failed to serialize object of type '{propertyType.AssemblyQualifiedName}'");
+                reply.Element = GetElement(value as DependencyObject);
             }
             else
             {
-                reply.Value = serializedValue;
+                string? serializedValue = Serializer.Serialize(valueType, value);
+                if (serializedValue is null)
+                {
+                    reply.ErrorMessages.Add($"Failed to serialize object of type '{propertyType.AssemblyQualifiedName}'");
+                }
+                else
+                {
+                    reply.Value = serializedValue;
+                }
             }
         }
 
@@ -1065,6 +1063,20 @@ namespace XamlTest
                     yield return typedElement;
                 }
             }
+        }
+
+        private Element GetElement(DependencyObject? element)
+        {
+            Element rv = new();
+            if (element is not null)
+            {
+                rv.Id = DependencyObjectTracker.GetOrSetId(element, KnownElements);
+                for (Type? type = element.GetType(); type != null; type = type.BaseType)
+                {
+                    rv.AllowedTypes.Add(type.AssemblyQualifiedName);
+                }
+            }
+            return rv;
         }
 
         private TElement? GetCachedElement<TElement>(string? id)

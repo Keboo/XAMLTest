@@ -97,7 +97,7 @@ namespace XAMLTest.Generator
                 builder.AppendLine("}");
 
                 string fileName = $"XamlTest{type.Type.Name}GeneratedExtensions.g.cs";
-                System.IO.File.WriteAllText(@"D:\Dev\XAMLTest\XAMLTest\obj\" + fileName, builder.ToString());
+                //System.IO.File.WriteAllText(@"D:\Dev\XAMLTest\XAMLTest\obj\" + fileName, builder.ToString());
                 context.AddSource(fileName, builder.ToString());
             }
 
@@ -167,7 +167,11 @@ namespace XAMLTest.Generator
             "System.Collections.Generic.IList<System.Windows.Controls.DataGridCellInfo>",
             "System.Collections.IList",
             "System.Windows.Controls.Primitives.IItemContainerGenerator",
-            "System.Windows.Documents.IDocumentPaginatorSource"
+            "System.Windows.Documents.IDocumentPaginatorSource",
+            "System.Windows.Documents.Typography",
+            "System.Windows.Documents.InlineCollection",
+            "System.Windows.Documents.TextPointer",
+            "System.Windows.Controls.ItemContainerTemplateSelector"
         };
         private List<VisualElement> Elements { get; } = new();
         public IReadOnlyList<VisualElement> GeneratedTypes => Elements;

@@ -33,6 +33,8 @@ namespace XAMLTest.UnitTestGenerator
                     char.ToLowerInvariant(targetType.Type.Name[0]) 
                     + targetType.Type.Name.Substring(1);
 
+                string className = $"{targetType.Type.Name}{suffix}Tests";
+
                 sb.AppendLine($@"
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics.CodeAnalysis;
@@ -42,23 +44,26 @@ using System.Threading.Tasks;
 namespace XamlTest.Tests.Generated
 {{
     [TestClass]
-    public class {targetType.Type.Name}{suffix}Tests
+    public class {className}
     {{
-        public TestContext TestContext {{ get; set; }} = null!;
+        [NotNull]
+        private static IApp? App {{ get; set; }}
 
         [NotNull]
-        private IApp? App {{ get; set; }}
+        private static IWindow Window {{ get; set; }}
 
-        [TestInitialize]
-        public async Task TestInitialize()
+        [ClassInitialize]
+        public static async Task ClassInitialize(TestContext context)
         {{
-            App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
+            App = XamlTest.App.StartRemote(logMessage: msg => context.WriteLine(msg));
 
             await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
+
+            Window = await App.CreateWindowWithContent(@$""<{targetTypeName} x:Name=""""Test{targetTypeName}"""" /> "");
         }}
 
-        [TestCleanup]
-        public void TestCleanup()
+        [ClassCleanup]
+        public static void TestCleanup()
         {{
             App.Dispose();
         }}");
@@ -75,10 +80,8 @@ namespace XamlTest.Tests.Generated
             // Arrange
             await using TestRecorder recorder = new(App);
 
-            IWindow appWindow = await App.CreateWindowWithContent(@$""<{targetTypeName} x:Name=""""Test{targetTypeName}"""" /> "");
-
             //Act
-            IVisualElement<{targetTypeFullName}> {variableTargetTypeName} = await appWindow.GetElement<{targetTypeFullName}>(""Test{targetTypeName}"");
+            IVisualElement<{targetTypeFullName}> {variableTargetTypeName} = await Window.GetElement<{targetTypeFullName}>(""Test{targetTypeName}"");
             var actual = await {variableTargetTypeName}.{getMethod.Name}();
 
             //Assert
@@ -94,7 +97,9 @@ namespace XamlTest.Tests.Generated
     }}
 }}");
 
-                context.AddSource($"{targetType.Type.Name}{suffix}Tests.cs", sb.ToString());
+                System.IO.File.WriteAllText($@"D:\Dev\XAMLTest\XAMLTest.UnitTestGenerator\obj\{className}.cs", sb.ToString());
+
+                context.AddSource($"{className}.cs", sb.ToString());
             }
         }
 
