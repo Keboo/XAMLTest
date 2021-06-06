@@ -97,7 +97,7 @@ namespace XamlTest.Tests.Generated
     }}
 }}");
 
-                System.IO.File.WriteAllText($@"D:\Dev\XAMLTest\XAMLTest.UnitTestGenerator\obj\{className}.cs", sb.ToString());
+                System.IO.File.WriteAllText($@"C:\Dev\XAMLTest\XAMLTest.UnitTestGenerator\obj\{className}.cs", sb.ToString());
 
                 context.AddSource($"{className}.cs", sb.ToString());
             }

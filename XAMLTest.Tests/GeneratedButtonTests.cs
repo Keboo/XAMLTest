@@ -21,7 +21,6 @@ namespace XamlTest.Tests
             App = XamlTest.App.StartRemote(logMessage: msg => context.WriteLine(msg));
 
             await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-            TextBoxBase tb;
             Window = await App.CreateWindowWithContent(@$"<Button x:Name=""TestButton"" />");
         }
 
@@ -39,6 +38,9 @@ namespace XamlTest.Tests
             await using TestRecorder recorder = new(App);
 
             //Act
+            //IVisualElement<System.Windows.Controls.Viewbox> decorator = await Window.GetElement<System.Windows.Controls.Viewbox>("TestDecorator");
+            //var actual = await decorator.GetChild();
+
             IVisualElement<Button> button = await Window.GetElement<Button>("TestButton");
 
             //Assert
