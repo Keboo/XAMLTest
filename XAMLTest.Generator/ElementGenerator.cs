@@ -56,7 +56,7 @@ namespace XAMLTest.Generator
                         }
                         builder.Append("            ")
                             .AppendLine($"=> await element.GetProperty<{property.TypeFullName}>(nameof({type.Type.FullName}.{property.Name}));");
-                        
+
                         if (property.TypeFullName == "System.Windows.Media.SolidColorBrush" ||
                             property.TypeFullName == "System.Windows.Media.Brush")
                         {
@@ -142,12 +142,9 @@ namespace XAMLTest.Generator
             "System.Windows.TextDecorationCollection",
             "System.Windows.Media.TextEffectCollection",
             "System.Windows.Data.BindingGroup",
-            "System.Windows.Controls.ContextMenu", //This should be made into a IVisualElement<ContextMenu>
             "System.Windows.Style",
             "System.Windows.DependencyObject", //This should be IVisualElement
             "System.Windows.ResourceDictionary",
-            "System.Windows.UIElement", //This should be IVisualElement
-            "System.Windows.IInputElement", //This should be IVisualElement
             "System.Windows.DataTemplate",
             "System.Windows.Controls.DataTemplateSelector",
             "System.Windows.Controls.ControlTemplate",
@@ -161,8 +158,6 @@ namespace XAMLTest.Generator
             "System.Windows.Controls.ItemCollection",
             "System.Windows.Controls.ItemsPanelTemplate",
             "System.Collections.ObjectModel.ObservableCollection<System.Windows.Controls.DataGridColumn>",
-            "System.Windows.Controls.DataGridCellInfo",
-            "System.Windows.Controls.DataGridColumn",
             "System.Collections.ObjectModel.ObservableCollection<System.Windows.Controls.ValidationRule>",
             "System.Collections.Generic.IList<System.Windows.Controls.DataGridCellInfo>",
             "System.Collections.IList",
@@ -215,7 +210,7 @@ namespace XAMLTest.Generator
                     List<Property> properties = new();
 
                     if (Elements.Any(x => x.Type.FullName == $"{type}")) continue;
-                    
+
                     foreach (ISymbol member in type.GetMembers())
                     {
                         if (member is IPropertySymbol property &&
@@ -225,12 +220,24 @@ namespace XAMLTest.Generator
                             !property.GetAttributes().Any(x => x.AttributeClass.Name == "ObsoleteAttribute") &&
                             !IgnoredTypes.Contains($"{property.Type}"))
                         {
-                            properties.Add( 
-                                new Property(
-                                    property.Name,
-                                    $"{property.Type}",
-                                    property.GetMethod is not null,
-                                    property.SetMethod is not null));
+                            if (IsFrameworkElement(property.Type))
+                            {
+                                properties.Add(
+                                    new Property(
+                                        property.Name,
+                                        $"XamlTest.IVisualElement<{property.Type}>",
+                                        property.GetMethod is not null,
+                                        property.SetMethod is not null));
+                            }
+                            else
+                            {
+                                properties.Add(
+                                    new Property(
+                                        property.Name,
+                                        $"{property.Type}",
+                                        property.GetMethod is not null,
+                                        property.SetMethod is not null));
+                            }
                         }
                     }
                     if (properties.Any())
@@ -240,6 +247,20 @@ namespace XAMLTest.Generator
                     }
                 }
             }
+        }
+
+        private static bool IsFrameworkElement(ITypeSymbol typeSymbol)
+        {
+            for (ITypeSymbol? type = typeSymbol;
+                type != null;
+                type = type.BaseType)
+            {
+                if ($"{type}" == "System.Windows.FrameworkElement")
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

@@ -28,7 +28,18 @@ namespace XamlTest.Internal
                 return default;
             }
 
-            return (T)Serializer.Deserialize(typeof(T), Value?.ToString() ??)!;
+            if (Value is T converted)
+            {
+                return converted;
+            }
+            Type desiredType = typeof(T);
+            if (ValueType == VisualElementType &&
+                Value is IVisualElementConverter converter)
+            {
+                return converter.Convert<T>();
+            }
+
+            return (T)Serializer.Deserialize(desiredType, Value?.ToString() ?? "")!;
         }
     }
 }

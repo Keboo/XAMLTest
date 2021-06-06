@@ -329,9 +329,9 @@ namespace XamlTest
             Type valueType = value?.GetType() ?? propertyType;
             reply.ValueType = valueType.AssemblyQualifiedName;
 
-            if (propertyType.IsSubclassOf(typeof(DependencyObject)))
+            if (propertyType.IsSubclassOf(typeof(FrameworkElement)))
             {
-                reply.Element = GetElement(value as DependencyObject);
+                reply.Element = GetElement(value as FrameworkElement);
             }
             else
             {
@@ -1071,10 +1071,7 @@ namespace XamlTest
             if (element is not null)
             {
                 rv.Id = DependencyObjectTracker.GetOrSetId(element, KnownElements);
-                for (Type? type = element.GetType(); type != null; type = type.BaseType)
-                {
-                    rv.AllowedTypes.Add(type.AssemblyQualifiedName);
-                }
+                rv.Type = element.GetType().AssemblyQualifiedName;
             }
             return rv;
         }

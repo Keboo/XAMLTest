@@ -217,7 +217,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             IWindow window = await App.CreateWindowWithContent(
                 @"<Grid x:Name=""MyGrid"" Background=""Red"" />");
             IVisualElement<Grid> element = await window.GetElement<Grid>("MyGrid");
-
+            
             Assert.AreEqual(Colors.Red, await element.GetBackgroundColor());
         }
 
@@ -601,14 +601,19 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             // Arrange
             await using TestRecorder recorder = new(App);
 
-            IWindow window = await App.CreateWindowWithContent(@"<StackPanel x:Name=""Panel"">");
+            IWindow window = await App.CreateWindowWithContent(@"
+<StackPanel x:Name=""Panel"">
+    <StackPanel.ContextMenu>
+         <ContextMenu x:Name=""TestContextMenu""/>
+    </StackPanel.ContextMenu>
+</StackPanel>");
             IVisualElement<StackPanel> stackPanel = await window.GetElement<StackPanel>("Panel");
 
             //Act
-            IVisualElement<ScrollViewer> scrollViewer = await stackPanel.GetScrollOwner();
+            IVisualElement<ContextMenu> contextMenu = await stackPanel.GetContextMenu();
 
             //Assert
-            Assert.IsNotNull(scrollViewer);
+            Assert.AreEqual("TestContextMenu", await contextMenu.GetName());
             recorder.Success();
         }
 
@@ -618,12 +623,11 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             // Arrange
             await using TestRecorder recorder = new(App);
 
-            IWindow window = await App.CreateWindowWithContent(@"<StackPanel x:Name=""Panel"">");
+            IWindow window = await App.CreateWindowWithContent(@"<StackPanel x:Name=""Panel"" />");
             IVisualElement panel = await window.GetElement("Panel");
 
             //Act
-            IVisualElement<StackPanel> stackPanel = (IVisualElement<StackPanel>)panel;
-
+            IVisualElement<StackPanel> stackPanel = panel.As<StackPanel>();
 
             //Assert
             Assert.AreEqual("Panel", await stackPanel.GetName());
@@ -636,11 +640,11 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             // Arrange
             await using TestRecorder recorder = new(App);
 
-            IWindow window = await App.CreateWindowWithContent(@"<StackPanel x:Name=""Panel"">");
+            IWindow window = await App.CreateWindowWithContent(@"<StackPanel x:Name=""Panel"" />");
             IVisualElement panel = await window.GetElement("Panel");
 
             //Act
-            IVisualElement<FrameworkElement> frameworkElement = (IVisualElement<FrameworkElement>)panel;
+            IVisualElement<FrameworkElement> frameworkElement = panel.As<FrameworkElement>();
 
 
             //Assert

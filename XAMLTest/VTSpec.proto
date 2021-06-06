@@ -82,7 +82,7 @@ message ElementResult {
 
 message Element {
   string id = 1;
-  repeated string allowedTypes = 2;
+  string type = 2;
 }
 
 message PropertyQuery {

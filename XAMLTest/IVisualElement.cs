@@ -1,32 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Media;
 
 namespace XamlTest
 {
-    public static class FooEx
-    {
-        public static void Do<T>(this IFoo<T> button)
-            where T : Button
-        { }
-
-        public static void DoNot<T>(this IFoo<T> fe)
-            where T : FrameworkElement
-        { }
-
-        public static void Baz()
-        {
-            IFoo<Button>? x = null;
-            x.Do();
-            x.DoNot();
-        }
-    }
-
-    public interface IFoo<T>
-    { }
-
     public interface IVisualElement<TElement> : IVisualElement
     {
 

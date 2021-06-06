@@ -2,35 +2,36 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 
 namespace XamlTest.Internal
 {
-    internal class VisualElement<T> : VisualElement, IVisualElement<T>
+    internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId, IVisualElementConverter
     {
-        public VisualElement(
-            Protocol.ProtocolClient client, 
-            string id, 
-            Serializer serializer, 
-            Action<string>? logMessage) 
-            : base(client, id, serializer, logMessage)
-        {
-        }
-    }
+        private class Unknown { }
 
-    internal class VisualElement : IVisualElement
-    {
         public VisualElement(
             Protocol.ProtocolClient client,
             string id,
-            IEnumerable<string> allowedTypes,
+            Serializer serializer,
+            Action<string>? logMessage)
+            : this(client, id, typeof(T), serializer, logMessage)
+        {
+        }
+
+        public VisualElement(
+            Protocol.ProtocolClient client,
+            string id,
+            Type type,
             Serializer serializer,
             Action<string>? logMessage)
         {
             Client = client ?? throw new ArgumentNullException(nameof(client));
             Id = id ?? throw new ArgumentNullException(nameof(id));
+            Type = type ?? throw new ArgumentNullException(nameof(type));
             Serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
             LogMessage = logMessage;
         }
@@ -38,16 +39,17 @@ namespace XamlTest.Internal
         private Serializer Serializer { get; }
         private Protocol.ProtocolClient Client { get; }
 
-        protected string Id { get; }
-        private IReadOnlyList<string> AllowedTypes { get; }
+        public string Id { get; }
+        public Type Type { get; }
         public Action<string>? LogMessage { get; }
 
         public async Task<IVisualElement> GetElement(string query)
-        {
-            return await GetElement<object>(query);
-        }
+            => await GetElement(query, null);
 
         public async Task<IVisualElement<TElement>> GetElement<TElement>(string query)
+            => (IVisualElement<TElement>)await GetElement(query, typeof(TElement));
+
+        private async Task<IVisualElement> GetElement(string query, Type? desiredType)
         {
             ElementQuery elementQuery = GetFindElementQuery(query);
             LogMessage?.Invoke($"{nameof(GetElement)}({query})");
@@ -60,11 +62,20 @@ namespace XamlTest.Internal
                 if (reply.Elements.Count == 1)
                 {
                     Element element = reply.Elements[0];
-                    if (!element.AllowedTypes.Contains(typeof(TElement).AssemblyQualifiedName))
+                    if (Type.GetType(element.Type) is { } elementType)
                     {
-                        throw new Exception($"Element of type '{element.AllowedTypes[0]}' does not match desired type '{typeof(TElement).AssemblyQualifiedName}'");
+                        if (desiredType is null)
+                        {
+                            return Create(Client, element.Id, elementType, Serializer, LogMessage);
+                        }
+                        if (desiredType != elementType &&
+                            !elementType.IsSubclassOf(desiredType))
+                        {
+                            throw new Exception($"Element of type '{element.Type}' does not match desired type '{desiredType.AssemblyQualifiedName}'");
+                        }
+                        return Create(Client, element.Id, desiredType, Serializer, LogMessage);
                     }
-                    return new VisualElement<TElement>(Client, element.Id, Serializer, LogMessage);
+                    throw new Exception($"Could not find element type '{element.Type}'");
                 }
                 throw new Exception($"Found {reply.Elements.Count} elements");
             }
@@ -80,7 +91,7 @@ namespace XamlTest.Internal
                 Name = name,
                 OwnerType = ownerType ?? ""
             };
-            LogMessage?.Invoke($"{nameof(GetProperty)}({name}{(!string.IsNullOrEmpty(ownerType) ? ",": "")}{ownerType})");
+            LogMessage?.Invoke($"{nameof(GetProperty)}({name}{(!string.IsNullOrEmpty(ownerType) ? "," : "")}{ownerType})");
             if (await Client.GetPropertyAsync(propertyQuery) is { } reply)
             {
                 if (reply.ErrorMessages.Any())
@@ -91,12 +102,13 @@ namespace XamlTest.Internal
                 {
                     if (reply.Element is { } element)
                     {
-                        if (!element.AllowedTypes.Contains(typeof(TElement).AssemblyQualifiedName))
+                        Type? elementType = Type.GetType(string.IsNullOrEmpty(element.Type) ? propertyType : element.Type);
+                        if (elementType is not null)
                         {
-                            throw new Exception($"Element of type '{element.AllowedTypes[0]}' does not match desired type '{typeof(TElement).AssemblyQualifiedName}'");
+                            var visualElement = Create(Client, element.Id, elementType, Serializer, LogMessage);
+                            return new Property(propertyType, BaseValue.VisualElementType, visualElement, Serializer);
                         }
-                        var visualElement = new VisualElement(Client, element.Id, Serializer, LogMessage);
-                        return new Property(propertyType, BaseValue.VisualElementType, visualElement, Serializer);
+                        throw new Exception($"Could not find element type '{element.Type}'");
                     }
                     return new Property(propertyType, reply.ValueType, reply.Value, Serializer);
                 }
@@ -104,7 +116,7 @@ namespace XamlTest.Internal
             }
             throw new Exception("Failed to receive a reply");
         }
-        
+
         public async Task<IValue> SetProperty(string name, string value, string? valueType, string? ownerType)
         {
             SetPropertyRequest query = new()
@@ -130,7 +142,7 @@ namespace XamlTest.Internal
             }
             throw new Exception("Failed to receive a reply");
         }
-        
+
         public async Task<IResource> GetResource(string key)
         {
             ResourceQuery query = new()
@@ -157,7 +169,7 @@ namespace XamlTest.Internal
 
         public async Task<Color> GetEffectiveBackground(IVisualElement? toElement)
         {
-            string? toElementId = (toElement as VisualElement)?.Id;
+            string? toElementId = (toElement as IElementId)?.Id;
 
             EffectiveBackgroundQuery propertyQuery = new()
             {
@@ -214,7 +226,7 @@ namespace XamlTest.Internal
 
             throw new Exception("Failed to receive a reply");
         }
-        
+
         public async Task SendInput(KeyboardInput keyboardInput)
         {
             if (keyboardInput is null)
@@ -226,10 +238,10 @@ namespace XamlTest.Internal
             {
                 ElementId = Id
             };
-            request.KeyboardData.AddRange(keyboardInput.Inputs.Select(i => 
+            request.KeyboardData.AddRange(keyboardInput.Inputs.Select(i =>
             {
                 KeyboardData rv = new();
-                switch(i)
+                switch (i)
                 {
                     case KeysInput keysInput:
                         rv.Keys.AddRange(keysInput.Keys.Cast<int>());
@@ -247,7 +259,7 @@ namespace XamlTest.Internal
             {
                 if (reply.LogMessages.Any() && LogMessage is { } logMessage)
                 {
-                    foreach(var message in reply.LogMessages)
+                    foreach (var message in reply.LogMessages)
                     {
                         logMessage(message);
                     }
@@ -287,6 +299,7 @@ namespace XamlTest.Internal
 
             throw new Exception("Failed to receive a reply");
         }
+        
         public async Task UnregisterEvent(IEventRegistration eventRegistration)
         {
             if (eventRegistration is null)
@@ -327,7 +340,7 @@ namespace XamlTest.Internal
         {
             if (other is null) return false;
             if (ReferenceEquals(this, other)) return true;
-            if (other is VisualElement visualElement)
+            if (other is IElementId visualElement)
             {
                 return Id == visualElement.Id;
             }
@@ -339,6 +352,68 @@ namespace XamlTest.Internal
 
         public override int GetHashCode()
             => Id.GetHashCode();
-        
+
+        private static IVisualElement Create(
+            Protocol.ProtocolClient client,
+            string id,
+            Type type,
+            Serializer serializer,
+            Action<string>? logMessage,
+            Type? visualElementType = null)
+        {
+            ConstructorInfo ctor = typeof(VisualElement<>)
+                .MakeGenericType(visualElementType ?? type)
+                .GetConstructors()
+                .Single(x =>
+                {
+                    return x.GetParameters()
+                    .Select(x => x.ParameterType)
+                    .SequenceEqual(new[]
+                    {
+                        typeof(Protocol.ProtocolClient),
+                        typeof(string),
+                        typeof(Type),
+                        typeof(Serializer),
+                        typeof(Action<string>)
+                    });
+                });
+            return (IVisualElement)ctor.Invoke(new object?[] { client, id, type, serializer, logMessage });
+        }
+
+        public TVisualElement Convert<TVisualElement>()
+        {
+            if (this is TVisualElement current)
+            {
+                return current;
+            }
+            var targetType = typeof(TVisualElement);
+            if (targetType.IsGenericType &&
+                targetType.GetGenericTypeDefinition() == typeof(IVisualElement<>))
+            {
+                Type elementType = targetType.GetGenericArguments()[0];
+                if (GetValidTypes(Type).Contains(elementType))
+                {
+                    return (TVisualElement)Create(Client, Id, Type, Serializer, LogMessage, elementType);
+                }
+            }
+            throw new InvalidOperationException($"Cannot convert {typeof(IVisualElement<T>)} to {typeof(IVisualElement)}");
+
+            static IEnumerable<Type> GetValidTypes(Type type)
+            {
+                for(Type? t = type;
+                    t != null;
+                    t = t.BaseType)
+                {
+                    yield return t;
+                }
+                foreach(Type interfaceType in type.GetInterfaces())
+                {
+                    yield return interfaceType;
+                }
+            }
+        }
+
+        public IVisualElement<TElement> As<TElement>() where TElement : DependencyObject
+            => Convert<IVisualElement<TElement>>();
     }
 }

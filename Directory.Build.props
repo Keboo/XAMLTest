@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <Title>XAML UI Testing Library</Title>
     <Description>A library that allows unit tests to be written again WPF XAML.</Description>
     <Copyright>Copyright 2020</Copyright>
