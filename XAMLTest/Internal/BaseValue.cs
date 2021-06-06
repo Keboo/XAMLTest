@@ -28,7 +28,7 @@ namespace XamlTest.Internal
                 return default;
             }
 
-            if (Value is T converted)
+            if (Value is T converted && typeof(T) != typeof(string))
             {
                 return converted;
             }
