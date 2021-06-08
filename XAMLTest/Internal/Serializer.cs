@@ -14,6 +14,7 @@ namespace XamlTest.Internal
             //NB: Order matters here. Items earlier in the list take precedence
             Serializers.Add(new BrushSerializer());
             Serializers.Add(new CharSerializer());
+            Serializers.Add(new SecureStringSerializer());
             Serializers.Add(new DefaultSerializer());
         }
 
