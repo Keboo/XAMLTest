@@ -41,11 +41,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Threading.Tasks;
+using System;
 
 namespace XamlTest.Tests.Generated
 {{
     [TestClass]
-    public class {className}
+    public partial class {className}
     {{
         [NotNull]
         private static IApp? App {{ get; set; }}
@@ -53,14 +54,23 @@ namespace XamlTest.Tests.Generated
         [NotNull]
         private static IWindow? Window {{ get; set; }}
 
+        private static Func<string, string> GetWindowContent {{ get; set; }} = x => x;
+
+        static partial void OnClassInitialize();
+
         [ClassInitialize]
         public static async Task ClassInitialize(TestContext context)
         {{
+            OnClassInitialize();
             App = XamlTest.App.StartRemote(logMessage: msg => context.WriteLine(msg));
 
             await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
 
-            Window = await App.CreateWindowWithContent(@$""<{targetTypeName} x:Name=""""Test{targetTypeName}"""" /> "");
+            string content = @$""<{targetTypeName} x:Name=""""Test{targetTypeName}""""/>"";
+
+            content = GetWindowContent(content);
+
+            Window = await App.CreateWindowWithContent(content);
         }}
 
         [ClassCleanup]
@@ -96,7 +106,7 @@ namespace XamlTest.Tests.Generated
     }}
 }}");
 
-                System.IO.File.WriteAllText($@"D:\Dev\XAMLTest\XAMLTest.UnitTestGenerator\obj\{className}.cs", sb.ToString());
+                //System.IO.File.WriteAllText($@"D:\Dev\XAMLTest\XAMLTest.UnitTestGenerator\obj\{className}.cs", sb.ToString());
 
                 context.AddSource($"{className}.cs", sb.ToString());
             }

@@ -3,6 +3,7 @@ using Grpc.Core;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -84,7 +85,6 @@ namespace XamlTest
         public override async Task<ElementResult> GetElement(ElementQuery request, ServerCallContext context)
         {
             ElementResult reply = new();
-
             await Application.Dispatcher.InvokeAsync(() =>
             {
                 try
@@ -149,38 +149,45 @@ namespace XamlTest
             PropertyResult reply = new();
             await Application.Dispatcher.InvokeAsync(() =>
             {
-                DependencyObject? element = GetCachedElement<DependencyObject>(request.ElementId);
-                if (element is null)
+                try
                 {
-                    reply.ErrorMessages.Add("Could not find element");
-                    return;
-                }
-
-                if (!string.IsNullOrWhiteSpace(request.OwnerType))
-                {
-                    if (DependencyPropertyHelper.TryGetDependencyProperty(request.Name, request.OwnerType,
-                        out DependencyProperty? dependencyProperty))
+                    DependencyObject? element = GetCachedElement<DependencyObject>(request.ElementId);
+                    if (element is null)
                     {
-                        object? value = element.GetValue(dependencyProperty);
-                        SetValue(reply, dependencyProperty.PropertyType, value);
+                        reply.ErrorMessages.Add("Could not find element");
+                        return;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(request.OwnerType))
+                    {
+                        if (DependencyPropertyHelper.TryGetDependencyProperty(request.Name, request.OwnerType,
+                            out DependencyProperty? dependencyProperty))
+                        {
+                            object? value = element.GetValue(dependencyProperty);
+                            SetValue(reply, dependencyProperty.PropertyType, value);
+                        }
+                        else
+                        {
+                            reply.ErrorMessages.Add($"Could not find dependency property '{request.Name}' on '{request.OwnerType}'");
+                            return;
+                        }
                     }
                     else
                     {
-                        reply.ErrorMessages.Add($"Could not find dependency property '{request.Name}' on '{request.OwnerType}'");
-                        return;
+                        var properties = TypeDescriptor.GetProperties(element);
+                        PropertyDescriptor? foundProperty = properties.Find(request.Name, false);
+                        if (foundProperty is null)
+                        {
+                            reply.ErrorMessages.Add($"Could not find property with name '{request.Name}' on element '{element.GetType().FullName}'");
+                            return;
+                        }
+                        object? value = foundProperty.GetValue(element);
+                        SetValue(reply, foundProperty.PropertyType, value);
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    var properties = TypeDescriptor.GetProperties(element);
-                    PropertyDescriptor? foundProperty = properties.Find(request.Name, false);
-                    if (foundProperty is null)
-                    {
-                        reply.ErrorMessages.Add($"Could not find property with name '{request.Name}' on element '{element.GetType().FullName}'");
-                        return;
-                    }
-                    object? value = foundProperty.GetValue(element);
-                    SetValue(reply, foundProperty.PropertyType, value);
+                    reply.ErrorMessages.Add(ex.ToString());
                 }
             });
             return reply;
@@ -329,21 +336,19 @@ namespace XamlTest
             Type valueType = value?.GetType() ?? propertyType;
             reply.ValueType = valueType.AssemblyQualifiedName;
 
-            if (propertyType.IsSubclassOf(typeof(FrameworkElement)))
+            if (propertyType == typeof(DependencyObject) ||
+                propertyType.IsSubclassOf(typeof(DependencyObject)))
             {
-                reply.Element = GetElement(value as FrameworkElement);
+                reply.Element = GetElement(value as DependencyObject);
+            }
+            string? serializedValue = Serializer.Serialize(valueType, value);
+            if (serializedValue is null)
+            {
+                reply.ErrorMessages.Add($"Failed to serialize object of type '{propertyType.AssemblyQualifiedName}'");
             }
             else
             {
-                string? serializedValue = Serializer.Serialize(valueType, value);
-                if (serializedValue is null)
-                {
-                    reply.ErrorMessages.Add($"Failed to serialize object of type '{propertyType.AssemblyQualifiedName}'");
-                }
-                else
-                {
-                    reply.Value = serializedValue;
-                }
+                reply.Value = serializedValue;
             }
         }
 
@@ -1032,6 +1037,17 @@ namespace XamlTest
                         yield return child;
                     }
                 }
+                if (item is FrameworkElement fe)
+                {
+                    if (fe.ContextMenu is { } contextMenu)
+                    {
+                        yield return contextMenu;
+                    }
+                    if (fe.ToolTip as DependencyObject is { } toolTip )
+                    {
+                        yield return toolTip;
+                    }
+                }
                 if (childrenCount == 0)
                 {
                     foreach (object? logicalChild in LogicalTreeHelper.GetChildren(item))
@@ -1068,7 +1084,8 @@ namespace XamlTest
         private Element GetElement(DependencyObject? element)
         {
             Element rv = new();
-            if (element is not null)
+            if (element is not null &&
+                (element is not Freezable freeze || !freeze.IsFrozen))
             {
                 rv.Id = DependencyObjectTracker.GetOrSetId(element, KnownElements);
                 rv.Type = element.GetType().AssemblyQualifiedName;

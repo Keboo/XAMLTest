@@ -5,9 +5,6 @@ namespace XamlTest.Internal
 {
     internal abstract class BaseValue : IValue
     {
-        public static string VisualElementType =
-            typeof(IVisualElement<>).AssemblyQualifiedName!;
-
         protected Serializer Serializer { get; }
 
         public object? Value { get; }
@@ -21,7 +18,7 @@ namespace XamlTest.Internal
         }
 
         [return: MaybeNull]
-        public T GetAs<T>()
+        public virtual T GetAs<T>()
         {
             if (ValueType is null)
             {
@@ -32,14 +29,8 @@ namespace XamlTest.Internal
             {
                 return converted;
             }
-            Type desiredType = typeof(T);
-            if (ValueType == VisualElementType &&
-                Value is IVisualElementConverter converter)
-            {
-                return converter.Convert<T>();
-            }
 
-            return (T)Serializer.Deserialize(desiredType, Value?.ToString() ?? "")!;
+            return (T)Serializer.Deserialize(typeof(T), Value?.ToString() ?? "")!;
         }
     }
 }

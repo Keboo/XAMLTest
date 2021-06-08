@@ -65,15 +65,15 @@ namespace XAMLTest.Generator
                             .Append("        ");
                             if (type.Type.IsFinal)
                             {
-                                builder.AppendLine($"public static async System.Threading.Tasks.Task<System.Windows.Media.Color> Get{property.Name}Color(this IVisualElement<{type.Type.FullName}> element)");
+                                builder.AppendLine($"public static async System.Threading.Tasks.Task<System.Windows.Media.Color?> Get{property.Name}Color(this IVisualElement<{type.Type.FullName}> element)");
                             }
                             else
                             {
-                                builder.AppendLine($"public static async System.Threading.Tasks.Task<System.Windows.Media.Color> Get{property.Name}Color<T>(this IVisualElement<T> element) where T : {type.Type.FullName}");
+                                builder.AppendLine($"public static async System.Threading.Tasks.Task<System.Windows.Media.Color?> Get{property.Name}Color<T>(this IVisualElement<T> element) where T : {type.Type.FullName}");
                             }
                             builder
                             .Append("            ")
-                            .AppendLine($"=> await element.GetProperty<System.Windows.Media.Color>(nameof({type.Type.FullName}.{property.Name}));");
+                            .AppendLine($"=> await element.GetProperty<System.Windows.Media.Color?>(nameof({type.Type.FullName}.{property.Name}));");
                         }
                     }
                     if (property.CanWrite)
@@ -167,7 +167,19 @@ namespace XAMLTest.Generator
             "System.Windows.Documents.Typography",
             "System.Windows.Documents.InlineCollection",
             "System.Windows.Documents.TextPointer",
-            "System.Windows.Controls.ItemContainerTemplateSelector"
+            "System.Windows.Controls.ItemContainerTemplateSelector",
+            "System.Windows.Controls.DataGridCellInfo",
+            "System.Windows.Documents.DocumentPage",
+            "System.Windows.Documents.DocumentPaginator",
+            "System.Windows.Documents.TextSelection",
+            "System.Windows.Navigation.NavigationService",
+            "System.Windows.Ink.DrawingAttributes",
+            "System.Windows.Input.StylusPointDescription",
+            "System.Windows.Ink.StylusShape",
+            "System.Collections.Generic.IEnumerable<System.Windows.Controls.InkCanvasClipboardFormat>",
+            "System.Windows.Media.MediaClock",
+            "System.Windows.IInputElement",
+            "System.Collections.ObjectModel.Collection<System.Windows.Controls.ToolBar>"
         };
         private List<VisualElement> Elements { get; } = new();
         public IReadOnlyList<VisualElement> GeneratedTypes => Elements;
@@ -220,9 +232,10 @@ namespace XAMLTest.Generator
                             !property.IsOverride &&
                             property.DeclaredAccessibility == Accessibility.Public &&
                             !property.GetAttributes().Any(x => x.AttributeClass.Name == "ObsoleteAttribute") &&
-                            !IgnoredTypes.Contains($"{property.Type}"))
+                            !IgnoredTypes.Contains($"{property.Type}") &&
+                            !IsDelegate(property.Type))
                         {
-                            if (IsUIElement(property.Type))
+                            if (ShouldUseVisualElement(property.Type))
                             {
                                 properties.Add(
                                     new Property(
@@ -256,20 +269,47 @@ namespace XAMLTest.Generator
                     }
                 }
             }
+
+            static bool ShouldUseVisualElement(ITypeSymbol typeSymbol)
+            {
+                for (ITypeSymbol? type = typeSymbol;
+                type != null;
+                type = type.BaseType)
+                {
+                    switch($"{type}")
+                    {
+                        case "System.Windows.Media.Brush": return false;
+                        case "System.Windows.DependencyObject": return true;
+                    }
+                }
+                return false;
+            }
         }
 
+        
+
+        private static bool IsDependencyObject(ITypeSymbol typeSymbol)
+            => Is(typeSymbol, "System.Windows.DependencyObject");
+
         private static bool IsUIElement(ITypeSymbol typeSymbol)
+            => Is(typeSymbol, "System.Windows.UIElement");
+
+        private static bool IsDelegate(ITypeSymbol typeSymbol)
+            => Is(typeSymbol, "System.Delegate");
+
+        private static bool Is(ITypeSymbol typeSymbol, string targetType)
         {
             for (ITypeSymbol? type = typeSymbol;
                 type != null;
                 type = type.BaseType)
             {
-                if ($"{type}" == "System.Windows.UIElement")
+                if ($"{type}" == targetType)
                 {
                     return true;
                 }
             }
             return false;
         }
+
     }
 }

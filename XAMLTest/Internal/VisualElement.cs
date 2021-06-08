@@ -9,7 +9,7 @@ using System.Windows.Media;
 
 namespace XamlTest.Internal
 {
-    internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId, IVisualElementConverter
+    internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
     {
         private class Unknown { }
 
@@ -100,17 +100,18 @@ namespace XamlTest.Internal
                 }
                 if (reply.PropertyType is { } propertyType)
                 {
-                    if (reply.Element is { } element)
+                    IVisualElement? visualElement = null;
+                    if (reply.Element is { } element &&
+                        !string.IsNullOrEmpty(element.Type))
                     {
-                        Type? elementType = Type.GetType(string.IsNullOrEmpty(element.Type) ? propertyType : element.Type);
-                        if (elementType is not null)
+                        Type? elementType = Type.GetType(element.Type);
+                        if (elementType is null)
                         {
-                            var visualElement = Create(Client, element.Id, elementType, Serializer, LogMessage);
-                            return new Property(propertyType, BaseValue.VisualElementType, visualElement, Serializer);
+                            throw new Exception($"Could not find element type '{element.Type}'");
                         }
-                        throw new Exception($"Could not find element type '{element.Type}'");
+                        visualElement = Create(Client, element.Id, elementType, Serializer, LogMessage);
                     }
-                    return new Property(propertyType, reply.ValueType, reply.Value, Serializer);
+                    return new Property(propertyType, reply.ValueType, reply.Value, visualElement, Serializer);
                 }
                 throw new Exception("Property does not have a type specified");
             }
@@ -136,7 +137,7 @@ namespace XamlTest.Internal
                 }
                 if (reply.PropertyType is { } propertyType)
                 {
-                    return new Property(propertyType, reply.ValueType, reply.Value, Serializer);
+                    return new Property(propertyType, reply.ValueType, reply.Value, null, Serializer);
                 }
                 throw new Exception("Property reply does not have a type specified");
             }
@@ -299,7 +300,7 @@ namespace XamlTest.Internal
 
             throw new Exception("Failed to receive a reply");
         }
-        
+
         public async Task UnregisterEvent(IEventRegistration eventRegistration)
         {
             if (eventRegistration is null)
@@ -380,7 +381,7 @@ namespace XamlTest.Internal
             return (IVisualElement)ctor.Invoke(new object?[] { client, id, type, serializer, logMessage });
         }
 
-        public TVisualElement Convert<TVisualElement>()
+        private TVisualElement Convert<TVisualElement>()
         {
             if (this is TVisualElement current)
             {
@@ -400,13 +401,13 @@ namespace XamlTest.Internal
 
             static IEnumerable<Type> GetValidTypes(Type type)
             {
-                for(Type? t = type;
+                for (Type? t = type;
                     t != null;
                     t = t.BaseType)
                 {
                     yield return t;
                 }
-                foreach(Type interfaceType in type.GetInterfaces())
+                foreach (Type interfaceType in type.GetInterfaces())
                 {
                     yield return interfaceType;
                 }

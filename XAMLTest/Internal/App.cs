@@ -93,7 +93,7 @@ namespace XamlTest.Internal
                 }
                 if (reply.ErrorMessages.Any())
                 {
-                    throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages) + windowXaml);
+                    throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages) + Environment.NewLine + windowXaml);
                 }
                 return new Window(Client, reply.WindowsId, Serializer, LogMessage);
             }
