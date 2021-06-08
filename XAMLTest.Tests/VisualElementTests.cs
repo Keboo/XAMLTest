@@ -207,7 +207,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             IWindow window = await App.CreateWindowWithContent(
                 @"<Grid x:Name=""MyGrid"" Width=""25"" />");
             IVisualElement<Grid> element = await window.GetElement<Grid>("MyGrid");
-
             Assert.AreEqual(25.0, await element.GetWidth());
         }
 
@@ -610,9 +609,10 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             IVisualElement<StackPanel> stackPanel = await window.GetElement<StackPanel>("Panel");
 
             //Act
-            IVisualElement<ContextMenu> contextMenu = await stackPanel.GetContextMenu();
+            IVisualElement<ContextMenu>? contextMenu = await stackPanel.GetContextMenu();
 
             //Assert
+            Assert.IsNotNull(contextMenu);
             Assert.AreEqual("TestContextMenu", await contextMenu.GetName());
             recorder.Success();
         }

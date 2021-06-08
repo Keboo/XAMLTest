@@ -20,7 +20,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XAMLTest.TestApp", "XAMLTes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XAMLTest.Generator", "XAMLTest.Generator\XAMLTest.Generator.csproj", "{CBBE847F-498F-4E17-A437-9B02E6DB7398}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XAMLTest.UnitTestGenerator", "XAMLTest.UnitTestGenerator\XAMLTest.UnitTestGenerator.csproj", "{B320FF6B-1691-4BFB-821E-2DD89817AD98}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XAMLTest.UnitTestGenerator", "XAMLTest.UnitTestGenerator\XAMLTest.UnitTestGenerator.csproj", "{B320FF6B-1691-4BFB-821E-2DD89817AD98}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

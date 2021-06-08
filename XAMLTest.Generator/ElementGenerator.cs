@@ -34,6 +34,7 @@ namespace XAMLTest.Generator
                 if (ignoredTypes.Contains(type.Type.FullName)) continue;
 
                 StringBuilder builder = new();
+                builder.AppendLine("#nullable enable");
                 builder.AppendLine($"namespace {type.Namespace}");
                 builder.AppendLine("{");
                 builder.AppendLine($"    public static partial class {type.Type.Name}GeneratedExtensions");
@@ -57,8 +58,8 @@ namespace XAMLTest.Generator
                         builder.Append("            ")
                             .AppendLine($"=> await element.GetProperty<{property.TypeFullName}>(nameof({type.Type.FullName}.{property.Name}));");
 
-                        if (property.TypeFullName == "System.Windows.Media.SolidColorBrush" ||
-                            property.TypeFullName == "System.Windows.Media.Brush")
+                        if (property.TypeFullName.StartsWith("System.Windows.Media.SolidColorBrush") ||
+                            property.TypeFullName.StartsWith("System.Windows.Media.Brush"))
                         {
                             builder
                             .Append("        ");
@@ -216,25 +217,33 @@ namespace XAMLTest.Generator
                         if (member is IPropertySymbol property &&
                             property.CanBeReferencedByName &&
                             !property.IsStatic &&
+                            !property.IsOverride &&
                             property.DeclaredAccessibility == Accessibility.Public &&
                             !property.GetAttributes().Any(x => x.AttributeClass.Name == "ObsoleteAttribute") &&
                             !IgnoredTypes.Contains($"{property.Type}"))
                         {
-                            if (IsFrameworkElement(property.Type))
+                            if (IsUIElement(property.Type))
                             {
                                 properties.Add(
                                     new Property(
                                         property.Name,
-                                        $"XamlTest.IVisualElement<{property.Type}>",
+                                        $"XamlTest.IVisualElement<{property.Type}>?",
                                         property.GetMethod is not null,
                                         property.SetMethod is not null));
                             }
                             else
                             {
+                                string propertyType = $"{property.Type}";
+                                if (property.Type.IsReferenceType &&
+                                    !propertyType.EndsWith("?"))
+                                {
+                                    propertyType += "?";
+                                }
+
                                 properties.Add(
                                     new Property(
                                         property.Name,
-                                        $"{property.Type}",
+                                        propertyType,
                                         property.GetMethod is not null,
                                         property.SetMethod is not null));
                             }
@@ -249,13 +258,13 @@ namespace XAMLTest.Generator
             }
         }
 
-        private static bool IsFrameworkElement(ITypeSymbol typeSymbol)
+        private static bool IsUIElement(ITypeSymbol typeSymbol)
         {
             for (ITypeSymbol? type = typeSymbol;
                 type != null;
                 type = type.BaseType)
             {
-                if ($"{type}" == "System.Windows.FrameworkElement")
+                if ($"{type}" == "System.Windows.UIElement")
                 {
                     return true;
                 }

@@ -19,9 +19,10 @@ namespace XAMLTest.UnitTestGenerator
             }
 #endif
             SyntaxReceiver rx = (SyntaxReceiver)context.SyntaxContextReceiver!;
-
             foreach (TypeInfo targetType in rx.GeneratedTypes)
             {
+                if (targetType.Type?.IsAbstract == true) continue;
+
                 StringBuilder sb = new();
                 const string suffix = "GeneratedExtensions";
                 string targetTypeFullName = $"{targetType.Type}";
@@ -50,7 +51,7 @@ namespace XamlTest.Tests.Generated
         private static IApp? App {{ get; set; }}
 
         [NotNull]
-        private static IWindow Window {{ get; set; }}
+        private static IWindow? Window {{ get; set; }}
 
         [ClassInitialize]
         public static async Task ClassInitialize(TestContext context)
@@ -67,11 +68,9 @@ namespace XamlTest.Tests.Generated
         {{
             App.Dispose();
         }}");
-                foreach (IMethodSymbol getMethod in extensionClass!.GetMembers()
-                    .OfType<IMethodSymbol>()
-                    .Where(x => x.Name.StartsWith("Get") && x.IsStatic))
+                foreach (IMethodSymbol getMethod in GetTestMethods(extensionClass))
                 {
-                    string methodReturnType = ((INamedTypeSymbol)getMethod.ReturnType).TypeArguments[0].ToString();//.GenericTypeArguments[0].FullName;
+                    string methodReturnType = ((INamedTypeSymbol)getMethod.ReturnType).TypeArguments[0].ToString();
 
                     sb.AppendLine($@"
         [TestMethod]
@@ -97,9 +96,26 @@ namespace XamlTest.Tests.Generated
     }}
 }}");
 
-                System.IO.File.WriteAllText($@"C:\Dev\XAMLTest\XAMLTest.UnitTestGenerator\obj\{className}.cs", sb.ToString());
+                System.IO.File.WriteAllText($@"D:\Dev\XAMLTest\XAMLTest.UnitTestGenerator\obj\{className}.cs", sb.ToString());
 
                 context.AddSource($"{className}.cs", sb.ToString());
+            }
+
+            static IEnumerable<IMethodSymbol> GetTestMethods(INamedTypeSymbol extensionClass)
+            {
+                for (INamedTypeSymbol? type = extensionClass;
+                    type != null;
+                    type = type.BaseType)
+                {
+                    //Pick up the abstract base stuff
+                    if (type.IsAbstract) continue;
+                    foreach (IMethodSymbol getMethod in type.GetMembers()
+                        .OfType<IMethodSymbol>()
+                        .Where(x => x.Name.StartsWith("Get") && x.IsStatic))
+                    {
+                        yield return getMethod;
+                    }
+                }
             }
         }
 

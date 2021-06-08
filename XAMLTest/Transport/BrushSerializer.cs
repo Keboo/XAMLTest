@@ -213,7 +213,7 @@ namespace XamlTest.Transport
                 {
                     StartPoint = StartPoint,
                     EndPoint = EndPoint,
-                    GradientStops = new GradientStopCollection(GradientStops.Select(x => new GradientStop(x.Color, x.Offset)))
+                    GradientStops = new GradientStopCollection(GradientStops?.Select(x => new GradientStop(x.Color, x.Offset)) ?? Enumerable.Empty<GradientStop>())
                 };
             }
         }
@@ -246,7 +246,7 @@ namespace XamlTest.Transport
                     RadiusX = RadiusX,
                     RadiusY = RadiusY,
                     GradientOrigin = GradientOrigin,
-                    GradientStops = new GradientStopCollection(GradientStops.Select(x => new GradientStop(x.Color, x.Offset)))
+                    GradientStops = new GradientStopCollection(GradientStops?.Select(x => new GradientStop(x.Color, x.Offset)) ?? Enumerable.Empty<GradientStop>())
                 };
             }
         }

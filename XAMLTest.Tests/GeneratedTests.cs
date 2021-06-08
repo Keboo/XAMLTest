@@ -118,7 +118,6 @@ using XamlTest;
 [assembly: GenerateHelpers(typeof(System.Windows.Controls.Primitives.RepeatButton))]
 [assembly: GenerateHelpers(typeof(System.Windows.Controls.Primitives.ResizeGrip))]
 [assembly: GenerateHelpers(typeof(System.Windows.Controls.Primitives.ScrollBar))]
-[assembly: GenerateHelpers(typeof(System.Windows.Controls.Primitives.ScrollEventArgs))]
 [assembly: GenerateHelpers(typeof(System.Windows.Controls.Primitives.ScrollEventHandler))]
 [assembly: GenerateHelpers(typeof(System.Windows.Controls.Primitives.SelectiveScrollingGrid))]
 [assembly: GenerateHelpers(typeof(System.Windows.Controls.Primitives.Selector))]
