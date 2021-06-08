@@ -56,6 +56,9 @@ namespace XamlTest.Tests.Generated
 
         private static Func<string, string> GetWindowContent {{ get; set; }} = x => x;
 
+        private static Func<string, Task<IVisualElement<{targetTypeFullName}>>> GetElement {{ get; set; }}
+            = async x => await Window.GetElement<{targetTypeFullName}>(x);
+
         static partial void OnClassInitialize();
 
         [ClassInitialize]
@@ -77,7 +80,10 @@ namespace XamlTest.Tests.Generated
         public static void TestCleanup()
         {{
             App.Dispose();
-        }}");
+        }}
+
+");
+
                 foreach (IMethodSymbol getMethod in GetTestMethods(extensionClass))
                 {
                     string methodReturnType = ((INamedTypeSymbol)getMethod.ReturnType).TypeArguments[0].ToString();
@@ -90,7 +96,7 @@ namespace XamlTest.Tests.Generated
             await using TestRecorder recorder = new(App);
 
             //Act
-            IVisualElement<{targetTypeFullName}> {variableTargetTypeName} = await Window.GetElement<{targetTypeFullName}>(""Test{targetTypeName}"");
+            IVisualElement<{targetTypeFullName}> {variableTargetTypeName} = await GetElement(""Test{targetTypeName}"");
             var actual = await {variableTargetTypeName}.{getMethod.Name}();
 
             //Assert

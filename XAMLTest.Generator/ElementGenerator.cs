@@ -179,7 +179,8 @@ namespace XAMLTest.Generator
             "System.Collections.Generic.IEnumerable<System.Windows.Controls.InkCanvasClipboardFormat>",
             "System.Windows.Media.MediaClock",
             "System.Windows.IInputElement",
-            "System.Collections.ObjectModel.Collection<System.Windows.Controls.ToolBar>"
+            "System.Collections.ObjectModel.Collection<System.Windows.Controls.ToolBar>",
+            "System.Windows.WindowCollection"
         };
         private List<VisualElement> Elements { get; } = new();
         public IReadOnlyList<VisualElement> GeneratedTypes => Elements;

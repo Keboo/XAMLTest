@@ -30,7 +30,6 @@ namespace XamlTest.Tests
             await using var recorder = new TestRecorder(app);
 
             await app.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await app.CreateWindowWithContent("", title: "Test Window Title");
 
             Assert.AreEqual("Test Window Title", await window.GetTitle());
