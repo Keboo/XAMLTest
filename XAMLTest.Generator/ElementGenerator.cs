@@ -150,7 +150,6 @@ namespace XAMLTest.Generator
             "System.Windows.Media.TextEffectCollection",
             "System.Windows.Data.BindingGroup",
             "System.Windows.Style",
-            "System.Windows.DependencyObject", //This should be IVisualElement
             "System.Windows.ResourceDictionary",
             "System.Windows.DataTemplate",
             "System.Windows.Controls.DataTemplateSelector",
