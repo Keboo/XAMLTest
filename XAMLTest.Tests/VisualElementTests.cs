@@ -309,7 +309,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         {
             IWindow window = await App.CreateWindowWithContent(
                 @"<Grid x:Name=""MyGrid"" />");
-            IVisualElement element = await window.GetElement("MyGrid");
+            var element = await window.GetElement<Grid>("MyGrid");
 
             Assert.AreEqual(Colors.Red, await element.SetBackgroundColor(Colors.Red));
         }
@@ -319,7 +319,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         {
             IWindow window = await App.CreateWindowWithContent(
                 @"<TextBlock x:Name=""MyTextblock"" />");
-            IVisualElement element = await window.GetElement("MyTextblock");
+            var element = await window.GetElement<TextBlock>("MyTextblock");
 
             Assert.AreEqual("WPF", await element.SetText("WPF"));
         }
