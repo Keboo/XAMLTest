@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Windows;
 using System.Windows.Media;
 
@@ -22,7 +21,7 @@ namespace XamlTest.Transport
             if (type == typeof(LinearGradientBrush))
             {
                 if (!string.IsNullOrEmpty(value) &&
-                    JsonSerializer.Deserialize<BrushData>(value) is { } brushData)
+                    System.Text.Json.JsonSerializer.Deserialize<BrushData>(value) is { } brushData)
                 {
                     return brushData.LinearGradientData?.GetBrush();
                 }
@@ -30,7 +29,7 @@ namespace XamlTest.Transport
             else if (type == typeof(RadialGradientBrush))
             {
                 if (!string.IsNullOrEmpty(value) &&
-                    JsonSerializer.Deserialize<BrushData>(value) is { } brushData)
+                    System.Text.Json.JsonSerializer.Deserialize<BrushData>(value) is { } brushData)
                 {
                     return brushData.RadialGradientData?.GetBrush();
                 }
@@ -38,7 +37,7 @@ namespace XamlTest.Transport
             else if (type == typeof(SolidColorBrush))
             {
                 if (!string.IsNullOrEmpty(value) &&
-                    JsonSerializer.Deserialize<BrushData>(value) is { } brushData)
+                    System.Text.Json.JsonSerializer.Deserialize<BrushData>(value) is { } brushData)
                 {
                     return brushData.SolidColorData?.GetBrush();
                 }
@@ -46,7 +45,7 @@ namespace XamlTest.Transport
             else if (type == typeof(Brush))
             {
                 if (string.IsNullOrEmpty(value)) return null;
-                if (JsonSerializer.Deserialize<BrushData>(value) is { } brushData)
+                if (System.Text.Json.JsonSerializer.Deserialize<BrushData>(value) is { } brushData)
                 {
                     if (brushData.SolidColorData is not null)
                     {
@@ -65,7 +64,7 @@ namespace XamlTest.Transport
             else if (type == typeof(Color))
             {
                 if (!string.IsNullOrEmpty(value) &&
-                    JsonSerializer.Deserialize<BrushData>(value) is { } brushData &&
+                    System.Text.Json.JsonSerializer.Deserialize<BrushData>(value) is { } brushData &&
                     brushData.SolidColorData is { } data)
                 {
                     return data.Color;
@@ -75,7 +74,7 @@ namespace XamlTest.Transport
             else if (type == typeof(Color?))
             {
                 if (!string.IsNullOrEmpty(value) &&
-                    JsonSerializer.Deserialize<BrushData>(value) is { } brushData &&
+                    System.Text.Json.JsonSerializer.Deserialize<BrushData>(value) is { } brushData &&
                     brushData.SolidColorData is { } data)
                 {
                     return data.Color;
@@ -88,10 +87,10 @@ namespace XamlTest.Transport
         {
             return value switch
             {
-                SolidColorBrush brush => JsonSerializer.Serialize((BrushData)brush),
-                LinearGradientBrush linearBrush => JsonSerializer.Serialize((BrushData)linearBrush),
-                RadialGradientBrush radialBrush => JsonSerializer.Serialize((BrushData)radialBrush),
-                Color color => JsonSerializer.Serialize((BrushData)color),
+                SolidColorBrush brush => System.Text.Json.JsonSerializer.Serialize((BrushData)brush),
+                LinearGradientBrush linearBrush => System.Text.Json.JsonSerializer.Serialize((BrushData)linearBrush),
+                RadialGradientBrush radialBrush => System.Text.Json.JsonSerializer.Serialize((BrushData)radialBrush),
+                Color color => System.Text.Json.JsonSerializer.Serialize((BrushData)color),
                 _ => ""
             };
         }
@@ -106,7 +105,6 @@ namespace XamlTest.Transport
                 => new()
                 {
                     SolidColorData = new(brush)
-
                 };
 
             public static implicit operator BrushData(Color color)

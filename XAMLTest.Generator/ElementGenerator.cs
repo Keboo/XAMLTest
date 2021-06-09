@@ -130,6 +130,11 @@ namespace XAMLTest.Generator
 
     public class SyntaxReceiver : ISyntaxContextReceiver
     {
+        private static Dictionary<string, string> TypeRemap { get; } = new()
+        {
+            { "System.Windows.Controls.ColumnDefinitionCollection", "System.Collections.Generic.IList<System.Windows.Controls.ColumnDefinition>" }
+        };
+
         private static HashSet<string> IgnoredTypes { get; } = new()
         {
             "System.Windows.TriggerCollection",
@@ -248,6 +253,11 @@ namespace XAMLTest.Generator
                             else
                             {
                                 string propertyType = $"{property.Type}";
+                                if (TypeRemap.TryGetValue(propertyType, out string? remappedType))
+                                {
+                                    propertyType = remappedType;
+                                }
+
                                 if (property.Type.IsReferenceType &&
                                     !propertyType.EndsWith("?"))
                                 {
@@ -274,8 +284,8 @@ namespace XAMLTest.Generator
             static bool ShouldUseVisualElement(ITypeSymbol typeSymbol)
             {
                 for (ITypeSymbol? type = typeSymbol;
-                type != null;
-                type = type.BaseType)
+                     type != null;
+                     type = type.BaseType)
                 {
                     switch($"{type}")
                     {
@@ -286,14 +296,6 @@ namespace XAMLTest.Generator
                 return false;
             }
         }
-
-        
-
-        private static bool IsDependencyObject(ITypeSymbol typeSymbol)
-            => Is(typeSymbol, "System.Windows.DependencyObject");
-
-        private static bool IsUIElement(ITypeSymbol typeSymbol)
-            => Is(typeSymbol, "System.Windows.UIElement");
 
         private static bool IsDelegate(ITypeSymbol typeSymbol)
             => Is(typeSymbol, "System.Delegate");
