@@ -132,7 +132,8 @@ namespace XAMLTest.Generator
     {
         private static Dictionary<string, string> TypeRemap { get; } = new()
         {
-            { "System.Windows.Controls.ColumnDefinitionCollection", "System.Collections.Generic.IList<System.Windows.Controls.ColumnDefinition>" }
+            { "System.Windows.Controls.ColumnDefinitionCollection", "System.Collections.Generic.IList<System.Windows.Controls.ColumnDefinition>" },
+            { "System.Windows.Controls.RowDefinitionCollection", "System.Collections.Generic.IList<System.Windows.Controls.RowDefinition>" }
         };
 
         private static HashSet<string> IgnoredTypes { get; } = new()

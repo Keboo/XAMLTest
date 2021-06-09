@@ -4,7 +4,7 @@ using System.Security;
 
 namespace XamlTest.Transport
 {
-    internal class SecureStringSerializer : ISerializer
+    public class SecureStringSerializer : ISerializer
     {
         public bool CanSerialize(Type type)
             => type == typeof(SecureString);

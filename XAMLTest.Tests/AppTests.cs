@@ -170,10 +170,12 @@ namespace XamlTest.Tests
 
             var serializers = await app.GetSerializers();
 
-            Assert.AreEqual(3, serializers.Count);
+            Assert.AreEqual(5, serializers.Count);
             Assert.IsInstanceOfType(serializers[0], typeof(BrushSerializer));
             Assert.IsInstanceOfType(serializers[1], typeof(CharSerializer));
-            Assert.IsInstanceOfType(serializers[2], typeof(DefaultSerializer));
+            Assert.IsInstanceOfType(serializers[2], typeof(GridSerializer));
+            Assert.IsInstanceOfType(serializers[3], typeof(SecureStringSerializer));
+            Assert.IsInstanceOfType(serializers[4], typeof(DefaultSerializer));
         }
 
         [TestMethod]
@@ -182,15 +184,14 @@ namespace XamlTest.Tests
             await using var app = App.StartRemote();
             await app.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
 
+            var initialSerializersCount = (await app.GetSerializers()).Count;
+
             await app.RegisterSerializer<CustomSerializer>(1);
 
             var serializers = await app.GetSerializers();
 
-            Assert.AreEqual(4, serializers.Count);
-            Assert.IsInstanceOfType(serializers[0], typeof(BrushSerializer));
+            Assert.AreEqual(initialSerializersCount + 1, serializers.Count);
             Assert.IsInstanceOfType(serializers[1], typeof(CustomSerializer));
-            Assert.IsInstanceOfType(serializers[2], typeof(CharSerializer));
-            Assert.IsInstanceOfType(serializers[3], typeof(DefaultSerializer));
         }
 
         private class CustomSerializer : ISerializer

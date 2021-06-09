@@ -7,16 +7,6 @@ namespace XamlTest
 {
     public static partial class VisualElementMixins
     {
-        public static IVisualElement<TElement> As<TElement>(this IVisualElement visualElement)
-            where TElement : DependencyObject
-        {
-            if (visualElement is IVisualElementConverter converter)
-            {
-                return converter.Convert<IVisualElement<TElement>>();
-            }
-            throw new InvalidOperationException($"Cannot convert {visualElement} to {typeof(IVisualElement<TElement>)}");
-        }
-
         public static async Task<Color> GetEffectiveBackground(this IVisualElement element) 
             => await element.GetEffectiveBackground(null);
 

@@ -12,6 +12,7 @@ namespace XamlTest
 
     public interface IVisualElement : IEquatable<IVisualElement>
     {
+        IVisualElement<TElement> As<TElement>() where TElement : DependencyObject;
         Task<IVisualElement> GetElement(string query);
         Task<IVisualElement<TElement>> GetElement<TElement>(string query);
 
