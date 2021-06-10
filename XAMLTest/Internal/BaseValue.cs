@@ -7,10 +7,10 @@ namespace XamlTest.Internal
     {
         protected Serializer Serializer { get; }
 
-        public string Value { get; }
+        public object? Value { get; }
         public string? ValueType { get; }
 
-        protected BaseValue(string? valueType, string value, Serializer serializer)
+        protected BaseValue(string? valueType, object? value, Serializer serializer)
         {
             ValueType = valueType;
             Value = value;
@@ -18,14 +18,19 @@ namespace XamlTest.Internal
         }
 
         [return: MaybeNull]
-        public T GetAs<T>()
+        public virtual T GetAs<T>()
         {
             if (ValueType is null)
             {
                 return default;
             }
 
-            return (T)Serializer.Deserialize(typeof(T), Value)!;
+            if (Value is T converted && typeof(T) != typeof(string))
+            {
+                return converted;
+            }
+
+            return (T)Serializer.Deserialize(typeof(T), Value?.ToString() ?? "")!;
         }
     }
 }

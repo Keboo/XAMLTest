@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Windows.Media;
 
 namespace XamlTest.Transport
 {
@@ -19,6 +20,14 @@ namespace XamlTest.Transport
             var converter = TypeDescriptor.GetConverter(type);
             if (converter.CanConvertFrom(typeof(string)))
             {
+                if (string.IsNullOrEmpty(value))
+                {
+                    return null;
+                }
+                if (type == typeof(Brush))
+                {
+
+                }
                 return converter.ConvertFromInvariantString(value);
             }
             return value;

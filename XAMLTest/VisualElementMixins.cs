@@ -7,22 +7,8 @@ namespace XamlTest
 {
     public static partial class VisualElementMixins
     {
-        public static async Task<Color> GetEffectiveBackground(this IVisualElement element) 
+        public static async Task<Color> GetEffectiveBackground(this IVisualElement element)
             => await element.GetEffectiveBackground(null);
-
-        public static async Task<IVisualElement?> SetXamlContent(this IVisualElement containerElement, string xaml)
-        {
-            if (containerElement is null)
-            {
-                throw new ArgumentNullException(nameof(containerElement));
-            }
-
-            if (await containerElement.SetProperty("Content", xaml, Types.XamlString) is { })
-            {
-                return await containerElement.GetElement(".Content");
-            }
-            return null;
-        }
 
         public static async Task<IValue> GetProperty(this IVisualElement element, string name)
         {
@@ -62,19 +48,7 @@ namespace XamlTest
             return value.GetAs<T?>();
         }
 
-        public static async Task<string?> GetText(this IVisualElement element)
-            => await element.GetProperty<string?>("Text");
-
-        public static async Task<Color> GetBackgroundColor(this IVisualElement element)
-            => await element.GetProperty<Color>("Background");
-
-        public static async Task<Color> GetForegroundColor(this IVisualElement element)
-            => await element.GetProperty<Color>("Foreground");
-
-        public static async Task<object?> GetContent(this IVisualElement element)
-            => await element.GetProperty<object?>("Content");
-
-        public static async Task<IValue> SetProperty(this IVisualElement element, 
+        public static async Task<IValue> SetProperty(this IVisualElement element,
             string name, string value, string? valueType = null)
         {
             return await element.SetProperty(name, value, valueType, null);
@@ -119,14 +93,5 @@ namespace XamlTest
             }
             return default;
         }
-
-        public static async Task<Color?> SetBackgroundColor(this IVisualElement element, Color color)
-        {
-            SolidColorBrush? brush = await element.SetProperty("Background", new SolidColorBrush(color));
-            return brush?.Color ?? default;
-        }
-
-        public static async Task<string?> SetText(this IVisualElement element, string text)
-            => await element.SetProperty("Text", text);
     }
 }

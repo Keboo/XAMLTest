@@ -4,6 +4,11 @@
     <WarningsAsErrors>true</WarningsAsErrors>
     <AnalysisLevel>5</AnalysisLevel>
     <LangVersion>9.0</LangVersion>
+    <Version>1.2.6</Version>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
   </PropertyGroup>
 
   <PropertyGroup>

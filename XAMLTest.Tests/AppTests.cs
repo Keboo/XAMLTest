@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using System.Windows.Media;
 using XamlTest.Tests.TestControls;
 using XamlTest.Transport;
+using XamlTest;
+using System.Windows;
 
 namespace XamlTest.Tests
 {
@@ -17,9 +19,7 @@ namespace XamlTest.Tests
         public async Task OnStartRemote_LaunchesRemoteApp()
         {
             await using var app = App.StartRemote<XAMLTest.TestApp.App>();
-            
             IWindow? window = await app.GetMainWindow();
-
             Assert.AreEqual("Test App Window", await window!.GetTitle());
         }
 
@@ -30,7 +30,6 @@ namespace XamlTest.Tests
             await using var recorder = new TestRecorder(app);
 
             await app.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
             IWindow window = await app.CreateWindowWithContent("", title: "Test Window Title");
 
             Assert.AreEqual("Test Window Title", await window.GetTitle());
@@ -62,7 +61,7 @@ namespace XamlTest.Tests
             await app.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
 
             IWindow? mainWindow = await app.GetMainWindow();
-            
+
             Assert.IsNull(mainWindow);
 
             recorder.Success();
@@ -80,7 +79,7 @@ namespace XamlTest.Tests
             IWindow window2 = await app.CreateWindowWithContent("");
 
             IWindow? mainWindow = await app.GetMainWindow();
-            
+
             Assert.AreEqual(window1, mainWindow);
 
             recorder.Success();
@@ -98,7 +97,7 @@ namespace XamlTest.Tests
             IWindow window2 = await app.CreateWindowWithContent("");
 
             IReadOnlyList<IWindow> windows = await app.GetWindows();
-            
+
             CollectionAssert.AreEqual(new[] { window1, window2 }, windows.ToArray());
 
             recorder.Success();
@@ -171,9 +170,12 @@ namespace XamlTest.Tests
 
             var serializers = await app.GetSerializers();
 
-            Assert.AreEqual(2, serializers.Count);
-            Assert.IsInstanceOfType(serializers[0], typeof(SolidColorBrushSerializer));
-            Assert.IsInstanceOfType(serializers[1], typeof(DefaultSerializer));
+            Assert.AreEqual(5, serializers.Count);
+            Assert.IsInstanceOfType(serializers[0], typeof(BrushSerializer));
+            Assert.IsInstanceOfType(serializers[1], typeof(CharSerializer));
+            Assert.IsInstanceOfType(serializers[2], typeof(GridSerializer));
+            Assert.IsInstanceOfType(serializers[3], typeof(SecureStringSerializer));
+            Assert.IsInstanceOfType(serializers[4], typeof(DefaultSerializer));
         }
 
         [TestMethod]
@@ -182,14 +184,14 @@ namespace XamlTest.Tests
             await using var app = App.StartRemote();
             await app.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
 
+            var initialSerializersCount = (await app.GetSerializers()).Count;
+
             await app.RegisterSerializer<CustomSerializer>(1);
 
             var serializers = await app.GetSerializers();
 
-            Assert.AreEqual(3, serializers.Count);
-            Assert.IsInstanceOfType(serializers[0], typeof(SolidColorBrushSerializer));
+            Assert.AreEqual(initialSerializersCount + 1, serializers.Count);
             Assert.IsInstanceOfType(serializers[1], typeof(CustomSerializer));
-            Assert.IsInstanceOfType(serializers[2], typeof(DefaultSerializer));
         }
 
         private class CustomSerializer : ISerializer

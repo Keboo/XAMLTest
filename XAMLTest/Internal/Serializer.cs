@@ -12,7 +12,10 @@ namespace XamlTest.Internal
         public Serializer()
         {
             //NB: Order matters here. Items earlier in the list take precedence
-            Serializers.Add(new SolidColorBrushSerializer());
+            Serializers.Add(new BrushSerializer());
+            Serializers.Add(new CharSerializer());
+            Serializers.Add(new GridSerializer());
+            Serializers.Add(new SecureStringSerializer());
             Serializers.Add(new DefaultSerializer());
         }
 
