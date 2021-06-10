@@ -33,6 +33,11 @@ namespace XAMLTest.Generator
             {
                 if (ignoredTypes.Contains(type.Type.FullName)) continue;
 
+                if (context.Compilation.GetTypeByMetadataName($"{type.Namespace}.{type.Type.Name}GeneratedExtensions") is not null)
+                {
+                    continue;
+                }
+
                 StringBuilder builder = new();
                 builder.AppendLine("#nullable enable");
                 builder.AppendLine($"namespace {type.Namespace}");
