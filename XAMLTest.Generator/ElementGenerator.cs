@@ -92,6 +92,29 @@ namespace XAMLTest.Generator
                         builder
                             .Append("            ")
                             .AppendLine($"=> await element.SetProperty(nameof({type.Type.FullName}.{property.Name}), value);");
+
+                        if (property.TypeFullName.StartsWith("System.Windows.Media.SolidColorBrush") ||
+                            property.TypeFullName.StartsWith("System.Windows.Media.Brush"))
+                        {
+                            builder
+                            .Append("        ");
+                            if (type.Type.IsFinal)
+                            {
+                                builder.AppendLine($"public static async System.Threading.Tasks.Task<System.Windows.Media.Color?> Set{property.Name}Color(this IVisualElement<{type.Type.FullName}> element, System.Windows.Media.Color value)");
+                            }
+                            else
+                            {
+                                builder.AppendLine($"public static async System.Threading.Tasks.Task<System.Windows.Media.Color?> Set{property.Name}Color<T>(this IVisualElement<T> element, System.Windows.Media.Color value) where T : {type.Type.FullName}");
+                            }
+                            builder
+                            .AppendLine("        {")
+                            .Append("            ")
+                            .AppendLine($"System.Windows.Media.SolidColorBrush? brush = await element.SetProperty(nameof({type.Type.FullName}.{property.Name}), new System.Windows.Media.SolidColorBrush(value));")
+                            .Append("            ")
+                            .AppendLine("return brush?.Color ?? default;")
+                            .AppendLine("        }");
+                        }
+
                     }
                 }
                 builder.AppendLine("    }");
