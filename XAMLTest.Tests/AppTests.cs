@@ -1,3 +1,4 @@
+using MaterialDesignThemes.Wpf;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -5,10 +6,12 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Media;
+using XamlTest;
 using XamlTest.Tests.TestControls;
 using XamlTest.Transport;
-using XamlTest;
-using System.Windows;
+
+[assembly: GenerateHelpers(typeof(ColorZone))]
+
 
 namespace XamlTest.Tests
 {
@@ -21,6 +24,18 @@ namespace XamlTest.Tests
             await using var app = App.StartRemote<XAMLTest.TestApp.App>();
             IWindow? window = await app.GetMainWindow();
             Assert.AreEqual("Test App Window", await window!.GetTitle());
+        }
+
+        [TestMethod]
+        public async Task CanGenerateTypedElement_ForCustomControlInRemoteApp()
+        {
+            await using var app = App.StartRemote<XAMLTest.TestApp.App>();
+            IWindow? window = await app.GetMainWindow();
+            Assert.IsNotNull(window);
+
+            IVisualElement<ColorZone> colorZone = await window.GetElement<ColorZone>("/ColorZone");
+
+            Assert.AreEqual(ColorZoneMode.PrimaryMid, await colorZone.GetMode());
         }
 
         [TestMethod]

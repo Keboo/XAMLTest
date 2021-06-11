@@ -166,7 +166,7 @@ namespace XamlTest.Tests.Generated
             {
                 if (context.Node is AttributeSyntax attrib
                     && attrib.ArgumentList?.Arguments.Count >= 1
-                    && context.SemanticModel.GetTypeInfo(attrib).Type?.Name == "GenerateHelpersAttribute")
+                    && context.SemanticModel.GetTypeInfo(attrib).Type?.Name == "GenerateTestsAttribute")
                 {
                     TypeOfExpressionSyntax typeArgument = (TypeOfExpressionSyntax)attrib.ArgumentList.Arguments[0].Expression;
                     TypeInfo info = context.SemanticModel.GetTypeInfo(typeArgument.Type);
