@@ -389,6 +389,17 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         }
 
         [TestMethod]
+        [Description("Issue 27")]
+        public async Task OnGetElement_ItRetrievesItemsByBaseType()
+        {
+            IWindow window = await App.CreateWindowWithContent(
+                @"<TextBox x:Name=""TestName""/>");
+            IVisualElement<TextBoxBase> element = await window.GetElement<TextBoxBase>("/TextBoxBase");
+
+            Assert.AreEqual("TestName", await element.GetName());
+        }
+
+        [TestMethod]
         public async Task OnGetElement_ItRetrievesNestedItemsByType()
         {
             IWindow window = await App.CreateWindowWithContent(@"
