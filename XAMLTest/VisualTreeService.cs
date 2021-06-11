@@ -3,7 +3,6 @@ using Grpc.Core;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -953,7 +952,7 @@ namespace XamlTest
 
                 foreach (DependencyObject child in Decendants<DependencyObject>(root))
                 {
-                    if (child.GetType().Name == childTypeQuery)
+                    if (GetTypeNames(child).Any(x => x == childTypeQuery))
                     {
                         if (index == 0)
                         {
@@ -985,6 +984,16 @@ namespace XamlTest
                     }
                 }
                 throw new Exception($"Failed to find child with property expression '{propertyExpression}'");
+            }
+
+            static IEnumerable<string> GetTypeNames(DependencyObject child)
+            {
+                for(Type? type = child.GetType();
+                    type is not null;
+                    type = type.BaseType)
+                {
+                    yield return type.Name;
+                }
             }
         }
 
