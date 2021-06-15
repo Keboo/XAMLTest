@@ -20,7 +20,7 @@ namespace XamlTest.Transport
             if (typeof(IEnumerable<ColumnDefinition>).IsAssignableFrom(type))
             {
                 List<ColumnDefinition> rv = new();
-                foreach(var data in JsonSerializer.Deserialize<List<ColumnDefinitionData>>(value) ?? Enumerable.Empty<ColumnDefinitionData >())
+                foreach (var data in JsonSerializer.Deserialize<List<ColumnDefinitionData>>(value) ?? Enumerable.Empty<ColumnDefinitionData>())
                 {
                     rv.Add(ConvertFrom(data));
                 }
@@ -47,6 +47,7 @@ namespace XamlTest.Transport
             }
             return null;
         }
+
         public string Serialize(Type type, object? value)
         {
             if (typeof(IEnumerable<ColumnDefinition>).IsAssignableFrom(type) &&
@@ -101,7 +102,7 @@ namespace XamlTest.Transport
                 Width = ConvertTo(value.Width)
             };
 
-        private static List<ColumnDefinitionData> ConvertTo(IEnumerable<ColumnDefinition> value) 
+        private static List<ColumnDefinitionData> ConvertTo(IEnumerable<ColumnDefinition> value)
             => value.Select(x => ConvertTo(x)).OfType<ColumnDefinitionData>().ToList();
 
         private static RowDefinition ConvertFrom(RowDefinitionData value)
