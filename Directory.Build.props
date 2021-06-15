@@ -8,7 +8,6 @@
 
   <PropertyGroup>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-    <EmbedUntrackedSource>true</EmbedUntrackedSource>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -16,10 +15,17 @@
     <Description>A library that allows unit tests to be written against WPF XAML.</Description>
     <Copyright>Copyright 2020</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <IncludeSymbols>True</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PackageIcon>icon.png</PackageIcon>
     <RepositoryUrl>https://github.com/Keboo/XamlTest</RepositoryUrl>
     <Authors>Keboo</Authors>
+  </PropertyGroup>
+
+  <!-- Source Link Properties -->
+  <PropertyGroup>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSource>true</EmbedUntrackedSource>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 </Project>
