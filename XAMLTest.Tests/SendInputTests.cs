@@ -1,10 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Printing;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -18,7 +14,7 @@ namespace XamlTest.Tests
         private static IApp? App { get; set; }
 
         [NotNull]
-        private static IVisualElement<TextBox> TextBox { get; set; }
+        private static IVisualElement<TextBox>? TextBox { get; set; }
 
         [ClassInitialize]
         public static async Task ClassInitialize(TestContext context)
@@ -54,7 +50,7 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task SendInput_WithFormattableStringInput_SetsText()
         {
-            await TextBox.SendInput($"Some Text");
+            await TextBox.SendKeyboardInput($"Some Text");
 
             Assert.AreEqual("Some Text", await TextBox.GetText());
         }
@@ -62,7 +58,7 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task SendInput_WithFormattableStringWithKeys_SetsText()
         {
-            await TextBox.SendInput($"Some{Key.Space}Text");
+            await TextBox.SendKeyboardInput($"Some{Key.Space}Text");
 
             Assert.AreEqual("Some Text", await TextBox.GetText());
         }

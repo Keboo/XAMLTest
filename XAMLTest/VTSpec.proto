@@ -189,6 +189,7 @@ message KeyboardFocusResult {
 message InputRequest {
   string elementId = 1;
   repeated KeyboardData keyboardData = 2;
+  repeated MouseData mouseData = 3;
 }
 
 message InputResponse {
@@ -199,6 +200,21 @@ message InputResponse {
 message KeyboardData {
   string textInput = 1;
   repeated int32 keys = 2;
+}
+
+message MouseData {
+  enum MouseEvent {
+    MoveToElement = 0;
+    LeftDown = 1;
+    LeftUp = 2;
+    MiddleDown = 3;
+    MiddleUp = 4;
+    RightDown = 5;
+    RightUp = 6;
+    Delay = 7;
+  }
+  MouseEvent event = 1;
+  string value = 2;
 }
 
 message ShutdownRequest {

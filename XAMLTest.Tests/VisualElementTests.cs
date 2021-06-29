@@ -505,7 +505,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             IVisualElement<TextBox> element = await window.GetElement<TextBox>("/Grid~MyTextBox");
             await element.MoveKeyboardFocus();
 
-            await element.SendInput($"Test Text!");
+            await element.SendKeyboardInput($"Test Text!");
 
             Assert.AreEqual("Test Text!", await element.GetText());
 
@@ -524,7 +524,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             IVisualElement<TextBox> element = await window.GetElement<TextBox>("/Grid~MyTextBox");
             await element.MoveKeyboardFocus();
 
-            await element.SendInput($"First Line{Key.Enter}Second Line");
+            await element.SendKeyboardInput($"First Line{Key.Enter}Second Line");
 
             Assert.AreEqual($"First Line{Environment.NewLine}Second Line", await element.GetText());
 
@@ -545,7 +545,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
             await using IEventRegistration clickEvent = await element.RegisterForEvent(nameof(Button.Click));
 
             // Act
-            await element.Click();
+            await element.LeftClick();
             await Task.Delay(500);
 
             //Assert

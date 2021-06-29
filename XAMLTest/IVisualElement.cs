@@ -30,6 +30,6 @@ namespace XamlTest
         Task MoveKeyboardFocus();
 
         Task SendInput(KeyboardInput keyboardInput);
-        //Task SendInput(MouseInput mouseInput);
+        Task SendInput(MouseInput mouseInput);
     }
 }

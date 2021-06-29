@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using XamlTest.Input;
 
 namespace XamlTest.Internal
 {
@@ -256,6 +257,68 @@ namespace XamlTest.Internal
                 return rv;
             }));
             LogMessage?.Invoke($"{nameof(SendInput)}({keyboardInput})");
+            if (await Client.SendInputAsync(request) is { } reply)
+            {
+                if (reply.LogMessages.Any() && LogMessage is { } logMessage)
+                {
+                    foreach (var message in reply.LogMessages)
+                    {
+                        logMessage(message);
+                    }
+                }
+                if (reply.ErrorMessages.Any())
+                {
+                    throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
+                }
+                return;
+            }
+
+            throw new Exception("Failed to receive a reply");
+        }
+
+        public async Task SendInput(MouseInput mouseInput)
+        {
+            if (mouseInput is null)
+            {
+                throw new ArgumentNullException(nameof(mouseInput));
+            }
+
+            InputRequest request = new()
+            {
+                ElementId = Id
+            };
+            request.MouseData.AddRange(mouseInput.Inputs.SelectMany(i =>
+            {
+                return GetAll(i);
+
+                static IEnumerable<MouseData> GetAll(IInput i)
+                {
+                    switch (i)
+                    {
+                        case MouseInput.MouseInputData data:
+                            yield return GetData(data);
+                            break;
+                        case MouseInput input:
+                            foreach (MouseData item in input.Inputs.SelectMany(x => GetAll(x)))
+                            {
+                                yield return item;
+                            }
+                            break;
+                        default:
+                            throw new InvalidOperationException($"Unknown input type {i.GetType().FullName}");
+                    }
+                }
+
+                static MouseData GetData(MouseInput.MouseInputData inputData)
+                {
+                    return new MouseData
+                    {
+                        Event = inputData.Event,
+                        Value = inputData.Value
+                    };
+                }
+            }));
+            LogMessage?.Invoke($"{nameof(SendInput)}({mouseInput})");
             if (await Client.SendInputAsync(request) is { } reply)
             {
                 if (reply.LogMessages.Any() && LogMessage is { } logMessage)
