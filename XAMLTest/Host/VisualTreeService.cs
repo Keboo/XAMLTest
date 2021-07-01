@@ -26,7 +26,7 @@ using Color = System.Windows.Media.Color;
 using Point = System.Windows.Point;
 using Window = System.Windows.Window;
 
-namespace XamlTest
+namespace XamlTest.Host
 {
     internal class VisualTreeService : Protocol.ProtocolBase
     {

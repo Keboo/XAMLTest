@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option csharp_namespace = "XamlTest";
+option csharp_namespace = "XamlTest.Host";
 
 package XamlTest;
 

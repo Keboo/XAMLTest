@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using XamlTest.Host;
 using XamlTest.Input;
 
 namespace XamlTest.Internal
@@ -287,37 +288,7 @@ namespace XamlTest.Internal
             {
                 ElementId = Id
             };
-            request.MouseData.AddRange(mouseInput.Inputs.SelectMany(i =>
-            {
-                return GetAll(i);
-
-                static IEnumerable<MouseData> GetAll(IInput i)
-                {
-                    switch (i)
-                    {
-                        case MouseInput.MouseInputData data:
-                            yield return GetData(data);
-                            break;
-                        case MouseInput input:
-                            foreach (MouseData item in input.Inputs.SelectMany(x => GetAll(x)))
-                            {
-                                yield return item;
-                            }
-                            break;
-                        default:
-                            throw new InvalidOperationException($"Unknown input type {i.GetType().FullName}");
-                    }
-                }
-
-                static MouseData GetData(MouseInput.MouseInputData inputData)
-                {
-                    return new MouseData
-                    {
-                        Event = inputData.Event,
-                        Value = inputData.Value
-                    };
-                }
-            }));
+            request.MouseData.AddRange(mouseInput.Inputs.SelectMany(GetAll));
             LogMessage?.Invoke($"{nameof(SendInput)}({mouseInput})");
             if (await Client.SendInputAsync(request) is { } reply)
             {
@@ -336,6 +307,33 @@ namespace XamlTest.Internal
             }
 
             throw new Exception("Failed to receive a reply");
+
+            static IEnumerable<MouseData> GetAll(IInput input)
+            {
+                switch (input)
+                {
+                    case MouseInput.MouseInputData data:
+                        yield return GetData(data);
+                        break;
+                    case MouseInput mouseInput:
+                        foreach (MouseData item in mouseInput.Inputs.SelectMany(x => GetAll(x)))
+                        {
+                            yield return item;
+                        }
+                        break;
+                    default:
+                        throw new InvalidOperationException($"Unknown input type {input.GetType().FullName}");
+                }
+            }
+
+            static MouseData GetData(MouseInput.MouseInputData inputData)
+            {
+                return new MouseData
+                {
+                    Event = inputData.Event,
+                    Value = inputData.Value
+                };
+            }
         }
 
         public async Task<IEventRegistration> RegisterForEvent(string name)
