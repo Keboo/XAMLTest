@@ -556,7 +556,7 @@ namespace XamlTest.Host
         public override async Task<ImageResult> GetScreenshot(ImageQuery request, ServerCallContext context)
         {
             ImageResult reply = new();
-            await Application.Dispatcher.InvokeAsync(async () =>
+            await Application.Dispatcher.Invoke(async () =>
             {
                 Window mainWindow = Application.MainWindow;
                 Screen? screen;
@@ -626,7 +626,7 @@ namespace XamlTest.Host
         public override async Task<InputResponse> SendInput(InputRequest request, ServerCallContext context)
         {
             InputResponse reply = new();
-            await Application.Dispatcher.InvokeAsync(async () =>
+            await Application.Dispatcher.Invoke(async () =>
             {
                 try
                 {
@@ -637,7 +637,7 @@ namespace XamlTest.Host
                         return;
                     }
 
-                    Window window = Window.GetWindow((DependencyObject)element);
+                    Window window = Window.GetWindow(element);
                     if (window is null)
                     {
                         reply.ErrorMessages.Add("Failed to find parent window");
@@ -709,18 +709,21 @@ namespace XamlTest.Host
                                 return;
                             }
                         }
-                        foreach (KeyboardData keyboardData in request.KeyboardData)
+                        await Task.Run(async () =>
                         {
-                            if (!string.IsNullOrEmpty(keyboardData.TextInput))
+                            foreach (KeyboardData keyboardData in request.KeyboardData)
                             {
-                                Input.KeyboardInput.SendKeysForText(windowHandle, keyboardData.TextInput);
+                                if (!string.IsNullOrEmpty(keyboardData.TextInput))
+                                {
+                                    Input.KeyboardInput.SendKeysForText(windowHandle, keyboardData.TextInput);
+                                }
+                                if (keyboardData.Keys.Any())
+                                {
+                                    Input.KeyboardInput.SendKeys(windowHandle, keyboardData.Keys.Cast<Key>().ToArray());
+                                }
+                                await Task.Delay(10);
                             }
-                            if (keyboardData.Keys.Any())
-                            {
-                                Input.KeyboardInput.SendKeys(windowHandle, keyboardData.Keys.Cast<Key>().ToArray());
-                            }
-                            await Task.Delay(10);
-                        }
+                        });
                     }
                 }
                 catch (Exception e)

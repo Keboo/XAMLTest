@@ -331,7 +331,7 @@ namespace XamlTest.Internal
                 return new MouseData
                 {
                     Event = inputData.Event,
-                    Value = inputData.Value
+                    Value = inputData.Value ?? ""
                 };
             }
         }
