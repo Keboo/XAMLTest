@@ -8,7 +8,7 @@ using System.Windows.Input;
 namespace XamlTest.Tests
 {
     [TestClass]
-    public class SendInputTests
+    public class SendKeyboardInputTests
     {
         [NotNull]
         private static IApp? App { get; set; }

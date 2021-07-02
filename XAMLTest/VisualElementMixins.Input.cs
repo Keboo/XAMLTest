@@ -29,25 +29,60 @@ namespace XamlTest
             Input.MouseInput.MoveCursor(location);
         }
 
-        public static async Task LeftClick(this IVisualElement element)
+        public static async Task LeftClick(this IVisualElement element,
+            Position position = Position.Center,
+            TimeSpan? clickTime = null)
         {
-            await SendMouseInput(element, new[]
+            MouseInput[] inputs;
+            if (clickTime is null)
             {
-                MouseInput.LeftDown(),
-                MouseInput.LeftUp()
-            });
+                inputs = new[]
+                {
+                    MouseInput.LeftDown(),
+                    MouseInput.LeftUp()
+                };
+            }
+            else
+            {
+                inputs = new[]
+                {
+                    MouseInput.LeftDown(),
+                    MouseInput.Delay(clickTime.Value),
+                    MouseInput.LeftUp()
+                };
+            }
+
+            await SendMouseInput(element, position, inputs);
         }
 
-        public static async Task RightClick(this IVisualElement element)
+        public static async Task RightClick(this IVisualElement element,
+            Position position = Position.Center,
+            TimeSpan? clickTime = null)
         {
-            await SendMouseInput(element, new[]
+            MouseInput[] inputs;
+            if (clickTime is null)
             {
-                MouseInput.RightDown(),
-                MouseInput.RightUp()
-            });
+                inputs = new[]
+                {
+                    MouseInput.RightDown(),
+                    MouseInput.RightUp()
+                };
+            }
+            else
+            {
+                inputs = new[]
+                {
+                    MouseInput.RightDown(),
+                    MouseInput.Delay(clickTime.Value),
+                    MouseInput.RightUp()
+                };
+            }
+
+            await SendMouseInput(element, position, inputs);
         }
 
-        public static async Task SendMouseInput(this IVisualElement element,
+        private static async Task SendMouseInput(IVisualElement element,
+            Position position,
             params MouseInput[] mouseInputs)
         {
             if (element is null)
@@ -55,7 +90,7 @@ namespace XamlTest
                 throw new ArgumentNullException(nameof(element));
             }
 
-            var moveToElement = MouseInput.MoveToElement(element);
+            var moveToElement = MouseInput.MoveToElement(position);
             
             await element.SendInput(new MouseInput(
                 new IInput[] { moveToElement }.Concat(mouseInputs).ToArray()));

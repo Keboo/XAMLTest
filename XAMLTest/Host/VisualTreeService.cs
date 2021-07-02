@@ -669,6 +669,9 @@ namespace XamlTest.Host
                                         Point location = position switch
                                         {
                                             Position.TopLeft => coordinates.TopLeft,
+                                            Position.TopRight => coordinates.TopRight,
+                                            Position.BottomRight => coordinates.BottomRight,
+                                            Position.BottomLeft => coordinates.BottomLeft,
                                             _ => coordinates.Center()
                                         };
                                         Input.MouseInput.MoveCursor(location);

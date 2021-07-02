@@ -21,12 +21,21 @@ namespace XamlTest
             Inputs = inputs ?? throw new ArgumentNullException(nameof(inputs));
         }
 
-        public static MouseInput MoveToElement(IVisualElement element)
+        public static MouseInput Delay(TimeSpan timespan)
+        {
+            return new MouseInput(new MouseInputData
+            {
+                Event = MouseData.Types.MouseEvent.Delay,
+                Value = timespan.TotalMilliseconds.ToString()
+            });
+        }
+
+        public static MouseInput MoveToElement(Position position = Position.Center)
         {
             return new MouseInput(new MouseInputData
             {
                 Event = MouseData.Types.MouseEvent.MoveToElement,
-                //TODO: Point
+                Value = position.ToString()
             });
         }
 
