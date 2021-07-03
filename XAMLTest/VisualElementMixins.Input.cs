@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Input;
 using XamlTest.Input;
 
@@ -10,37 +9,47 @@ namespace XamlTest
 {
     public static partial class VisualElementMixins
     {
-        public static async Task MoveCursorToElement(
-            this IVisualElement element, Position position = Position.Center)
+        public static async Task LeftClick(this IVisualElement element,
+            Position position = Position.Center,
+            TimeSpan? clickTime = null)
         {
-            if (element is null)
-            {
-                throw new ArgumentNullException(nameof(element));
-            }
-
-            Rect coordinates = await element.GetCoordinates();
-
-            Point location = position switch
-            {
-                Position.TopLeft => coordinates.TopLeft,
-                _ => coordinates.Center()
-            };
-
-            MouseInput.MoveCursor(location);
+            await SendClick(element,
+                MouseInput.LeftDown(),
+                MouseInput.LeftUp(),
+                position,
+                clickTime);
         }
 
-        public static async Task Click(this IVisualElement element)
+        public static async Task RightClick(this IVisualElement element,
+            Position position = Position.Center,
+            TimeSpan? clickTime = null)
         {
-            if (element is null)
-            {
-                throw new ArgumentNullException(nameof(element));
-            }
-
-            await MoveCursorToElement(element);
-            MouseInput.LeftClick();
+            await SendClick(element,
+                MouseInput.RightDown(),
+                MouseInput.RightUp(),
+                position,
+                clickTime);
         }
 
-        public static async Task SendInput(this IVisualElement element, FormattableString input)
+        public static async Task SendClick(IVisualElement element,
+            MouseInput down,
+            MouseInput up,
+            Position position,
+            TimeSpan? clickTime)
+        {
+            List<MouseInput> inputs = new();
+            inputs.Add(MouseInput.MoveToElement(position));
+            inputs.Add(down);
+            if (clickTime != null)
+            {
+                inputs.Add(MouseInput.Delay(clickTime.Value));
+            }
+            inputs.Add(up);
+            
+            await element.SendInput(new MouseInput(inputs.ToArray()));
+        }
+
+        public static async Task SendKeyboardInput(this IVisualElement element, FormattableString input)
         {
             var placeholder = Guid.NewGuid().ToString("N");
             string formatted = string.Format(input.Format, Enumerable.Repeat(placeholder, input.ArgumentCount).Cast<object>().ToArray());

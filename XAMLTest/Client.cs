@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using GrpcDotNetNamedPipes;
+using XamlTest.Host;
 
 namespace XamlTest
 {

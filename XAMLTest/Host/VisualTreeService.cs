@@ -26,7 +26,7 @@ using Color = System.Windows.Media.Color;
 using Point = System.Windows.Point;
 using Window = System.Windows.Window;
 
-namespace XamlTest
+namespace XamlTest.Host
 {
     internal class VisualTreeService : Protocol.ProtocolBase
     {
@@ -408,20 +408,12 @@ namespace XamlTest
 
                 if (dependencyObject is FrameworkElement element)
                 {
-                    var window = element as Window ?? Window.GetWindow(element);
-                    Point windowOrigin = window.PointToScreen(new Point(0, 0));
-
-                    Point topLeft = element.TranslatePoint(new Point(0, 0), window);
-                    Point bottomRight = element.TranslatePoint(new Point(element.ActualWidth, element.ActualHeight), window);
-                    double left = windowOrigin.X + topLeft.X;
-                    double top = windowOrigin.Y + topLeft.Y;
-                    double right = windowOrigin.X + bottomRight.X;
-                    double bottom = windowOrigin.Y + bottomRight.Y;
-
-                    reply.Left = Math.Min(left, right);
-                    reply.Top = Math.Min(top, bottom);
-                    reply.Right = Math.Max(left, right);
-                    reply.Bottom = Math.Max(top, bottom);
+                    Rect rect = GetCoordinates(element);
+                    
+                    reply.Left = rect.Left;
+                    reply.Top = rect.Top;
+                    reply.Right = rect.Right;
+                    reply.Bottom = rect.Bottom;
                 }
                 else
                 {
@@ -564,7 +556,7 @@ namespace XamlTest
         public override async Task<ImageResult> GetScreenshot(ImageQuery request, ServerCallContext context)
         {
             ImageResult reply = new();
-            await Application.Dispatcher.InvokeAsync(async () =>
+            await Application.Dispatcher.Invoke(async () =>
             {
                 Window mainWindow = Application.MainWindow;
                 Screen? screen;
@@ -634,18 +626,18 @@ namespace XamlTest
         public override async Task<InputResponse> SendInput(InputRequest request, ServerCallContext context)
         {
             InputResponse reply = new();
-            IntPtr windowHandle = IntPtr.Zero;
-            await Application.Dispatcher.InvokeAsync(() =>
+            await Application.Dispatcher.Invoke(async () =>
             {
                 try
                 {
-                    if (!(GetCachedElement<DependencyObject>(request.ElementId) is IInputElement element))
+                    IntPtr windowHandle = IntPtr.Zero;
+                    if (!(GetCachedElement<DependencyObject>(request.ElementId) is { } element))
                     {
                         reply.ErrorMessages.Add("Could not find element");
                         return;
                     }
 
-                    Window window = Window.GetWindow((DependencyObject)element);
+                    Window window = Window.GetWindow(element);
                     if (window is null)
                     {
                         reply.ErrorMessages.Add("Failed to find parent window");
@@ -659,12 +651,83 @@ namespace XamlTest
                         return;
                     }
 
-                    if (Keyboard.Focus(element) != element)
+                    if (windowHandle != IntPtr.Zero)
                     {
-                        reply.ErrorMessages.Add($"Failed to move focus to element {element}");
-                        return;
+                        foreach (MouseData mouseData in request.MouseData)
+                        {
+                            switch (mouseData.Event)
+                            {
+                                case MouseData.Types.MouseEvent.MoveToElement:
+                                    if (element is FrameworkElement frameworkElement)
+                                    {
+                                        Rect coordinates = GetCoordinates(frameworkElement);
+                                        Position position = Position.Center;
+                                        if (!string.IsNullOrEmpty(mouseData.Value))
+                                        {
+                                            Enum.TryParse(mouseData.Value, out position);
+                                        }
+                                        Point location = position switch
+                                        {
+                                            Position.TopLeft => coordinates.TopLeft,
+                                            Position.TopRight => coordinates.TopRight,
+                                            Position.BottomRight => coordinates.BottomRight,
+                                            Position.BottomLeft => coordinates.BottomLeft,
+                                            _ => coordinates.Center()
+                                        };
+                                        Input.MouseInput.MoveCursor(location);
+                                    }
+                                    break;
+                                case MouseData.Types.MouseEvent.LeftDown:
+                                    Input.MouseInput.LeftDown();
+                                    break;
+                                case MouseData.Types.MouseEvent.LeftUp:
+                                    Input.MouseInput.LeftUp();
+                                    break;
+                                case MouseData.Types.MouseEvent.MiddleDown:
+                                    Input.MouseInput.MiddleDown();
+                                    break;
+                                case MouseData.Types.MouseEvent.MiddleUp:
+                                    Input.MouseInput.MiddleUp();
+                                    break;
+                                case MouseData.Types.MouseEvent.RightDown:
+                                    Input.MouseInput.RightDown();
+                                    break;
+                                case MouseData.Types.MouseEvent.RightUp:
+                                    Input.MouseInput.RightUp();
+                                    break;
+                                case MouseData.Types.MouseEvent.Delay:
+                                    if (!string.IsNullOrEmpty(mouseData.Value) &&
+                                        int.TryParse(mouseData.Value, out int millisecondsDelay))
+                                    {
+                                        await Task.Delay(TimeSpan.FromMilliseconds(millisecondsDelay));
+                                    }
+                                    break;
+                            }
+                        }
+                        if (request.KeyboardData.Any() && element is IInputElement inputElement)
+                        {
+                            if (Keyboard.Focus(inputElement) != element)
+                            {
+                                reply.ErrorMessages.Add($"Failed to move focus to element {element}");
+                                return;
+                            }
+                        }
+                        await Task.Run(async () =>
+                        {
+                            foreach (KeyboardData keyboardData in request.KeyboardData)
+                            {
+                                if (!string.IsNullOrEmpty(keyboardData.TextInput))
+                                {
+                                    Input.KeyboardInput.SendKeysForText(windowHandle, keyboardData.TextInput);
+                                }
+                                if (keyboardData.Keys.Any())
+                                {
+                                    Input.KeyboardInput.SendKeys(windowHandle, keyboardData.Keys.Cast<Key>().ToArray());
+                                }
+                                await Task.Delay(10);
+                            }
+                        });
                     }
-
                 }
                 catch (Exception e)
                 {
@@ -672,33 +735,6 @@ namespace XamlTest
                 }
             });
 
-            if (reply.ErrorMessages.Any())
-            {
-                return reply;
-            }
-
-            try
-            {
-                if (windowHandle != IntPtr.Zero)
-                {
-                    foreach (KeyboardData keyboardData in request.KeyboardData)
-                    {
-                        if (!string.IsNullOrEmpty(keyboardData.TextInput))
-                        {
-                            Input.KeyboardInput.SendKeysForText(windowHandle, keyboardData.TextInput);
-                        }
-                        if (keyboardData.Keys.Any())
-                        {
-                            Input.KeyboardInput.SendKeys(windowHandle, keyboardData.Keys.Cast<Key>().ToArray());
-                        }
-                        await Task.Delay(10);
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                reply.ErrorMessages.Add(e.ToString());
-            }
             return reply;
         }
 
@@ -1137,8 +1173,8 @@ namespace XamlTest
             //Fall back, attempt to click on the window to activate it
             foreach (Point clickPoint in GetClickPoints(window))
             {
-                MouseInput.MoveCursor(clickPoint);
-                MouseInput.LeftClick();
+                Input.MouseInput.MoveCursor(clickPoint);
+                Input.MouseInput.LeftClick();
 
                 if (window.IsActive)
                 {
@@ -1164,6 +1200,31 @@ namespace XamlTest
                 // Center
                 yield return new Point(window.Left + window.Width / 2, window.Top + window.Height / 2);
             }
+        }
+
+        private static Rect GetCoordinates(FrameworkElement element)
+        {
+            if (element is null)
+            {
+                throw new ArgumentNullException(nameof(element));
+            }
+
+            var window = element as Window ?? Window.GetWindow(element);
+            Point windowOrigin = window.PointToScreen(new Point(0, 0));
+
+            Point topLeft = element.TranslatePoint(new Point(0, 0), window);
+            Point bottomRight = element.TranslatePoint(new Point(element.ActualWidth, element.ActualHeight), window);
+            double left = windowOrigin.X + topLeft.X;
+            double top = windowOrigin.Y + topLeft.Y;
+            double right = windowOrigin.X + bottomRight.X;
+            double bottom = windowOrigin.Y + bottomRight.Y;
+
+            var rvleft = Math.Min(left, right);
+            var rvtop = Math.Min(top, bottom);
+            var rvright = Math.Max(left, right);
+            var rvbottom = Math.Max(top, bottom);
+
+            return new Rect(rvleft, rvtop, rvright - rvleft, rvbottom - rvtop);
         }
     }
 }

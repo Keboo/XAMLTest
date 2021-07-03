@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using GrpcDotNetNamedPipes;
+using XamlTest.Host;
 using XamlTest.Internal;
 
 namespace XamlTest
