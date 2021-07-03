@@ -532,38 +532,6 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         }
 
         [TestMethod]
-        public async Task OnRegisterForEvent_EventsAreRaised()
-        {
-            // Arrange
-            await using TestRecorder recorder = new(App);
-
-            IWindow window = await App.CreateWindowWithContent(@"
-<Grid>
-  <Button x:Name=""MyButton"" Content=""Click Event"" VerticalAlignment=""Center"" HorizontalAlignment=""Center"" />
-</Grid>");
-            IVisualElement element = await window.GetElement("MyButton");
-            await using IEventRegistration clickEvent = await element.RegisterForEvent(nameof(Button.Click));
-
-            // Act
-            await element.LeftClick();
-            await Task.Delay(500);
-
-            //Assert
-            var invocations = await Wait.For(async () =>
-            {
-                var i = await clickEvent.GetInvocations();
-                Assert.AreEqual(1, i.Count);
-                return i;
-            });
-
-            Assert.AreEqual(2, invocations[0].Parameters.Count);
-            Assert.AreEqual($"{typeof(Button).FullName}: Click Event", invocations[0].Parameters[0].ToString());
-            Assert.AreEqual(typeof(RoutedEventArgs).FullName, invocations[0].Parameters[1].ToString());
-
-            recorder.Success();
-        }
-
-        [TestMethod]
         public async Task OnGetTypedElement_GetsTypedElement()
         {
             // Arrange
