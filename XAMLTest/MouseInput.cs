@@ -1,18 +1,26 @@
 ﻿using System;
+using System.Linq;
 using XamlTest.Host;
 using XamlTest.Input;
 
 namespace XamlTest
 {
-
     public sealed class MouseInput : IInput
     {
         internal class MouseInputData : IInput
         {
-            public MouseData.Types.MouseEvent Event {get; set;}
+            public MouseData.Types.MouseEvent Event { get; set; }
             public string? Value { get; set; }
-        }
 
+            public override string ToString()
+            {
+                if (!string.IsNullOrWhiteSpace(Value))
+                {
+                    return $"{Event}({Value})";
+                }
+                return $"{Event}";
+            }
+        }
 
         internal IInput[] Inputs { get; }
 
@@ -20,6 +28,9 @@ namespace XamlTest
         {
             Inputs = inputs ?? throw new ArgumentNullException(nameof(inputs));
         }
+
+        public override string ToString()
+            => $"{string.Join(";", Inputs.Select(x => x.ToString()))}";
 
         public static MouseInput Delay(TimeSpan timespan)
         {

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Input;
 using XamlTest.Input;
 
@@ -10,90 +9,44 @@ namespace XamlTest
 {
     public static partial class VisualElementMixins
     {
-        public static async Task MoveCursorToElement(
-            this IVisualElement element, Position position = Position.Center)
-        {
-            if (element is null)
-            {
-                throw new ArgumentNullException(nameof(element));
-            }
-
-            Rect coordinates = await element.GetCoordinates();
-
-            Point location = position switch
-            {
-                Position.TopLeft => coordinates.TopLeft,
-                _ => coordinates.Center()
-            };
-
-            Input.MouseInput.MoveCursor(location);
-        }
-
         public static async Task LeftClick(this IVisualElement element,
             Position position = Position.Center,
             TimeSpan? clickTime = null)
         {
-            MouseInput[] inputs;
-            if (clickTime is null)
-            {
-                inputs = new[]
-                {
-                    MouseInput.LeftDown(),
-                    MouseInput.LeftUp()
-                };
-            }
-            else
-            {
-                inputs = new[]
-                {
-                    MouseInput.LeftDown(),
-                    MouseInput.Delay(clickTime.Value),
-                    MouseInput.LeftUp()
-                };
-            }
-
-            await SendMouseInput(element, position, inputs);
+            await SendClick(element,
+                MouseInput.LeftDown(),
+                MouseInput.LeftUp(),
+                position,
+                clickTime);
         }
 
         public static async Task RightClick(this IVisualElement element,
             Position position = Position.Center,
             TimeSpan? clickTime = null)
         {
-            MouseInput[] inputs;
-            if (clickTime is null)
-            {
-                inputs = new[]
-                {
-                    MouseInput.RightDown(),
-                    MouseInput.RightUp()
-                };
-            }
-            else
-            {
-                inputs = new[]
-                {
-                    MouseInput.RightDown(),
-                    MouseInput.Delay(clickTime.Value),
-                    MouseInput.RightUp()
-                };
-            }
-
-            await SendMouseInput(element, position, inputs);
+            await SendClick(element,
+                MouseInput.RightDown(),
+                MouseInput.RightUp(),
+                position,
+                clickTime);
         }
 
-        private static async Task SendMouseInput(IVisualElement element,
+        public static async Task SendClick(IVisualElement element,
+            MouseInput down,
+            MouseInput up,
             Position position,
-            params MouseInput[] mouseInputs)
+            TimeSpan? clickTime)
         {
-            if (element is null)
+            List<MouseInput> inputs = new();
+            inputs.Add(MouseInput.MoveToElement(position));
+            inputs.Add(down);
+            if (clickTime != null)
             {
-                throw new ArgumentNullException(nameof(element));
+                inputs.Add(MouseInput.Delay(clickTime.Value));
             }
-
-            var moveToElement = MouseInput.MoveToElement(position);
+            inputs.Add(up);
             
-            await element.SendInput(new MouseInput(
-                new IInput[] { moveToElement }.Concat(mouseInputs).ToArray()));
+            await element.SendInput(new MouseInput(inputs.ToArray()));
         }
 
         public static async Task SendKeyboardInput(this IVisualElement element, FormattableString input)

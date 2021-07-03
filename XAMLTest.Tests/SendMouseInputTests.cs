@@ -29,7 +29,7 @@ namespace XamlTest.Tests
 
             var window = await App.CreateWindowWithContent(
                 @$"
-<Grid x:Name=""Grid"" Background=""Transparent"">
+<Grid x:Name=""Grid"" Background=""Transparent"" Margin=""10"">
     <Grid.RowDefinitions>
         <RowDefinition Height=""Auto"" />
         <RowDefinition />
@@ -66,12 +66,16 @@ namespace XamlTest.Tests
         public async Task CanClickThroughMenus()
         {
             await TopMenuItem.LeftClick();
+            await Task.Delay(100);
             var nestedMenuItem = await TopMenuItem.GetElement<MenuItem>("SubMenu");
             await using IEventRegistration registration = await nestedMenuItem.RegisterForEvent(nameof(MenuItem.Click));
             await nestedMenuItem.LeftClick(clickTime:TimeSpan.FromMilliseconds(100));
 
-            var invocations = await registration.GetInvocations();
-            Assert.AreEqual(1, invocations.Count);
+            await Wait.For(async () =>
+            {
+                var invocations = await registration.GetInvocations();
+                Assert.AreEqual(1, invocations.Count);
+            });
         }
 
         [TestMethod]
@@ -81,12 +85,16 @@ namespace XamlTest.Tests
             IVisualElement<ContextMenu>? contextMenu = await Grid.GetContextMenu();
             Assert.IsNotNull(contextMenu);
             var menuItem = await contextMenu.GetElement<MenuItem>("Context1");
+            await Task.Delay(100);
             Assert.IsNotNull(menuItem);
             await using IEventRegistration registration = await menuItem.RegisterForEvent(nameof(MenuItem.Click));
             await menuItem.LeftClick(clickTime: TimeSpan.FromMilliseconds(100));
 
-            var invocations = await registration.GetInvocations();
-            Assert.AreEqual(1, invocations.Count);
+            await Wait.For(async () =>
+            {
+                var invocations = await registration.GetInvocations();
+                Assert.AreEqual(1, invocations.Count);
+            });
         }
     }
 }
