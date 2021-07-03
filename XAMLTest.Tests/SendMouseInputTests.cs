@@ -29,13 +29,15 @@ namespace XamlTest.Tests
 
             var window = await App.CreateWindowWithContent(
                 @$"
-<Grid x:Name=""Grid"">
+<Grid x:Name=""Grid"" Background=""Transparent"">
     <Grid.RowDefinitions>
         <RowDefinition Height=""Auto"" />
         <RowDefinition />
     </Grid.RowDefinitions>
     <Grid.ContextMenu>
-
+        <ContextMenu>
+            <MenuItem Header=""Context1"" x:Name=""Context1"" />
+        </ContextMenu>
     </Grid.ContextMenu>
     <Menu> 
         <MenuItem Header=""TopLevel"" x:Name=""TopLevel"">
@@ -72,16 +74,19 @@ namespace XamlTest.Tests
             Assert.AreEqual(1, invocations.Count);
         }
 
-        //[TestMethod]
-        //public async Task CanRightClickToShowContextMenu()
-        //{
-        //    await TopMenuItem.LeftClick();
-        //    var nestedMenuItem = await TopMenuItem.GetElement<MenuItem>("SubMenu");
-        //    await using IEventRegistration registration = await nestedMenuItem.RegisterForEvent(nameof(MenuItem.Click));
-        //    await nestedMenuItem.LeftClick(clickTime: TimeSpan.FromMilliseconds(100));
+        [TestMethod]
+        public async Task CanRightClickToShowContextMenu()
+        {
+            await Grid.RightClick();
+            IVisualElement<ContextMenu>? contextMenu = await Grid.GetContextMenu();
+            Assert.IsNotNull(contextMenu);
+            var menuItem = await contextMenu.GetElement<MenuItem>("Context1");
+            Assert.IsNotNull(menuItem);
+            await using IEventRegistration registration = await menuItem.RegisterForEvent(nameof(MenuItem.Click));
+            await menuItem.LeftClick(clickTime: TimeSpan.FromMilliseconds(100));
 
-        //    var invocations = await registration.GetInvocations();
-        //    Assert.AreEqual(1, invocations.Count);
-        //}
+            var invocations = await registration.GetInvocations();
+            Assert.AreEqual(1, invocations.Count);
+        }
     }
 }
