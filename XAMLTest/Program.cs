@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -9,12 +10,19 @@ namespace XamlTest
 {
     internal class Program
     {
+        private static System.Threading.Timer HeartbeatTimer { get; set; }
+
         [STAThread]
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
+            if (args.Length < 1 || !int.TryParse(args[0], out int clientPid))
+            {
+                return -1;
+            }
+
             Application application;
-            if (args?.Length == 1 &&
-                Path.GetFullPath(args[0]) is { } fullPath &&
+            if (args.Length == 2 &&
+                Path.GetFullPath(args[1]) is { } fullPath &&
                 File.Exists(fullPath))
             {
                 application = CreateFromAssembly(fullPath);
@@ -31,13 +39,28 @@ namespace XamlTest
 
             application.Startup += ApplicationStartup;
             application.Exit += ApplicationExit;
-            application.Run();
+
+            return application.Run();
 
             void ApplicationStartup(object sender, StartupEventArgs e)
-                => service = Server.Start(application);
+            {
+                service = Server.Start(application);
+                HeartbeatTimer = new(HeartbeatCheck, clientPid, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+            }
 
             void ApplicationExit(object sender, ExitEventArgs e)
                 => service?.Dispose();
+
+            void HeartbeatCheck(object? state)
+            {
+                var pid = (int)state!;
+                using Process p = Process.GetProcessById(pid);
+                if (p is null || p.HasExited)
+                {
+                    HeartbeatTimer.Change(0, System.Threading.Timeout.Infinite);
+                    application.Shutdown();
+                }
+            }
         }
 
         private static Application CreateFromAssembly(string assemblyPath)
