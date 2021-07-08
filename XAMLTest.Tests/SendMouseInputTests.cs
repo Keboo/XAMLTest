@@ -99,11 +99,64 @@ namespace XamlTest.Tests
         }
 
         [TestMethod]
-        public async Task CanMoveCursorToRelativePositions()
+        public async Task CanMoveCursorPositions()
         {
+            const double tollerance = 1.0;
+
             Rect coordinates = await Grid.GetCoordinates();
+            Point center = new(
+                coordinates.Left + coordinates.Width / 2.0,
+                coordinates.Top + coordinates.Height / 2.0);
             
-            
+            Point cursorPosition = await Grid.MoveCurosrTo(Position.Center);
+            Vector distance = center - cursorPosition;
+            Assert.IsTrue(distance.Length < tollerance);
+
+            cursorPosition = await Grid.MoveCurosrTo(Position.TopLeft);
+            distance = coordinates.TopLeft - cursorPosition;
+            Assert.IsTrue(distance.Length < tollerance);
+
+            cursorPosition = await Grid.MoveCurosrTo(Position.TopRight);
+            distance = coordinates.TopRight - cursorPosition;
+            Assert.IsTrue(distance.Length < tollerance);
+
+            cursorPosition = await Grid.MoveCurosrTo(Position.BottomRight);
+            distance = coordinates.BottomRight - cursorPosition;
+            Assert.IsTrue(distance.Length < tollerance);
+
+            cursorPosition = await Grid.MoveCurosrTo(Position.BottomLeft);
+            distance = coordinates.BottomLeft - cursorPosition;
+            Assert.IsTrue(distance.Length < tollerance);
+        }
+
+        [TestMethod]
+        public async Task CanMoveCursorPositionToRelativePosition()
+        {
+            const double tollerance = 1.0;
+
+            Rect coordinates = await Grid.GetCoordinates();
+            Point center = new(
+                coordinates.Left + coordinates.Width / 2.0,
+                coordinates.Top + coordinates.Height / 2.0);
+
+            Point cursorPosition = await Grid.MoveCurosrTo(Position.Center, 10, 20);
+            Vector distance = (center + new Vector(10, 20)) - cursorPosition;
+            Assert.IsTrue(distance.Length < tollerance);
+        }
+
+        [TestMethod]
+        public async Task CanMoveCursorPositionToAbsolutePosition()
+        {
+            const double tollerance = 1.0;
+
+            Rect coordinates = await Grid.GetCoordinates();
+            Point center = new(
+                coordinates.Left + coordinates.Width / 2.0,
+                coordinates.Top + coordinates.Height / 2.0);
+
+            Point cursorPosition = await Grid.SendInput(MouseInput.MoveAbsolute((int)center.X, (int)center.Y));
+            Vector distance = center - cursorPosition;
+            Assert.IsTrue(distance.Length < tollerance);
         }
     }
 }

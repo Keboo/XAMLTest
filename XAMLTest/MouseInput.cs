@@ -97,5 +97,23 @@ namespace XamlTest
                 Event = MouseData.Types.MouseEvent.MiddleUp
             });
         }
+
+        public static MouseInput MoveRelative(int xOffset = 0, int yOffset = 0)
+        {
+            return new MouseInput(new MouseInputData
+            {
+                Event = MouseData.Types.MouseEvent.MoveRelative,
+                Value = $"{xOffset};{yOffset}"
+            });
+        }
+
+        public static MouseInput MoveAbsolute(int screenXPosition = 0, int screenYPosition = 0)
+        {
+            return new MouseInput(new MouseInputData
+            {
+                Event = MouseData.Types.MouseEvent.MoveAbsolute,
+                Value = $"{screenXPosition};{screenYPosition}"
+            });
+        }
     }
 }
