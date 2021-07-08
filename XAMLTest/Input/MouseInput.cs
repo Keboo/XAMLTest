@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using static PInvoke.User32;
 
 namespace XamlTest.Input
@@ -44,9 +45,16 @@ namespace XamlTest.Input
         public static void MoveCursor(Point screenLocation)
             => SetCursorPos((int)screenLocation.X, (int)screenLocation.Y);
 
+        public static Point GetCursorPosition()
+        {
+            PInvoke.POINT pos = GetCursorPos();
+            return new Point(pos.x, pos.y);
+        }
+
         private static unsafe void MouseEvent(mouse_eventFlags flags)
         {
             mouse_event(flags, 0, 0, 0, null);
         }
+
     }
 }

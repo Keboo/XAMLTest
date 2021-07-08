@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
@@ -95,6 +96,14 @@ namespace XamlTest.Tests
                 var invocations = await registration.GetInvocations();
                 Assert.AreEqual(1, invocations.Count);
             });
+        }
+
+        [TestMethod]
+        public async Task CanMoveCursorToRelativePositions()
+        {
+            Rect coordinates = await Grid.GetCoordinates();
+            
+            
         }
     }
 }

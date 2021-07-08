@@ -277,7 +277,7 @@ namespace XamlTest.Internal
             throw new Exception("Failed to receive a reply");
         }
 
-        public async Task SendInput(MouseInput mouseInput)
+        public async Task<Point> SendInput(MouseInput mouseInput)
         {
             if (mouseInput is null)
             {
@@ -303,7 +303,7 @@ namespace XamlTest.Internal
                 {
                     throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
                 }
-                return;
+                return new Point(reply.CursorX, reply.CursorY);
             }
 
             throw new Exception("Failed to receive a reply");

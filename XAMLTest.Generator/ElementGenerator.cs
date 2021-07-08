@@ -129,7 +129,6 @@ namespace XAMLTest.Generator
                 //System.IO.File.WriteAllText(@"D:\Dev\XAMLTest\XAMLTest\obj\" + fileName, builder.ToString());
                 context.AddSource(fileName, builder.ToString());
             }
-
         }
 
         public void Initialize(GeneratorInitializationContext context)
@@ -228,7 +227,7 @@ namespace XAMLTest.Generator
                 TypeOfExpressionSyntax typeArgument = (TypeOfExpressionSyntax)attrib.ArgumentList.Arguments[0].Expression;
                 TypeInfo info = context.SemanticModel.GetTypeInfo(typeArgument.Type);
                 if (info.Type is null) return;
-
+                
                 string? targetNamespace = null;
                 foreach (AttributeArgumentSyntax argumentExpression in attrib.ArgumentList.Arguments.Skip(1))
                 {

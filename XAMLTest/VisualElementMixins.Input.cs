@@ -9,6 +9,12 @@ namespace XamlTest
 {
     public static partial class VisualElementMixins
     {
+        public static async Task MoveCurosrTo(this IVisualElement element,
+            Position position = Position.Center)
+        {
+            await element.SendInput(MouseInput.MoveToElement(position));
+        }
+
         public static async Task LeftClick(this IVisualElement element,
             Position position = Position.Center,
             TimeSpan? clickTime = null)
