@@ -35,32 +35,6 @@ namespace XamlTest.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
-        public async Task OnGetResource_ThorwsExceptionWhenNotFound()
-        {
-            IWindow window = await App.CreateWindowWithContent(@"<Grid x:Name=""MyGrid"" />");
-            IVisualElement element = await window.GetElement("MyGrid");
-            await element.GetResource("TestResource");
-        }
-
-        [TestMethod]
-        public async Task OnGetResource_ReturnsFoundResource()
-        {
-            IWindow window = await App.CreateWindowWithContent(@"<Grid x:Name=""MyGrid"">
-  <Grid.Resources>
-    <Color x:Key=""TestResource"">Red</Color>
-  </Grid.Resources>
-</Grid>");
-            IVisualElement element = await window.GetElement("MyGrid");
-
-            IResource resource = await element.GetResource("TestResource");
-
-            Assert.AreEqual("TestResource", resource.Key);
-            Assert.AreEqual(Colors.Red, resource.GetAs<Color>());
-            Assert.AreEqual(typeof(Color).AssemblyQualifiedName, resource.ValueType);
-        }
-
-        [TestMethod]
         public async Task OnGetCoordinate_ReturnsScreenCoordinatesOfElement()
         {
             IWindow window = await App.CreateWindowWithContent(
