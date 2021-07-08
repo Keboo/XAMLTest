@@ -35,9 +35,10 @@ namespace XamlTest
                 WorkingDirectory = Path.GetDirectoryName(xamlTestPath) + Path.DirectorySeparatorChar,
                 UseShellExecute = true
             };
+            startInfo.ArgumentList.Add($"{Process.GetCurrentProcess().Id}");
             if (!string.IsNullOrWhiteSpace(remoteApp))
             {
-                startInfo.Arguments = remoteApp;
+                startInfo.ArgumentList.Add(remoteApp);
             }
 
             if (Process.Start(startInfo) is Process process)
