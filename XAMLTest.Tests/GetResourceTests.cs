@@ -84,7 +84,7 @@ namespace XamlTest.Tests
         {
             IResource resource = await Grid.GetResource("GridColorResource");
 
-            Assert.AreEqual("TestResource", resource.Key);
+            Assert.AreEqual("GridColorResource", resource.Key);
             Assert.AreEqual(Colors.Red, resource.GetAs<Color>());
             Assert.AreEqual(typeof(Color).AssemblyQualifiedName, resource.ValueType);
         }

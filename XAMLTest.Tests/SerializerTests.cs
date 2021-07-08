@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Media;
@@ -48,14 +49,19 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task OnGetSerializers_ReturnsDefaultSerializers()
         {
-            var serializers = await App.GetSerializers();
+            var serializers = (await App.GetSerializers()).ToList();
 
-            Assert.AreEqual(5, serializers.Count);
-            Assert.IsInstanceOfType(serializers[0], typeof(BrushSerializer));
-            Assert.IsInstanceOfType(serializers[1], typeof(CharSerializer));
-            Assert.IsInstanceOfType(serializers[2], typeof(GridSerializer));
-            Assert.IsInstanceOfType(serializers[3], typeof(SecureStringSerializer));
-            Assert.IsInstanceOfType(serializers[4], typeof(DefaultSerializer));
+            int brushSerializerIndex = serializers.FindIndex(x => x is BrushSerializer);
+            int charSerializerIndex = serializers.FindIndex(x => x is CharSerializer);
+            int gridSerializerIndex = serializers.FindIndex(x => x is GridSerializer);
+            int secureStringSerializerIndex = serializers.FindIndex(x => x is SecureStringSerializer);
+            int defaultSerializerIndex = serializers.FindIndex(x => x is DefaultSerializer);
+
+            Assert.IsTrue(brushSerializerIndex < charSerializerIndex);
+            Assert.IsTrue(charSerializerIndex < gridSerializerIndex);
+            Assert.IsTrue(gridSerializerIndex < secureStringSerializerIndex);
+            Assert.IsTrue(secureStringSerializerIndex < defaultSerializerIndex);
+            Assert.AreEqual(serializers.Count - 1, defaultSerializerIndex);
         }
 
         [TestMethod]
