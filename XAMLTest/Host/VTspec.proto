@@ -195,6 +195,8 @@ message InputRequest {
 message InputResponse {
   repeated string errorMessages = 1;
   repeated string logMessages = 2;
+  int32 cursorX = 3;
+  int32 cursorY = 4;
 }
 
 message KeyboardData {
@@ -205,13 +207,15 @@ message KeyboardData {
 message MouseData {
   enum MouseEvent {
     MoveToElement = 0;
-    LeftDown = 1;
-    LeftUp = 2;
-    MiddleDown = 3;
-    MiddleUp = 4;
-    RightDown = 5;
-    RightUp = 6;
-    Delay = 7;
+    MoveRelative = 1;
+    MoveAbsolute = 2;
+    LeftDown = 3;
+    LeftUp = 4;
+    MiddleDown = 5;
+    MiddleUp = 6;
+    RightDown = 7;
+    RightUp = 8;
+    Delay = 9;
   }
   MouseEvent event = 1;
   string value = 2;

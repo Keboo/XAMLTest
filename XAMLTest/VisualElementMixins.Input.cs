@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using XamlTest.Input;
 
@@ -9,29 +10,43 @@ namespace XamlTest
 {
     public static partial class VisualElementMixins
     {
-        public static async Task LeftClick(this IVisualElement element,
+        public static async Task<Point> MoveCurosrTo(this IVisualElement element,
+            Position position = Position.Center,
+            int xOffset = 0,
+            int yOffset = 0)
+        {
+            List<MouseInput> inputs = new();
+            inputs.Add(MouseInput.MoveToElement(position));
+            if (xOffset != 0 || yOffset != 0)
+            {
+                inputs.Add(MouseInput.MoveRelative(xOffset, yOffset));
+            }
+            return await element.SendInput(new MouseInput(inputs.ToArray()));
+        }
+
+        public static async Task<Point> LeftClick(this IVisualElement element,
             Position position = Position.Center,
             TimeSpan? clickTime = null)
         {
-            await SendClick(element,
+            return await SendClick(element,
                 MouseInput.LeftDown(),
                 MouseInput.LeftUp(),
                 position,
                 clickTime);
         }
 
-        public static async Task RightClick(this IVisualElement element,
+        public static async Task<Point> RightClick(this IVisualElement element,
             Position position = Position.Center,
             TimeSpan? clickTime = null)
         {
-            await SendClick(element,
+            return await SendClick(element,
                 MouseInput.RightDown(),
                 MouseInput.RightUp(),
                 position,
                 clickTime);
         }
 
-        public static async Task SendClick(IVisualElement element,
+        public static async Task<Point> SendClick(IVisualElement element,
             MouseInput down,
             MouseInput up,
             Position position,
@@ -46,7 +61,7 @@ namespace XamlTest
             }
             inputs.Add(up);
             
-            await element.SendInput(new MouseInput(inputs.ToArray()));
+            return await element.SendInput(new MouseInput(inputs.ToArray()));
         }
 
         public static async Task SendKeyboardInput(this IVisualElement element, FormattableString input)
