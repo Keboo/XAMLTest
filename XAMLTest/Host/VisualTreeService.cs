@@ -682,7 +682,7 @@ namespace XamlTest.Host
             {
                 if (current is null)
                 {
-                    throw new Exception($"Could not resolve '{query}' on null element");
+                    throw new XAMLTestException($"Could not resolve '{query}' on null element");
                 }
 
                 switch (GetNextQueryType(ref query, out string value))
@@ -771,7 +771,7 @@ namespace XamlTest.Host
                 {
                     return propertyDescriptor.GetValue(root);
                 }
-                throw new Exception($"Failed to find property '{property}' on element of type '{root.GetType().FullName}'");
+                throw new XAMLTestException($"Failed to find property '{property}' on element of type '{root.GetType().FullName}'");
             }
 
             static object EvaluateChildTypeQuery(DependencyObject root, string childTypeQuery)
@@ -797,7 +797,7 @@ namespace XamlTest.Host
                         index--;
                     }
                 }
-                throw new Exception($"Failed to find child of type '{childTypeQuery}'");
+                throw new XAMLTestException($"Failed to find child element of type '{childTypeQuery}'");
             }
 
             static object EvaluatePropertyExpressionQuery(DependencyObject root, string propertyExpression)
@@ -819,7 +819,7 @@ namespace XamlTest.Host
                         }
                     }
                 }
-                throw new Exception($"Failed to find child with property expression '{propertyExpression}'");
+                throw new XAMLTestException($"Failed to find child element with property expression '{propertyExpression}'");
             }
 
             static IEnumerable<string> GetTypeNames(DependencyObject child)

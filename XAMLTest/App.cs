@@ -27,7 +27,7 @@ namespace XamlTest
             xamlTestPath = Path.GetFullPath(xamlTestPath);
             if (!File.Exists(xamlTestPath))
             {
-                throw new Exception($"Could not find test app '{xamlTestPath}'");
+                throw new XAMLTestException($"Could not find test app '{xamlTestPath}'");
             }
 
             ProcessStartInfo startInfo = new(xamlTestPath)
@@ -51,7 +51,7 @@ namespace XamlTest
 
                 return new ManagedApp(process, client, logMessage);
             }
-            throw new Exception("Failed t ");
+            throw new XAMLTestException("Failed to start remote app");
         }
     }
 }

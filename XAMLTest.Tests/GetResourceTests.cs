@@ -46,7 +46,7 @@ namespace XamlTest.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(XAMLTestException))]
         public async Task OnAppGetResource_ThorwsExceptionWhenNotFound()
         {
             await App.GetResource("NotFound");
@@ -73,7 +73,7 @@ namespace XamlTest.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(XAMLTestException))]
         public async Task OnVisualElementGetResource_ThorwsExceptionWhenNotFound()
         {
             await Grid.GetResource("NotFound");

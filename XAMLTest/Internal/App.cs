@@ -29,12 +29,12 @@ namespace XamlTest.Internal
             {
                 if (reply.ErrorMessages.Any())
                 {
-                    throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
+                    throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
                 }
 
                 return;
             }
-            throw new Exception("Failed to get a reply");
+            throw new XAMLTestException("Failed to get a reply");
         }
 
         public virtual async ValueTask DisposeAsync()
@@ -48,11 +48,11 @@ namespace XamlTest.Internal
             {
                 if (reply.ErrorMessages.Any())
                 {
-                    throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
+                    throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
                 }
                 return;
             }
-            throw new Exception("Failed to get a reply");
+            throw new XAMLTestException("Failed to get a reply");
         }
 
         public async Task Initialize(string applicationResourceXaml, params string[] assemblies)
@@ -68,11 +68,11 @@ namespace XamlTest.Internal
             {
                 if (reply.ErrorMessages.Any())
                 {
-                    throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
+                    throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
                 }
                 return;
             }
-            throw new Exception("Failed to get a reply");
+            throw new XAMLTestException("Failed to get a reply");
         }
 
         public async Task<IWindow> CreateWindow(string windowXaml)
@@ -94,11 +94,11 @@ namespace XamlTest.Internal
                 }
                 if (reply.ErrorMessages.Any())
                 {
-                    throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages) + Environment.NewLine + windowXaml);
+                    throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages) + Environment.NewLine + windowXaml);
                 }
                 return new Window(Client, reply.WindowsId, Serializer, LogMessage);
             }
-            throw new Exception("Failed to get a reply");
+            throw new XAMLTestException("Failed to get a reply");
         }
 
         public async Task<IWindow> CreateWindow<TWindow>() where TWindow : System.Windows.Window
@@ -120,11 +120,11 @@ namespace XamlTest.Internal
                 }
                 if (reply.ErrorMessages.Any())
                 {
-                    throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
+                    throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
                 }
                 return new Window(Client, reply.WindowsId, Serializer, LogMessage);
             }
-            throw new Exception("Failed to get a reply");
+            throw new XAMLTestException("Failed to get a reply");
         }
 
         public async Task<IWindow?> GetMainWindow()
@@ -149,16 +149,16 @@ namespace XamlTest.Internal
             {
                 if (reply.ErrorMessages.Any())
                 {
-                    throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
+                    throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
                 }
                 if (!string.IsNullOrWhiteSpace(reply.ValueType))
                 {
                     return new Resource(reply.Key, reply.ValueType, reply.Value, Serializer);
                 }
-                throw new Exception($"Resource with key '{reply.Key}' not found");
+                throw new XAMLTestException($"Resource with key '{reply.Key}' not found");
             }
 
-            throw new Exception("Failed to receive a reply");
+            throw new XAMLTestException("Failed to receive a reply");
         }
 
         public async Task<IReadOnlyList<IWindow>> GetWindows()
@@ -179,11 +179,11 @@ namespace XamlTest.Internal
             {
                 if (reply.ErrorMessages.Any())
                 {
-                    throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
+                    throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
                 }
                 return new BitmapImage(reply.Data);
             }
-            throw new Exception("Failed to receive a reply");
+            throw new XAMLTestException("Failed to receive a reply");
         }
 
         public async Task RegisterSerializer<T>(int insertIndex = 0)
@@ -198,12 +198,12 @@ namespace XamlTest.Internal
             {
                 if (reply.ErrorMessages.Any())
                 {
-                    throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
+                    throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
                 }
                 Serializer.AddSerializer(new T(), insertIndex);
                 return;
             }
-            throw new Exception("Failed to receive a reply");
+            throw new XAMLTestException("Failed to receive a reply");
         }
 
         public Task<IReadOnlyList<ISerializer>> GetSerializers() 

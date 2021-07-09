@@ -71,7 +71,7 @@ namespace XamlTest
                 return true;
             }, retry);
 
-            return rv ?? throw new Exception("Return value is null");
+            return rv ?? throw new XAMLTestException("Return value is null");
         }
     }
 }
