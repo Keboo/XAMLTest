@@ -3,6 +3,7 @@ using Grpc.Core;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -264,68 +265,86 @@ namespace XamlTest.Host
             PropertyResult reply = new();
             await Application.Dispatcher.InvokeAsync(() =>
             {
-                DependencyObject? element = GetCachedElement<DependencyObject>(request.ElementId);
-                if (element is null)
+                try
                 {
-                    reply.ErrorMessages.Add("Could not find element");
-                    return;
-                }
-
-                object? value;
-                Type propertyType;
-                if (!string.IsNullOrWhiteSpace(request.OwnerType))
-                {
-                    if (DependencyPropertyHelper.TryGetDependencyProperty(request.Name, request.OwnerType,
-                        out DependencyProperty? dependencyProperty))
+                    DependencyObject? element = GetCachedElement<DependencyObject>(request.ElementId);
+                    if (element is null)
                     {
-                        var propertyConverter = TypeDescriptor.GetConverter(dependencyProperty.PropertyType);
-                        value = GetValue(propertyConverter);
+                        reply.ErrorMessages.Add("Could not find element");
+                        return;
+                    }
 
-                        element.SetValue(dependencyProperty, value);
+                    object? value;
+                    Type propertyType;
+                    if (!string.IsNullOrWhiteSpace(request.OwnerType))
+                    {
+                        if (DependencyPropertyHelper.TryGetDependencyProperty(request.Name, request.OwnerType,
+                            out DependencyProperty? dependencyProperty))
+                        {
+                            var propertyConverter = TypeDescriptor.GetConverter(dependencyProperty.PropertyType);
+                            value = GetValue(propertyConverter);
 
-                        //Re-retrive the value in case the dependency property coalesced it
-                        value = element.GetValue(dependencyProperty);
-                        propertyType = dependencyProperty.PropertyType;
+                            element.SetValue(dependencyProperty, value);
+
+                            //Re-retrive the value in case the dependency property coalesced it
+                            value = element.GetValue(dependencyProperty);
+                            propertyType = dependencyProperty.PropertyType;
+                        }
+                        else
+                        {
+                            reply.ErrorMessages.Add($"Could not find dependency property '{request.Name}' on '{request.OwnerType}'");
+                            return;
+                        }
                     }
                     else
                     {
-                        reply.ErrorMessages.Add($"Could not find dependency property '{request.Name}' on '{request.OwnerType}'");
-                        return;
+                        var properties = TypeDescriptor.GetProperties(element);
+                        PropertyDescriptor foundProperty = properties.Find(request.Name, false);
+                        if (foundProperty is null)
+                        {
+                            reply.ErrorMessages.Add($"Could not find property with name '{request.Name}'");
+                            return;
+                        }
+
+                        TypeConverter? propertyTypeConverter = null;
+                        if (string.IsNullOrWhiteSpace(request.ValueType))
+                        {
+                            propertyTypeConverter = foundProperty.Converter;
+                        }
+                        else if (Type.GetType(request.ValueType) is { } requestedValueType)
+                        {
+                            propertyTypeConverter = TypeDescriptor.GetConverter(requestedValueType);
+                        }
+                        value = GetValue(propertyTypeConverter);
+
+                        foundProperty.SetValue(element, value);
+
+                        //Re-retrive the value in case the dependency property coalesced it
+                        value = foundProperty.GetValue(element);
+                        propertyType = foundProperty.PropertyType;
                     }
+
+                    SetValue(reply, propertyType, value);
                 }
-                else
+                catch(Exception e)
                 {
-                    var properties = TypeDescriptor.GetProperties(element);
-                    PropertyDescriptor foundProperty = properties.Find(request.Name, false);
-                    if (foundProperty is null)
-                    {
-                        reply.ErrorMessages.Add($"Could not find property with name '{request.Name}'");
-                        return;
-                    }
-
-                    TypeConverter propertyTypeConverter = string.IsNullOrWhiteSpace(request.ValueType)
-                        ? foundProperty.Converter
-                        : TypeDescriptor.GetConverter(Type.GetType(request.ValueType));
-                    value = GetValue(propertyTypeConverter);
-
-                    foundProperty.SetValue(element, value);
-
-                    //Re-retrive the value in case the dependency property coalesced it
-                    value = foundProperty.GetValue(element);
-                    propertyType = foundProperty.PropertyType;
+                    reply.ErrorMessages.Add(e.ToString());
                 }
-
-                SetValue(reply, propertyType, value);
             });
             return reply;
 
-            object? GetValue(TypeConverter propertyConverter)
+
+            object? GetValue(TypeConverter? propertyConverter)
             {
-                return request.ValueType switch
+                if (request.ValueType == Types.XamlString)
                 {
-                    Types.XamlString => LoadXaml<object>(request.Value),
-                    _ => propertyConverter.ConvertFromString(request.Value),
-                };
+                    return LoadXaml<object>(request.Value);
+                }
+                if (propertyConverter != null)
+                {
+                    return propertyConverter.ConvertFromString(request.Value);
+                }
+                return request.Value;
             }
         }
 
@@ -826,7 +845,13 @@ namespace XamlTest.Host
         private static T LoadXaml<T>(string xaml) where T : class
         {
             using MemoryStream memoryStream = new(Encoding.UTF8.GetBytes(xaml));
-            return (T)XamlReader.Load(memoryStream);
+            //TODO: Allow for some control over the context
+            var context = new ParserContext();
+            context.XmlnsDictionary.Add("", "http://schemas.microsoft.com/winfx/2006/xaml/presentation");
+            context.XmlnsDictionary.Add("x", "http://schemas.microsoft.com/winfx/2006/xaml");
+            context.XmlnsDictionary.Add("d", "http://schemas.microsoft.com/expression/blend/2008");
+            context.XmlnsDictionary.Add("mc", "http://schemas.openxmlformats.org/markup-compatibility/2006");
+            return (T)XamlReader.Load(memoryStream, context);
         }
 
         private static IEnumerable<T> Decendants<T>(DependencyObject? parent)
