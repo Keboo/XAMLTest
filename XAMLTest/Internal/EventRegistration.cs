@@ -38,7 +38,7 @@ namespace XamlTest.Internal
             {
                 if (reply.ErrorMessages.Any())
                 {
-                    throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
+                    throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
                 }
                 return reply.EventInvocations
                     .Select(x =>
@@ -47,7 +47,7 @@ namespace XamlTest.Internal
                     })
                     .ToList();
             }
-            throw new Exception("Failed to receive a reply");
+            throw new XAMLTestException("Failed to receive a reply");
         }
 
         public async ValueTask DisposeAsync()
@@ -61,11 +61,11 @@ namespace XamlTest.Internal
             {
                 if (reply.ErrorMessages.Any())
                 {
-                    throw new Exception(string.Join(Environment.NewLine, reply.ErrorMessages));
+                    throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
                 }
                 return;
             }
-            throw new Exception("Failed to receive a reply");
+            throw new XAMLTestException("Failed to receive a reply");
         }
     }
 

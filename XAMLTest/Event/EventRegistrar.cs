@@ -83,7 +83,7 @@ namespace XamlTest.Event
             
             Type returnType = GetDelegateReturnType(delegateType);
             if (returnType != typeof(void))
-                throw new Exception("Delegate has a return type.");
+                throw new XAMLTestException("Event delegate must return void.");
 
             var delegateParameterTypes = GetDelegateParameterTypes(delegateType);
 
@@ -129,10 +129,12 @@ namespace XamlTest.Event
         private static Type[] GetDelegateParameterTypes(Type delegateType)
         {
             if (delegateType.BaseType != typeof(MulticastDelegate))
-                throw new Exception("Not a delegate.");
+            {
+                throw new XAMLTestException($"'{delegateType.FullName}' is not a delegate type.");
+            }
 
-            MethodInfo invoke = delegateType.GetMethod("Invoke")
-                ?? throw new Exception("Could not find delegate Invoke method");
+            MethodInfo invoke = delegateType.GetMethod(nameof(Action.Invoke))
+                ?? throw new MissingMethodException($"Could not find {nameof(Action.Invoke)} method on delegate {delegateType.FullName}");
 
             ParameterInfo[] parameters = invoke.GetParameters();
             Type[] typeParameters = new Type[parameters.Length];
@@ -146,11 +148,15 @@ namespace XamlTest.Event
         private static Type GetDelegateReturnType(Type delegateType)
         {
             if (delegateType.BaseType != typeof(MulticastDelegate))
-                throw new Exception("Not a delegate.");
+            {
+                throw new XAMLTestException($"'{delegateType.FullName}' is not a delegate type.");
+            }
 
             MethodInfo? invoke = delegateType.GetMethod(nameof(Action.Invoke));
             if (invoke is null)
-                throw new Exception($"Could not find {nameof(Action.Invoke)} method on delegate {delegateType.FullName}");
+            {
+                throw new MissingMethodException($"Could not find {nameof(Action.Invoke)} method on delegate {delegateType.FullName}");
+            }
 
             return invoke.ReturnType;
         }
