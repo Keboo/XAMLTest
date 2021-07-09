@@ -108,23 +108,23 @@ namespace XamlTest.Tests
                 coordinates.Left + coordinates.Width / 2.0,
                 coordinates.Top + coordinates.Height / 2.0);
             
-            Point cursorPosition = await Grid.MoveCurosrTo(Position.Center);
+            Point cursorPosition = await Grid.MoveCursorTo(Position.Center);
             Vector distance = center - cursorPosition;
             Assert.IsTrue(distance.Length < tollerance);
 
-            cursorPosition = await Grid.MoveCurosrTo(Position.TopLeft);
+            cursorPosition = await Grid.MoveCursorTo(Position.TopLeft);
             distance = coordinates.TopLeft - cursorPosition;
             Assert.IsTrue(distance.Length < tollerance);
 
-            cursorPosition = await Grid.MoveCurosrTo(Position.TopRight);
+            cursorPosition = await Grid.MoveCursorTo(Position.TopRight);
             distance = coordinates.TopRight - cursorPosition;
             Assert.IsTrue(distance.Length < tollerance);
 
-            cursorPosition = await Grid.MoveCurosrTo(Position.BottomRight);
+            cursorPosition = await Grid.MoveCursorTo(Position.BottomRight);
             distance = coordinates.BottomRight - cursorPosition;
             Assert.IsTrue(distance.Length < tollerance);
 
-            cursorPosition = await Grid.MoveCurosrTo(Position.BottomLeft);
+            cursorPosition = await Grid.MoveCursorTo(Position.BottomLeft);
             distance = coordinates.BottomLeft - cursorPosition;
             Assert.IsTrue(distance.Length < tollerance);
         }
@@ -139,7 +139,7 @@ namespace XamlTest.Tests
                 coordinates.Left + coordinates.Width / 2.0,
                 coordinates.Top + coordinates.Height / 2.0);
 
-            Point cursorPosition = await Grid.MoveCurosrTo(Position.Center, 10, 20);
+            Point cursorPosition = await Grid.MoveCursorTo(Position.Center, 10, 20);
             Vector distance = (center + new Vector(10, 20)) - cursorPosition;
             Assert.IsTrue(distance.Length < tollerance);
         }

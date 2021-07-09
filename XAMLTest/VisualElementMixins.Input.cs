@@ -10,7 +10,7 @@ namespace XamlTest
 {
     public static partial class VisualElementMixins
     {
-        public static async Task<Point> MoveCurosrTo(this IVisualElement element,
+        public static async Task<Point> MoveCursorTo(this IVisualElement element,
             Position position = Position.Center,
             int xOffset = 0,
             int yOffset = 0)
