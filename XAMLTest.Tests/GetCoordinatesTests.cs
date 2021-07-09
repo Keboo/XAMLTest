@@ -23,10 +23,7 @@ namespace XamlTest.Tests
         {
             App = XamlTest.App.StartRemote(logMessage: msg => context.WriteLine(msg));
 
-            await App.InitializeWithResources(@"
-<Color x:Key=""TestColor"">Red</Color>
-<SolidColorBrush x:Key=""TestBrush"" Color=""#FF0000"" />",
-                Assembly.GetExecutingAssembly().Location);
+            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
 
             Window = await App.CreateWindowWithContent(@"<Border />");
         }

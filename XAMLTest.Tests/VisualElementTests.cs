@@ -15,124 +15,43 @@ namespace XamlTest.Tests
     [TestClass]
     public class VisualElementTests
     {
-        public TestContext TestContext { get; set; } = null!;
+        [NotNull]
+        private static IApp? App { get; set; }
 
         [NotNull]
-        private IApp? App { get; set; }
+        private static IWindow? Window { get; set; }
 
-        [TestInitialize]
-        public async Task TestInitialize()
+        [ClassInitialize]
+        public static async Task ClassInitialize(TestContext context)
         {
-            App = XamlTest.App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
+            App = XamlTest.App.StartRemote(logMessage: msg => context.WriteLine(msg));
 
             await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
+
+            Window = await App.CreateWindowWithContent(@"");
         }
 
-        [TestCleanup]
-        public void TestCleanup()
+        [ClassCleanup]
+        public static void TestCleanup()
         {
             App.Dispose();
         }
 
         [TestMethod]
-        public async Task OnGetEffectiveBackground_ReturnsFirstOpaqueColor()
-        {
-            IWindow window = await App.CreateWindowWithContent(
-                @"<Border x:Name=""MyBorder"" />",
-                background: "Red");
-            IVisualElement element = await window.GetElement("MyBorder");
-
-            Color background = await element.GetEffectiveBackground();
-
-            Assert.AreEqual(Colors.Red, background);
-        }
-
-        [TestMethod]
-        public async Task OnGetEffectiveBackground_ReturnsMergingOfTransparentColors()
-        {
-            var backgroundParent = Colors.Blue;
-            var backgroundChild = Color.FromArgb(0xDD, 0, 0, 0);
-            IWindow window = await App.CreateWindowWithContent(
-                $@"
-<Border Background=""{backgroundParent}"">
-  <Border x:Name=""MyBorder"" Background=""{backgroundChild}"" />
-</Border>",
-                background: "Red");
-            IVisualElement element = await window.GetElement("MyBorder");
-
-            Color background = await element.GetEffectiveBackground();
-
-            var expected = backgroundChild.FlattenOnto(backgroundParent);
-            Assert.AreEqual(expected, background);
-        }
-
-        [TestMethod]
-        public async Task OnGetEffectiveBackground_ReturnsOpaquePanelColor()
-        {
-            IWindow window = await App.CreateWindowWithContent(@"
-<Grid Background=""Red"">
-    <TextBlock />
-</Grid>
-",
-                background: "Blue");
-            IVisualElement element = await window.GetElement("/TextBlock");
-
-            Color background = await element.GetEffectiveBackground();
-
-            Assert.AreEqual(Colors.Red, background);
-        }
-
-        [TestMethod]
-        public async Task OnGetEffectiveBackground_StopsProcessingAtDefinedParent()
-        {
-            IWindow window = await App.CreateWindowWithContent(@"
-<Grid Background=""#DDFF0000"">
-    <TextBlock />
-</Grid>
-",
-                background: "Blue");
-            IVisualElement child = await window.GetElement("/TextBlock");
-            IVisualElement parent = await window.GetElement("/Grid");
-
-            Color background = await child.GetEffectiveBackground(parent);
-
-            Assert.AreEqual(Color.FromArgb(0xDD, 0xFF, 0x00, 0x00), background);
-        }
-
-        [TestMethod]
-        public async Task OnGetEffectiveBackground_AppliesOpacityFromParents()
-        {
-            IWindow window = await App.CreateWindowWithContent(@"
-<Grid Background=""Red"" Opacity=""0.5"" x:Name=""RedGrid"">
-    <Grid Background=""Blue"" x:Name=""BlueGrid"">
-        <TextBlock />
-    </Grid>
-</Grid>
-",
-                background: "Lime");
-            IVisualElement child = await window.GetElement("/TextBlock");
-            IVisualElement parent = await window.GetElement("BlueGrid");
-
-            Color background = await child.GetEffectiveBackground(parent);
-
-            Assert.AreEqual(Color.FromArgb(127, 0x00, 0x00, 0xFF), background);
-        }
-
-        [TestMethod]
         public async Task OnGetProperty_CanRetrieveDouble()
         {
-            IWindow window = await App.CreateWindowWithContent(
-                @"<Grid x:Name=""MyGrid"" Width=""25"" />");
-            IVisualElement<Grid> element = await window.GetElement<Grid>("MyGrid");
+            await Window.SetXamlContent(@"<Grid x:Name=""MyGrid"" Width=""25"" />");
+
+            IVisualElement<Grid> element = await Window.GetElement<Grid>("MyGrid");
             Assert.AreEqual(25.0, await element.GetWidth());
         }
 
         [TestMethod]
         public async Task OnGetProperty_CanRetrieveColor()
         {
-            IWindow window = await App.CreateWindowWithContent(
-                @"<Grid x:Name=""MyGrid"" Background=""Red"" />");
-            IVisualElement<Grid> element = await window.GetElement<Grid>("MyGrid");
+            await Window.SetXamlContent(@"<Grid x:Name=""MyGrid"" Background=""Red"" />");
+
+            IVisualElement<Grid> element = await Window.GetElement<Grid>("MyGrid");
             
             Assert.AreEqual(Colors.Red, await element.GetBackgroundColor());
         }
@@ -140,13 +59,13 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task OnGetProperty_CanRetrieveBrush()
         {
-            IWindow window = await App.CreateWindowWithContent(@"
+            await Window.SetXamlContent(@"
 <Grid x:Name=""MyGrid"">
     <Grid.Background>
         <SolidColorBrush Color=""Red"" Opacity=""0.5"" />
     </Grid.Background>
 </Grid>");
-            IVisualElement element = await window.GetElement("MyGrid");
+            IVisualElement element = await Window.GetElement("MyGrid");
 
             var brush = await element.GetProperty<SolidColorBrush>("Background");
             Assert.AreEqual(Colors.Red, brush?.Color);
@@ -156,9 +75,9 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task OnGetProperty_CanRetrieveString()
         {
-            IWindow window = await App.CreateWindowWithContent(
-                @"<TextBlock x:Name=""MyTextblock"" Text=""WPF"" />");
-            IVisualElement<TextBlock> element = await window.GetElement<TextBlock>("MyTextblock");
+            await Window.SetXamlContent(@"<TextBlock x:Name=""MyTextblock"" Text=""WPF"" />");
+            
+            IVisualElement<TextBlock> element = await Window.GetElement<TextBlock>("MyTextblock");
 
             Assert.AreEqual("WPF", await element.GetText());
         }
@@ -166,9 +85,9 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task OnGetProperty_CanRetrieveThickness()
         {
-            IWindow window = await App.CreateWindowWithContent(
-                @"<TextBlock x:Name=""MyTextblock"" Margin=""2,3,4,5"" />");
-            IVisualElement<TextBlock> element = await window.GetElement<TextBlock>("MyTextblock");
+            await Window.SetXamlContent(@"<TextBlock x:Name=""MyTextblock"" Margin=""2,3,4,5"" />");
+
+            IVisualElement<TextBlock> element = await Window.GetElement<TextBlock>("MyTextblock");
 
             Assert.AreEqual(new Thickness(2, 3, 4, 5), await element.GetMargin());
         }
@@ -176,9 +95,9 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task OnGetProperty_CanRetrieveNull()
         {
-            IWindow window = await App.CreateWindowWithContent(
-                @"<DatePicker/>");
-            IVisualElement element = await window.GetElement("/DatePicker");
+            await Window.SetXamlContent(@"<DatePicker/>");
+
+            IVisualElement element = await Window.GetElement("/DatePicker");
 
             Assert.IsNull(await element.GetProperty<DateTime?>(nameof(DatePicker.SelectedDate)));
         }
@@ -186,18 +105,20 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task OnGetProperty_CanRetrieveNullableDateTime()
         {
-            IWindow window = await App.CreateWindowWithContent(
-                @"<DatePicker SelectedDate=""1234-05-06T00:00:00""/>");
-            IVisualElement element = await window.GetElement("/DatePicker");
+            await Window.SetXamlContent(@"<DatePicker SelectedDate=""1234-05-06T00:00:00""/>");
+            
+            IVisualElement element = await Window.GetElement("/DatePicker");
+            
             Assert.AreEqual(new DateTime(1234, 5, 6), await element.GetProperty<DateTime?>(nameof(DatePicker.SelectedDate)));
         }
 
         [TestMethod]
         public async Task OnGetProperty_CanRetrieveAttachedPropertyValue()
         {
-            IWindow window = await App.CreateWindowWithContent(
+            await Window.SetXamlContent(
                 @"<TextBlock x:Name=""MyTextblock"" Grid.Row=""3"" />");
-            IVisualElement element = await window.GetElement("MyTextblock");
+
+            IVisualElement element = await Window.GetElement("MyTextblock");
 
             Assert.AreEqual(3, await element.GetProperty<int>(Grid.RowProperty));
         }
@@ -214,9 +135,9 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task OnSetProperty_CanSetDouble()
         {
-            IWindow window = await App.CreateWindowWithContent(
-                @"<Grid x:Name=""MyGrid"" />");
-            IVisualElement<Grid> element = await window.GetElement<Grid>("MyGrid");
+            await Window.SetXamlContent(@"<Grid x:Name=""MyGrid"" />");
+
+            IVisualElement<Grid> element = await Window.GetElement<Grid>("MyGrid");
 
             Assert.AreEqual(25.0, await element.SetWidth(25));
         }
@@ -224,9 +145,9 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task OnSetProperty_CanSetColor()
         {
-            IWindow window = await App.CreateWindowWithContent(
-                @"<Grid x:Name=""MyGrid"" />");
-            var element = await window.GetElement<Grid>("MyGrid");
+            await Window.SetXamlContent(@"<Grid x:Name=""MyGrid"" />");
+
+            var element = await Window.GetElement<Grid>("MyGrid");
 
             Assert.AreEqual(Colors.Red, await element.SetBackgroundColor(Colors.Red));
         }
@@ -234,9 +155,9 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task OnSetProperty_CanSetString()
         {
-            IWindow window = await App.CreateWindowWithContent(
-                @"<TextBlock x:Name=""MyTextblock"" />");
-            var element = await window.GetElement<TextBlock>("MyTextblock");
+            await Window.SetXamlContent(@"<TextBlock x:Name=""MyTextblock"" />");
+
+            var element = await Window.GetElement<TextBlock>("MyTextblock");
 
             Assert.AreEqual("WPF", await element.SetText("WPF"));
         }
@@ -244,9 +165,9 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task OnSetProperty_CanSetThickness()
         {
-            IWindow window = await App.CreateWindowWithContent(
-                @"<TextBlock x:Name=""MyTextblock"" />");
-            IVisualElement<TextBlock> element = await window.GetElement<TextBlock>("MyTextblock");
+            await Window.SetXamlContent(@"<TextBlock x:Name=""MyTextblock"" />");
+
+            IVisualElement<TextBlock> element = await Window.GetElement<TextBlock>("MyTextblock");
 
             Assert.AreEqual(new Thickness(2, 3, 4, 5), await element.SetMargin(new Thickness(2, 3, 4, 5)));
         }
@@ -254,9 +175,9 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task OnSetProperty_CanSetNull()
         {
-            IWindow window = await App.CreateWindowWithContent(
-                @"<DatePicker/>");
-            IVisualElement element = await window.GetElement("/DatePicker");
+            await Window.SetXamlContent(@"<DatePicker/>");
+
+            IVisualElement element = await Window.GetElement("/DatePicker");
 
             Assert.IsNull(await element.SetProperty<DateTime?>(nameof(DatePicker.SelectedDate), null));
         }
@@ -264,9 +185,9 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task OnSetProperty_CanSetNullableDateTime()
         {
-            IWindow window = await App.CreateWindowWithContent(
-                @"<DatePicker/>");
-            IVisualElement element = await window.GetElement("/DatePicker");
+            await Window.SetXamlContent(@"<DatePicker/>");
+
+            IVisualElement element = await Window.GetElement("/DatePicker");
 
             Assert.AreEqual(new DateTime(1234, 5, 6), await element.SetProperty<DateTime?>(nameof(DatePicker.SelectedDate), new DateTime(1234, 5, 6)));
         }
@@ -274,9 +195,10 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task OnSetProperty_CanAssignAttachedPropertyValue()
         {
-            IWindow window = await App.CreateWindowWithContent(
+            await Window.SetXamlContent(
                 @"<TextBlock x:Name=""MyTextblock"" />");
-            IVisualElement element = await window.GetElement("MyTextblock");
+
+            IVisualElement element = await Window.GetElement("MyTextblock");
 
             Assert.AreEqual(2, await element.SetProperty(Grid.RowProperty, 2));
         }
@@ -293,14 +215,15 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task OnGetElement_ItRetrievesItemsByType()
         {
-            IWindow window = await App.CreateWindowWithContent(
+            await Window.SetXamlContent(
                 @"<ListBox MinWidth=""200"">
     <ListBoxItem Content=""Item1"" />
     <ListBoxItem Content=""Item2"" />
     <ListBoxItem Content=""Item3"" />
     <ListBoxItem Content=""Item4"" />
 </ListBox>");
-            IVisualElement<ListBoxItem> element = await window.GetElement<ListBoxItem>("/ListBoxItem");
+
+            IVisualElement<ListBoxItem> element = await Window.GetElement<ListBoxItem>("/ListBoxItem");
 
             Assert.AreEqual("Item1", await element.GetContent());
         }
@@ -309,9 +232,9 @@ namespace XamlTest.Tests
         [Description("Issue 27")]
         public async Task OnGetElement_ItRetrievesItemsByBaseType()
         {
-            IWindow window = await App.CreateWindowWithContent(
-                @"<TextBox x:Name=""TestName""/>");
-            IVisualElement<TextBoxBase> element = await window.GetElement<TextBoxBase>("/TextBoxBase");
+            await Window.SetXamlContent(@"<TextBox x:Name=""TestName""/>");
+
+            IVisualElement<TextBoxBase> element = await Window.GetElement<TextBoxBase>("/TextBoxBase");
 
             Assert.AreEqual("TestName", await element.GetName());
         }
@@ -319,16 +242,16 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task OnGetElement_ItRetrievesNestedItemsByType()
         {
-            IWindow window = await App.CreateWindowWithContent(@"
+            await Window.SetXamlContent(@"
 <Grid x:Name=""Parent"">
     <Grid x:Name=""Child"">
         <TextBlock />
     </Grid>
 </Grid>
 ");
-            IVisualElement child = await window.GetElement("Child");
+            IVisualElement child = await Window.GetElement("Child");
 
-            IVisualElement nestedElement = await window.GetElement("/Grid/Grid");
+            IVisualElement nestedElement = await Window.GetElement("/Grid/Grid");
 
             Assert.AreEqual(child, nestedElement);
         }
@@ -336,14 +259,14 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task OnGetElement_ItRetrievesItemsByTypeAndIndex()
         {
-            IWindow window = await App.CreateWindowWithContent(
+            await Window.SetXamlContent(
                 @"<ListBox MinWidth=""200"">
     <ListBoxItem Content=""Item1"" />
     <ListBoxItem Content=""Item2"" />
     <ListBoxItem Content=""Item3"" />
     <ListBoxItem Content=""Item4"" />
 </ListBox>");
-            IVisualElement<ListBoxItem> element = await window.GetElement<ListBoxItem>("/ListBoxItem[2]");
+            IVisualElement<ListBoxItem> element = await Window.GetElement<ListBoxItem>("/ListBoxItem[2]");
 
             Assert.AreEqual("Item3", await element.GetContent());
         }
@@ -351,11 +274,12 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task OnGetElement_ItRetrievesItemsByProperty()
         {
-            IWindow window = await App.CreateWindowWithContent(@"
+            await Window.SetXamlContent(@"
 <Border>
   <TextBlock Text=""Text"" />
 </Border>");
-            IVisualElement<TextBlock> element = await window.GetElement<TextBlock>("/Border.Child/TextBlock");
+
+            IVisualElement<TextBlock> element = await Window.GetElement<TextBlock>("/Border.Child/TextBlock");
 
             Assert.AreEqual("Text", await element.GetText());
         }
@@ -363,11 +287,12 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task OnGetElement_ItRetrievesItemsByName()
         {
-            IWindow window = await App.CreateWindowWithContent(@"
+            await Window.SetXamlContent(@"
 <Grid>
   <TextBox x:Name=""MyTextBox"" Text=""Text"" />
 </Grid>");
-            IVisualElement<TextBox> element = await window.GetElement<TextBox>("/Grid~MyTextBox");
+
+            IVisualElement<TextBox> element = await Window.GetElement<TextBox>("/Grid~MyTextBox");
 
             Assert.AreEqual("Text", await element.GetText());
         }
@@ -386,11 +311,12 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task OnGetElement_ItRetrievesElementByAutomationIdValue()
         {
-            IWindow window = await App.CreateWindowWithContent(@"
+            await Window.SetXamlContent(@"
 <Grid>
   <TextBox x:Name=""MyTextBox"" Text=""Text"" AutomationProperties.AutomationId=""TextBoxId""/>
 </Grid>");
-            IVisualElement<TextBox> element = await window.GetElement<TextBox>("[AutomationProperties.AutomationId=\"TextBoxId\"]");
+
+            IVisualElement<TextBox> element = await Window.GetElement<TextBox>("[AutomationProperties.AutomationId=\"TextBoxId\"]");
 
             Assert.AreEqual("MyTextBox", await element.GetName());
         }
@@ -398,11 +324,11 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task OnMoveKeyboardFocus_ItReceivesKeyboardFocus()
         {
-            IWindow window = await App.CreateWindowWithContent(@"
+            await Window.SetXamlContent(@"
 <Grid>
   <TextBox x:Name=""MyTextBox"" />
 </Grid>");
-            IVisualElement<TextBox> element = await window.GetElement<TextBox>("/Grid~MyTextBox");
+            IVisualElement<TextBox> element = await Window.GetElement<TextBox>("/Grid~MyTextBox");
             Assert.IsFalse(await element.GetIsKeyboardFocused());
 
             await element.MoveKeyboardFocus();
@@ -415,11 +341,11 @@ namespace XamlTest.Tests
         {
             await using TestRecorder recorder = new(App);
 
-            IWindow window = await App.CreateWindowWithContent(@"
+            await Window.SetXamlContent(@"
 <Grid>
   <TextBox x:Name=""MyTextBox"" VerticalAlignment=""Center"" Margin=""40"" />
 </Grid>");
-            IVisualElement<TextBox> element = await window.GetElement<TextBox>("/Grid~MyTextBox");
+            IVisualElement<TextBox> element = await Window.GetElement<TextBox>("/Grid~MyTextBox");
             await element.MoveKeyboardFocus();
 
             await element.SendKeyboardInput($"Test Text!");
@@ -434,11 +360,11 @@ namespace XamlTest.Tests
         {
             await using TestRecorder recorder = new(App);
 
-            IWindow window = await App.CreateWindowWithContent(@"
+            await Window.SetXamlContent(@"
 <Grid>
   <TextBox x:Name=""MyTextBox"" AcceptsReturn=""True"" MinWidth=""280"" Height=""80"" VerticalAlignment=""Center"" HorizontalAlignment=""Center"" />
 </Grid>");
-            IVisualElement<TextBox> element = await window.GetElement<TextBox>("/Grid~MyTextBox");
+            IVisualElement<TextBox> element = await Window.GetElement<TextBox>("/Grid~MyTextBox");
             await element.MoveKeyboardFocus();
 
             await element.SendKeyboardInput($"First Line{Key.Enter}Second Line");
@@ -454,13 +380,13 @@ namespace XamlTest.Tests
             // Arrange
             await using TestRecorder recorder = new(App);
 
-            IWindow window = await App.CreateWindowWithContent(@"
+            await Window.SetXamlContent(@"
 <Grid>
   <Button x:Name=""MyButton"" IsDefault=""True"" VerticalAlignment=""Center"" HorizontalAlignment=""Center"" />
 </Grid>");
 
             //Act
-            IVisualElement<Button> button = await window.GetElement<Button>("MyButton");
+            IVisualElement<Button> button = await Window.GetElement<Button>("MyButton");
             //Assert
             Assert.IsNotNull(button);
 
@@ -476,13 +402,13 @@ namespace XamlTest.Tests
             // Arrange
             await using TestRecorder recorder = new(App);
 
-            IWindow window = await App.CreateWindowWithContent(@"
+            await Window.SetXamlContent(@"
 <Grid>
   <Button x:Name=""MyButton"" IsDefault=""True"" VerticalAlignment=""Center"" HorizontalAlignment=""Center"" />
 </Grid>");
 
             //Act
-            IVisualElement<ButtonBase> button = await window.GetElement<ButtonBase>("MyButton");
+            IVisualElement<ButtonBase> button = await Window.GetElement<ButtonBase>("MyButton");
 
             //Assert
             Assert.IsNotNull(button);
@@ -496,13 +422,13 @@ namespace XamlTest.Tests
             // Arrange
             await using TestRecorder recorder = new(App);
 
-            IWindow window = await App.CreateWindowWithContent(@"
+            await Window.SetXamlContent(@"
 <StackPanel x:Name=""Panel"">
     <StackPanel.ContextMenu>
          <ContextMenu x:Name=""TestContextMenu""/>
     </StackPanel.ContextMenu>
 </StackPanel>");
-            IVisualElement<StackPanel> stackPanel = await window.GetElement<StackPanel>("Panel");
+            IVisualElement<StackPanel> stackPanel = await Window.GetElement<StackPanel>("Panel");
 
             //Act
             IVisualElement<ContextMenu>? contextMenu = await stackPanel.GetContextMenu();
@@ -519,8 +445,8 @@ namespace XamlTest.Tests
             // Arrange
             await using TestRecorder recorder = new(App);
 
-            IWindow window = await App.CreateWindowWithContent(@"<StackPanel x:Name=""Panel"" />");
-            IVisualElement panel = await window.GetElement("Panel");
+            await Window.SetXamlContent(@"<StackPanel x:Name=""Panel"" />");
+            IVisualElement panel = await Window.GetElement("Panel");
 
             //Act
             IVisualElement<StackPanel> stackPanel = panel.As<StackPanel>();
@@ -536,8 +462,8 @@ namespace XamlTest.Tests
             // Arrange
             await using TestRecorder recorder = new(App);
 
-            IWindow window = await App.CreateWindowWithContent(@"<StackPanel x:Name=""Panel"" />");
-            IVisualElement panel = await window.GetElement("Panel");
+            await Window.SetXamlContent(@"<StackPanel x:Name=""Panel"" />");
+            IVisualElement panel = await Window.GetElement("Panel");
 
             //Act
             IVisualElement<FrameworkElement> frameworkElement = panel.As<FrameworkElement>();
