@@ -18,14 +18,11 @@ namespace XamlTest.Tests.Simulators
         }
 
         public void Dispose()
-        {
-            throw new NotImplementedException();
-        }
+        { }
 
-        public ValueTask DisposeAsync()
-        {
-            throw new NotImplementedException();
-        }
+
+        private static ValueTask Completed { get; } = new();
+        public ValueTask DisposeAsync() => Completed;
 
         public Task<IWindow?> GetMainWindow()
         {
