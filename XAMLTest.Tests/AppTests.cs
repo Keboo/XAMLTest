@@ -1,14 +1,11 @@
 using MaterialDesignThemes.Wpf;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Windows.Media;
 using XamlTest;
 using XamlTest.Tests.TestControls;
-using XamlTest.Transport;
 
 [assembly: GenerateHelpers(typeof(ColorZone))]
 

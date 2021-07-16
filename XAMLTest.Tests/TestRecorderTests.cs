@@ -1,8 +1,10 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
@@ -11,9 +13,27 @@ namespace XamlTest.Tests
     [TestClass]
     public class TestRecorderTests
     {
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public TestContext TestContext { get; set; }
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+        [NotNull]
+        private static IApp? App { get; set; }
+
+        [NotNull]
+        private static IWindow? Window { get; set; }
+
+        [ClassInitialize]
+        public static async Task ClassInitialize(TestContext context)
+        {
+            App = XamlTest.App.StartRemote(logMessage: msg => context.WriteLine(msg));
+
+            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
+
+            Window = await App.CreateWindowWithContent(@"<Border />");
+        }
+
+        [ClassCleanup]
+        public static void ClassCleanup()
+        {
+            App.Dispose();
+        }
 
         [TestInitialize]
         public void TestInit()
@@ -36,7 +56,7 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task SaveScreenshot_SavesImage()
         {
-            IApp app = new Simulators.App();
+            await using IApp app = new Simulators.App();
             TestRecorder testRecorder = new(app);
 
             Assert.IsNotNull(await testRecorder.SaveScreenshot());
@@ -51,7 +71,7 @@ namespace XamlTest.Tests
         [TestMethod]
         public async Task SaveScreenshot_WithSuffix_SavesImage()
         {
-            var app = new Simulators.App();
+            await using var app = new Simulators.App();
             TestRecorder testRecorder = new(app);
 
             Assert.IsNotNull(await testRecorder.SaveScreenshot("MySuffix"));

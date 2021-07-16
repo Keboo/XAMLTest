@@ -326,7 +326,7 @@ namespace XamlTest.Host
 
                     SetValue(reply, propertyType, value);
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     reply.ErrorMessages.Add(e.ToString());
                 }
@@ -428,7 +428,7 @@ namespace XamlTest.Host
                 if (dependencyObject is FrameworkElement element)
                 {
                     Rect rect = GetCoordinates(element);
-                    
+
                     reply.Left = rect.Left;
                     reply.Top = rect.Top;
                     reply.Right = rect.Right;
@@ -597,7 +597,12 @@ namespace XamlTest.Host
 
                 using Bitmap screenBmp = new((int)screen.Bounds.Width, (int)screen.Bounds.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
                 using var bmpGraphics = Graphics.FromImage(screenBmp);
-                bmpGraphics.CopyFromScreen(0, 0, 0, 0, new System.Drawing.Size((int)screen.Bounds.Width, (int)screen.Bounds.Height));
+                bmpGraphics.CopyFromScreen(
+                    (int)Math.Floor(screen.Bounds.Left),
+                    (int)Math.Floor(screen.Bounds.Top),
+                    0, 
+                    0, 
+                    screenBmp.Size);
                 using MemoryStream ms = new();
                 screenBmp.Save(ms, ImageFormat.Bmp);
                 ms.Position = 0;
@@ -824,7 +829,7 @@ namespace XamlTest.Host
 
             static IEnumerable<string> GetTypeNames(DependencyObject child)
             {
-                for(Type? type = child.GetType();
+                for (Type? type = child.GetType();
                     type is not null;
                     type = type.BaseType)
                 {
@@ -894,7 +899,7 @@ namespace XamlTest.Host
                     {
                         yield return contextMenu;
                     }
-                    if (fe.ToolTip as DependencyObject is { } toolTip )
+                    if (fe.ToolTip as DependencyObject is { } toolTip)
                     {
                         yield return toolTip;
                     }
