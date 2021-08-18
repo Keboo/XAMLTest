@@ -20,7 +20,6 @@ namespace XamlTest.Tests.Simulators
         public void Dispose()
         { }
 
-
         private static ValueTask Completed { get; } = new();
         public ValueTask DisposeAsync() => Completed;
 
