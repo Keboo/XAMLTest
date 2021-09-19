@@ -10,7 +10,7 @@ namespace XamlTest
 {
     internal class Program
     {
-        private static System.Threading.Timer HeartbeatTimer { get; set; }
+        private static System.Threading.Timer? HeartbeatTimer { get; set; }
 
         [STAThread]
         static int Main(string[] args)
@@ -57,7 +57,7 @@ namespace XamlTest
                 using Process p = Process.GetProcessById(pid);
                 if (p is null || p.HasExited)
                 {
-                    HeartbeatTimer.Change(0, System.Threading.Timeout.Infinite);
+                    HeartbeatTimer?.Change(0, System.Threading.Timeout.Infinite);
                     application.Shutdown();
                 }
             }
