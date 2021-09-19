@@ -62,11 +62,6 @@ jobs:
     - name: Build
       run: dotnet build -p:Version=${{ env.buildVersion }} -p:ContinuousIntegrationBuild=True --configuration ${{ env.configuration }} --no-restore
     
-    - name: Install Procdump
-      uses: crazy-max/ghaction-chocolatey@v1
-      with:
-        args: install --ignore-checksums -y procdump
-    
     - name: Minimize all windows
       run: (New-Object -ComObject "Shell.Application").minimizeall()
 
