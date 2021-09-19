@@ -71,7 +71,7 @@ jobs:
       run: (New-Object -ComObject "Shell.Application").minimizeall()
 
     - name: Test
-      run: dotnet test --no-build --verbosity normal --configuration ${{ env.configuration }} --logger "console"
+      run: dotnet test --no-build --verbosity normal --configuration ${{ env.configuration }} --logger "console" --blame-hang --blame-hang-timeout 5m
 
     - name: Upload Screenshots
       if: ${{ always() }}
