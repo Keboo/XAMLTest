@@ -1,7 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -134,7 +133,7 @@ namespace XAMLTest.Generator
         public void Initialize(GeneratorInitializationContext context)
         {
 #if DEBUG
-            if (!Debugger.IsAttached)
+            if (!System.Diagnostics.Debugger.IsAttached)
             {
                 //Debugger.Launch();
             }
@@ -219,7 +218,6 @@ namespace XAMLTest.Generator
 
         public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
         {
-            // find all valid mustache attributes
             if (context.Node is AttributeSyntax attrib
                 && attrib.ArgumentList?.Arguments.Count >= 1
                 && context.SemanticModel.GetTypeInfo(attrib).Type?.Name == "GenerateHelpersAttribute")

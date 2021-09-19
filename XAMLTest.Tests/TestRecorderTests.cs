@@ -14,26 +14,7 @@ namespace XamlTest.Tests
     public class TestRecorderTests
     {
         [NotNull]
-        private static IApp? App { get; set; }
-
-        [NotNull]
-        private static IWindow? Window { get; set; }
-
-        [ClassInitialize]
-        public static async Task ClassInitialize(TestContext context)
-        {
-            App = XamlTest.App.StartRemote(logMessage: msg => context.WriteLine(msg));
-
-            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
-            Window = await App.CreateWindowWithContent(@"<Border />");
-        }
-
-        [ClassCleanup]
-        public static void ClassCleanup()
-        {
-            App.Dispose();
-        }
+        public TestContext? TestContext { get; set; }
 
         [TestInitialize]
         public void TestInit()
@@ -57,7 +38,7 @@ namespace XamlTest.Tests
         public async Task SaveScreenshot_SavesImage()
         {
             await using IApp app = new Simulators.App();
-            TestRecorder testRecorder = new(app);
+            await using TestRecorder testRecorder = new(app);
 
             Assert.IsNotNull(await testRecorder.SaveScreenshot());
 
@@ -66,13 +47,14 @@ namespace XamlTest.Tests
             string? fileName = Path.GetFileName(file);
             Assert.AreEqual(nameof(TestRecorderTests), Path.GetFileName(Path.GetDirectoryName(file)));
             Assert.AreEqual($"{nameof(SaveScreenshot_SavesImage)}{GetLineNumber(-6)}-win1.jpg", fileName);
+            testRecorder.Success();
         }
 
         [TestMethod]
         public async Task SaveScreenshot_WithSuffix_SavesImage()
         {
             await using var app = new Simulators.App();
-            TestRecorder testRecorder = new(app);
+            await using TestRecorder testRecorder = new(app);
 
             Assert.IsNotNull(await testRecorder.SaveScreenshot("MySuffix"));
 
@@ -81,6 +63,19 @@ namespace XamlTest.Tests
             var fileName = Path.GetFileName(file);
             Assert.AreEqual(nameof(TestRecorderTests), Path.GetFileName(Path.GetDirectoryName(file)));
             Assert.AreEqual($"{nameof(SaveScreenshot_WithSuffix_SavesImage)}MySuffix{GetLineNumber(-6)}-win1.jpg", fileName);
+            testRecorder.Success();
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(XAMLTestException))]
+        public async Task TestRecord_WhenExceptionThrown_DoesNotRethrow()
+        {
+            using var app = App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
+            await using (TestRecorder testRecorder = new(app))
+            {
+                await app.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
+                await app.CreateWindowWithContent(@"some invalid XAML <>");
+            }
         }
 
         private static int GetLineNumber(int offset = 0, [CallerLineNumber] int lineNumber = 0)
