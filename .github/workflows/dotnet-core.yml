@@ -56,7 +56,7 @@ jobs:
       env:
         NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
     
-    - name: Install dependencies
+    - name: Install dependencies 
       run: dotnet restore
     
     - name: Build
