@@ -10,10 +10,12 @@ namespace XamlTest
     {
         public IApp App { get; }
         public string BaseFileName { get; }
-        public string Directory { get; }
 
         private bool IsDisposed { get; set; }
         public bool IsSuccess { get; private set; }
+
+        private static object SyncLock { get; } = new object();
+        private Lazy<string> Directory { get; }
 
         public TestRecorder(IApp app,
             [CallerFilePath] string callerFilePath = "",
@@ -21,22 +23,30 @@ namespace XamlTest
         {
             App = app ?? throw new ArgumentNullException(nameof(app));
 
-            var callingAssembly = Assembly.GetCallingAssembly();
-            var assemblyName = callingAssembly.GetName().Name!;
-            int assemblyNameIndex = callerFilePath.IndexOf(assemblyName);
-            if (assemblyNameIndex >= 0)
+            Directory = new Lazy<string>(() =>
             {
-                Directory = callerFilePath[(assemblyNameIndex + assemblyName.Length + 1)..];
-            }
-            else
-            {
-                Directory = Path.GetFileName(callerFilePath);
-            }
-            Directory = Path.ChangeExtension(Directory, "").TrimEnd('.');
-            var rootDirectory = Path.GetDirectoryName(callingAssembly.Location) ?? Path.GetFullPath(".");
-            Directory = Path.Combine(rootDirectory, "Screenshots", Directory);
+                lock(SyncLock)
+                {
+                    var callingAssembly = Assembly.GetCallingAssembly();
+                    var assemblyName = callingAssembly.GetName().Name!;
+                    int assemblyNameIndex = callerFilePath.IndexOf(assemblyName);
+                    string directory;
+                    if (assemblyNameIndex >= 0)
+                    {
+                        directory = callerFilePath[(assemblyNameIndex + assemblyName.Length + 1)..];
+                    }
+                    else
+                    {
+                        directory = Path.GetFileName(callerFilePath);
+                    }
+                    directory = Path.ChangeExtension(directory, "").TrimEnd('.');
+                    var rootDirectory = Path.GetDirectoryName(callingAssembly.Location) ?? Path.GetFullPath(".");
+                    directory = Path.Combine(rootDirectory, "Screenshots", directory);
 
-            System.IO.Directory.CreateDirectory(Directory);
+                    System.IO.Directory.CreateDirectory(directory);
+                    return directory;
+                }
+            });
 
             BaseFileName = unitTestMethod;
             foreach (char invalidChar in Path.GetInvalidFileNameChars())
@@ -60,7 +70,7 @@ namespace XamlTest
         {
             int index = 1;
             string fileName = $"{BaseFileName}{suffix}-win{index++}.jpg";
-            string fullPath = Path.Combine(Directory, fileName);
+            string fullPath = Path.Combine(Directory.Value, fileName);
             File.Delete(fullPath);
 
             if (await App.GetScreenshot() is IImage screenshot)

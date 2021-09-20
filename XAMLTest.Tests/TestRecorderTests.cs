@@ -67,15 +67,12 @@ namespace XamlTest.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(XAMLTestException))]
         public async Task TestRecord_WhenExceptionThrown_DoesNotRethrow()
         {
             using var app = App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await using (TestRecorder testRecorder = new(app))
-            {
-                await app.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-                await app.CreateWindowWithContent(@"some invalid XAML <>");
-            }
+            await using TestRecorder testRecorder = new(app);
+            await app.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
+            await Assert.ThrowsExceptionAsync<XAMLTestException>(() => app.CreateWindowWithContent(@"some invalid XAML <>"));
         }
 
         private static int GetLineNumber(int offset = 0, [CallerLineNumber] int lineNumber = 0)
