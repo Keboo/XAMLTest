@@ -19,7 +19,7 @@ namespace XamlTest.Tests
         [TestInitialize]
         public void TestInit()
         {
-            foreach (var file in GetScreenshots(new TestRecorder(new Simulators.App())))
+            foreach (var file in new TestRecorder(new Simulators.App()).EnumerateScreenshots())
             {
                 File.Delete(file);
             }
@@ -28,7 +28,7 @@ namespace XamlTest.Tests
         [TestCleanup]
         public void TestCleanup()
         {
-            foreach (var file in GetScreenshots(new TestRecorder(new Simulators.App())))
+            foreach (var file in new TestRecorder(new Simulators.App()).EnumerateScreenshots())
             {
                 File.Delete(file);
             }
@@ -42,7 +42,7 @@ namespace XamlTest.Tests
 
             Assert.IsNotNull(await testRecorder.SaveScreenshot());
 
-            string? file = GetScreenshots(testRecorder).Single();
+            string? file = testRecorder.EnumerateScreenshots().Single();
 
             string? fileName = Path.GetFileName(file);
             Assert.AreEqual(nameof(TestRecorderTests), Path.GetFileName(Path.GetDirectoryName(file)));
@@ -58,7 +58,7 @@ namespace XamlTest.Tests
 
             Assert.IsNotNull(await testRecorder.SaveScreenshot("MySuffix"));
 
-            var file = GetScreenshots(testRecorder).Single();
+            var file = testRecorder.EnumerateScreenshots().Single();
 
             var fileName = Path.GetFileName(file);
             Assert.AreEqual(nameof(TestRecorderTests), Path.GetFileName(Path.GetDirectoryName(file)));
@@ -67,28 +67,15 @@ namespace XamlTest.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(XAMLTestException))]
         public async Task TestRecord_WhenExceptionThrown_DoesNotRethrow()
         {
             using var app = App.StartRemote(logMessage: msg => TestContext.WriteLine(msg));
-            await using (TestRecorder testRecorder = new(app))
-            {
-                await app.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-                await app.CreateWindowWithContent(@"some invalid XAML <>");
-            }
+            await using TestRecorder testRecorder = new(app);
+            await app.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
+            await Assert.ThrowsExceptionAsync<XAMLTestException>(() => app.CreateWindowWithContent(@"some invalid XAML <>"));
         }
 
         private static int GetLineNumber(int offset = 0, [CallerLineNumber] int lineNumber = 0)
             => lineNumber + offset;
-
-        private static IEnumerable<string> GetScreenshots(
-            TestRecorder testRecorder)
-        {
-            if (!Directory.Exists(testRecorder.Directory))
-            {
-                return Array.Empty<string>();
-            }
-            return Directory.EnumerateFiles(testRecorder.Directory, "*.jpg", SearchOption.AllDirectories);
-        }
     }
 }

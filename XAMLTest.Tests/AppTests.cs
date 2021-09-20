@@ -8,8 +8,6 @@ using XamlTest;
 using XamlTest.Tests.TestControls;
 
 [assembly: GenerateHelpers(typeof(ColorZone))]
-
-
 namespace XamlTest.Tests
 {
     [TestClass]
