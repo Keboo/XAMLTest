@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -59,6 +60,19 @@ namespace XamlTest
         /// Calling this method indicates that the test completed successfully and no additional recording is needed.
         /// </summary>
         public void Success() => IsSuccess = true;
+
+        /// <summary>
+        /// Enumerate all screenshots
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<string> EnumerateScreenshots()
+        {
+            if (!Directory.IsValueCreated)
+            {
+                return Array.Empty<string>();
+            }
+            return System.IO.Directory.EnumerateFiles(Directory.Value, "*.jpg", SearchOption.AllDirectories);
+        }
 
         public async Task<string?> SaveScreenshot([CallerLineNumber] int? lineNumber = null)
             => await SaveScreenshot(lineNumber?.ToString() ?? "");
