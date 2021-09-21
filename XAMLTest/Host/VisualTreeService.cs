@@ -509,13 +509,20 @@ namespace XamlTest.Host
                 Window? window = null;
                 if (!string.IsNullOrEmpty(request.WindowType))
                 {
-                    if (Type.GetType(request.WindowType) is Type windowType)
+                    try
                     {
-                        window = (Window?)Activator.CreateInstance(windowType);
+                        if (Type.GetType(request.WindowType) is Type windowType)
+                        {
+                            window = (Window?)Activator.CreateInstance(windowType);
+                        }
+                        else
+                        {
+                            reply.ErrorMessages.Add($"Error loading window type '{request.WindowType}'");
+                        }
                     }
-                    else
+                    catch(Exception e)
                     {
-                        reply.ErrorMessages.Add($"Error loading window type '{request.WindowType}'");
+                        reply.ErrorMessages.Add($"Error creating window '{request.WindowType}'{Environment.NewLine}{e}");
                     }
                 }
                 else
