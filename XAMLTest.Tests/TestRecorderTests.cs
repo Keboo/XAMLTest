@@ -78,6 +78,17 @@ namespace XamlTest.Tests
             await app.InitializeWithDefaults(null!);
         }
 
+        [TestMethod]
+        public async Task TestRecord_WithInvalidXAML_DoesNotRethrow()
+        {
+            await using var app = App.StartRemote();
+            await using (TestRecorder testRecorder = new(app))
+            {
+                await app.InitializeWithDefaults();
+                var ex = await Assert.ThrowsExceptionAsync<XAMLTestException>(async () => await app.CreateWindowWithContent("<InvalidContent />"));
+            }
+        }
+
         private static int GetLineNumber(int offset = 0, [CallerLineNumber] int lineNumber = 0)
             => lineNumber + offset;
     }

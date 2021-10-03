@@ -79,11 +79,15 @@ namespace XamlTest
             string fullPath = Path.Combine(Directory, fileName);
             File.Delete(fullPath);
 
-            if (await App.GetScreenshot() is IImage screenshot)
+            try
             {
-                await screenshot.Save(fullPath);
-                return fullPath;
+                if (await App.GetScreenshot() is IImage screenshot)
+                {
+                    await screenshot.Save(fullPath);
+                    return fullPath;
+                }
             }
+            catch (XAMLTestException) { }
             return null;
         }
 
