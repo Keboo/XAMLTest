@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Grpc.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -87,7 +88,7 @@ namespace XamlTest.Internal
             {
                 if (LogMessage is { })
                 {
-                    foreach(string logsMessage in reply.LogMessages)
+                    foreach (string logsMessage in reply.LogMessages)
                     {
                         LogMessage(logsMessage);
                     }
@@ -175,15 +176,22 @@ namespace XamlTest.Internal
         {
             ImageQuery imageQuery = new();
             LogMessage?.Invoke($"{nameof(GetScreenshot)}()");
-            if (await Client.GetScreenshotAsync(imageQuery) is { } reply)
+            try
             {
-                if (reply.ErrorMessages.Any())
+                if (await Client.GetScreenshotAsync(imageQuery) is { } reply)
                 {
-                    throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                    if (reply.ErrorMessages.Any())
+                    {
+                        throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                    }
+                    return new BitmapImage(reply.Data);
                 }
-                return new BitmapImage(reply.Data);
+                throw new XAMLTestException("Failed to receive a reply");
             }
-            throw new XAMLTestException("Failed to receive a reply");
+            catch (RpcException e)
+            {
+                throw new XAMLTestException($"Error communicating with host process", e);
+            }
         }
 
         public async Task RegisterSerializer<T>(int insertIndex = 0)
@@ -206,7 +214,7 @@ namespace XamlTest.Internal
             throw new XAMLTestException("Failed to receive a reply");
         }
 
-        public Task<IReadOnlyList<ISerializer>> GetSerializers() 
+        public Task<IReadOnlyList<ISerializer>> GetSerializers()
             => Task.FromResult<IReadOnlyList<ISerializer>>(Serializer.Serializers.AsReadOnly());
     }
 }
