@@ -6,7 +6,7 @@ namespace XamlTest
 {
     public static class Wait
     {
-        public static async Task For(Func<Task<bool>> action, Retry? retry = null)
+        public static async Task For(Func<Task<bool>> action, Retry? retry = null, string? message = null)
         {
             if (action is null)
             {
@@ -45,23 +45,24 @@ namespace XamlTest
                 }
             }
             while (ShouldRetry());
-            throw new TimeoutException($"Timeout of '{retry}' exceeded", thrownException);
+            var prefix = message == null ? string.Empty : $"{message}. ";
+            throw new TimeoutException($"{prefix}Timeout of '{retry}' exceeded", thrownException);
 
             bool ShouldRetry() =>
                 sw.Elapsed <= retry.Timeout ||
                 numAttempts < retry.MinAttempts;
         }
 
-        public static async Task For(Func<Task> action, Retry? retry = null)
+        public static async Task For(Func<Task> action, Retry? retry = null, string? message = null)
         {
             await For(async () =>
             {
                 await action();
                 return true;
-            }, retry);
+            }, retry, message);
         }
 
-        public static async Task<T> For<T>(Func<Task<T>> action, Retry? retry = null)
+        public static async Task<T> For<T>(Func<Task<T>> action, Retry? retry = null, string? message = null)
             where T : class
         {
             T? rv = default;
@@ -69,7 +70,7 @@ namespace XamlTest
             {
                 rv = await action();
                 return true;
-            }, retry);
+            }, retry, message);
 
             return rv ?? throw new XAMLTestException("Return value is null");
         }
