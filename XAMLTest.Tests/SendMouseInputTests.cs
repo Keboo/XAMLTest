@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 
 namespace XamlTest.Tests
 {
@@ -77,6 +76,17 @@ namespace XamlTest.Tests
                 var invocations = await registration.GetInvocations();
                 Assert.AreEqual(1, invocations.Count);
             });
+        }
+
+        [TestMethod]
+        public async Task LeftClick_WithPositionOffset_OffsetsCursor()
+        {
+            Rect coordinates = await TopMenuItem.GetCoordinates();
+            Point mousePosition = await TopMenuItem.LeftClick(Position.BottomLeft, 15, -5);
+
+            Point expected = coordinates.BottomLeft + new Vector(15, -5);
+            Assert.IsTrue(Math.Abs(expected.X - mousePosition.X) <= 1);
+            Assert.IsTrue(Math.Abs(expected.Y - mousePosition.Y) <= 1);
         }
 
         [TestMethod]
