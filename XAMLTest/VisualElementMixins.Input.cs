@@ -26,23 +26,29 @@ namespace XamlTest
 
         public static async Task<Point> LeftClick(this IVisualElement element,
             Position position = Position.Center,
+            int xOffset = 0, int yOffset = 0,
             TimeSpan? clickTime = null)
         {
             return await SendClick(element,
                 MouseInput.LeftDown(),
                 MouseInput.LeftUp(),
                 position,
+                xOffset,
+                yOffset,
                 clickTime);
         }
 
         public static async Task<Point> RightClick(this IVisualElement element,
             Position position = Position.Center,
+            int xOffset = 0, int yOffset = 0,
             TimeSpan? clickTime = null)
         {
             return await SendClick(element,
                 MouseInput.RightDown(),
                 MouseInput.RightUp(),
                 position,
+                xOffset,
+                yOffset,
                 clickTime);
         }
 
@@ -50,17 +56,23 @@ namespace XamlTest
             MouseInput down,
             MouseInput up,
             Position position,
+            int xOffset,
+            int yOffset,
             TimeSpan? clickTime)
         {
             List<MouseInput> inputs = new();
             inputs.Add(MouseInput.MoveToElement(position));
+            if (xOffset != 0 || yOffset != 0)
+            {
+                inputs.Add(MouseInput.MoveRelative(xOffset, yOffset));
+            }
             inputs.Add(down);
             if (clickTime != null)
             {
                 inputs.Add(MouseInput.Delay(clickTime.Value));
             }
             inputs.Add(up);
-            
+
             return await element.SendInput(new MouseInput(inputs.ToArray()));
         }
 
