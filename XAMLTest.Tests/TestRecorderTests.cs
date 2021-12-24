@@ -23,8 +23,8 @@ namespace XamlTest.Tests
             }
         }
 
-        [ClassCleanup]
-        public static void ClassCleanup()
+        [TestCleanup]
+        public void ClassCleanup()
         {
             foreach (var file in new TestRecorder(new Simulators.App()).EnumerateScreenshots())
             {
@@ -47,7 +47,7 @@ namespace XamlTest.Tests
 
             string? fileName = Path.GetFileName(file);
             Assert.AreEqual(nameof(TestRecorderTests), Path.GetFileName(Path.GetDirectoryName(file)));
-            Assert.AreEqual($"{nameof(SaveScreenshot_SavesImage)}{GetLineNumber(-9)}-win1.jpg", fileName);
+            Assert.AreEqual($"{nameof(SaveScreenshot_SavesImage)}{GetLineNumber(-9)}-1.jpg", fileName);
             testRecorder.Success();
         }
 
@@ -66,12 +66,12 @@ namespace XamlTest.Tests
 
             var fileName = Path.GetFileName(file);
             Assert.AreEqual(nameof(TestRecorderTests), Path.GetFileName(Path.GetDirectoryName(file)));
-            Assert.AreEqual($"{nameof(SaveScreenshot_WithSuffix_SavesImage)}MySuffix{GetLineNumber(-9)}-win1.jpg", fileName);
+            Assert.AreEqual($"{nameof(SaveScreenshot_WithSuffix_SavesImage)}MySuffix{GetLineNumber(-9)}-1.jpg", fileName);
             testRecorder.Success();
         }
 
         [TestMethod, ExpectedException(typeof(NotImplementedException))]
-        public async Task TestRecord_WhenExceptionThrown_DoesNotRethrow()
+        public async Task TestRecorder_WhenExceptionThrown_DoesNotRethrow()
         {
             await using var app = new Simulators.App();
             await using TestRecorder testRecorder = new(app);
@@ -79,7 +79,7 @@ namespace XamlTest.Tests
         }
 
         [TestMethod]
-        public async Task TestRecord_WithInvalidXAML_DoesNotRethrow()
+        public async Task TestRecorder_WithInvalidXAML_DoesNotRethrow()
         {
             await using var app = App.StartRemote();
             await using (TestRecorder testRecorder = new(app))
@@ -87,6 +87,28 @@ namespace XamlTest.Tests
                 await app.InitializeWithDefaults();
                 var ex = await Assert.ThrowsExceptionAsync<XAMLTestException>(async () => await app.CreateWindowWithContent("<InvalidContent />"));
             }
+        }
+
+        [TestMethod]
+        public async Task TestRecorder_WithCtorSuffix_AppendsToAllFileNames()
+        {
+            await using var app = new Simulators.App();
+            await using TestRecorder testRecorder = new(app, "CtorSuffix");
+
+            Assert.IsNotNull(await testRecorder.SaveScreenshot("OtherSuffix1"));
+            Assert.IsNotNull(await testRecorder.SaveScreenshot("OtherSuffix2"));
+
+            var files = testRecorder.EnumerateScreenshots()
+                .Where(x => Path.GetFileName(Path.GetDirectoryName(x)) == nameof(TestRecorderTests) &&
+                       Path.GetFileName(x).StartsWith(nameof(TestRecorder_WithCtorSuffix_AppendsToAllFileNames)))
+                .ToList();
+
+            Assert.AreEqual(2, files.Count);
+            var file1Name = Path.GetFileName(files[0]);
+            var file2Name = Path.GetFileName(files[1]);
+            Assert.AreEqual($"{nameof(TestRecorder_WithCtorSuffix_AppendsToAllFileNames)}CtorSuffixOtherSuffix1{GetLineNumber(-11)}-1.jpg", file1Name);
+            Assert.AreEqual($"{nameof(TestRecorder_WithCtorSuffix_AppendsToAllFileNames)}CtorSuffixOtherSuffix2{GetLineNumber(-11)}-2.jpg", file2Name);
+            testRecorder.Success();
         }
 
         private static int GetLineNumber(int offset = 0, [CallerLineNumber] int lineNumber = 0)

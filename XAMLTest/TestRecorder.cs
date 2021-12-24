@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace XamlTest
@@ -18,11 +19,17 @@ namespace XamlTest
 
         private string Directory { get; }
 
+        private string TestSuffix { get; }
+
+        private int _imageIndex = 0;
+
         public TestRecorder(IApp app,
+            string? suffix = null,
             [CallerFilePath] string callerFilePath = "",
             [CallerMemberName] string unitTestMethod = "")
         {
             App = app ?? throw new ArgumentNullException(nameof(app));
+            TestSuffix = suffix ?? "";
 
             var callingAssembly = Assembly.GetCallingAssembly();
             var assemblyName = callingAssembly.GetName().Name!;
@@ -73,8 +80,7 @@ namespace XamlTest
 
         private async Task<string?> SaveScreenshot(string suffix)
         {
-            int index = 1;
-            string fileName = $"{BaseFileName}{suffix}-win{index++}.jpg";
+            string fileName = $"{BaseFileName}{TestSuffix}{suffix}-{Interlocked.Increment(ref _imageIndex)}.jpg";
             System.IO.Directory.CreateDirectory(Directory);
             string fullPath = Path.Combine(Directory, fileName);
             File.Delete(fullPath);
