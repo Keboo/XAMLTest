@@ -3,7 +3,7 @@
     <Nullable>enable</Nullable>
     <WarningsAsErrors>true</WarningsAsErrors>
     <AnalysisLevel>5</AnalysisLevel>
-    <LangVersion>9.0</LangVersion>
+    <LangVersion>10.0</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup>
