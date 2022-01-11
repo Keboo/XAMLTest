@@ -299,7 +299,7 @@ namespace XamlTest.Host
                     else
                     {
                         var properties = TypeDescriptor.GetProperties(element);
-                        PropertyDescriptor foundProperty = properties.Find(request.Name, false);
+                        PropertyDescriptor? foundProperty = properties.Find(request.Name, false);
                         if (foundProperty is null)
                         {
                             reply.ErrorMessages.Add($"Could not find property with name '{request.Name}'");
@@ -776,7 +776,7 @@ namespace XamlTest.Host
                 return Decendants<FrameworkElement>(root).FirstOrDefault(x => x.Name == name);
             }
 
-            static object EvaluatePropertyQuery(DependencyObject root, string property)
+            static object? EvaluatePropertyQuery(DependencyObject root, string property)
             {
                 var properties = TypeDescriptor.GetProperties(root);
                 if (properties.Find(property, false) is PropertyDescriptor propertyDescriptor)

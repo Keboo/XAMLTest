@@ -60,10 +60,14 @@ namespace XamlTest.Utility
                 {
                     possible = possible.Where(x => x.Name.Version == name.Version);
                 }
+                //NB: AssemblyName.KeyPair throws PlatformNotSupportedException on .NET6
+                //https://docs.microsoft.com/en-us/dotnet/api/system.reflection.assemblyname.keypair?view=net-6.0#system-reflection-assemblyname-keypair
+#if !NET6_0_OR_GREATER
                 if (name.KeyPair != null)
                 {
                     possible = possible.Where(x => name.KeyPair.PublicKey.SequenceEqual(x.Name.KeyPair?.PublicKey ?? Array.Empty<byte>()));
                 }
+#endif
                 var found = possible.ToList();
                 if (found.Count == 1)
                 {

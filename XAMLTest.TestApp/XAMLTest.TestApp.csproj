@@ -1,15 +1,15 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <IsPackable>false</IsPackable>
     <DeterministicSourcePaths Condition="'$(EnableSourceLink)' == ''">false</DeterministicSourcePaths>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MaterialDesignThemes" Version="4.1.0" />
+    <PackageReference Include="MaterialDesignThemes" Version="4.3.0" />
   </ItemGroup>
 
 </Project>
