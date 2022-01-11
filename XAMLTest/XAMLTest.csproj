@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFrameworks>netcoreapp3.1;net5.0-windows7.0;net6.0-windows</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1;net5.0-windows7;net6.0-windows7</TargetFrameworks>
     <UseWPF>true</UseWPF>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>XamlTest</RootNamespace>
@@ -30,7 +30,7 @@
   <PropertyGroup>
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);IncludeExeInPackage</TargetsForTfmSpecificContentInPackage>
   </PropertyGroup>
-
+	
   <ItemGroup>
     <EmbeddedFiles Include="$(GeneratedAssemblyInfoFile)" />
     <EmbeddedFiles Include="$([System.IO.Path]::Combine('$(IntermediateOutputPath)','*AssemblyAttributes$(DefaultLanguageSourceExtension)'))" />
