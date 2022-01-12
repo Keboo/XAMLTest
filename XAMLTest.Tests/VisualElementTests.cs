@@ -484,12 +484,13 @@ namespace XamlTest.Tests
             await using TestRecorder recorder = new(App);
 
             //Act
-            await Window.RemoteExecute(static window => window.Title = "Test Title");
+            await Window.RemoteExecute(ChangeTitle);
 
             //Assert
             Assert.AreEqual("Test Title", await Window.GetTitle());
             recorder.Success();
 
+            static void ChangeTitle(Window window) => window.Title = "Test Title";
         }
     }
 }

@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
 using XamlTest.Host;
 
 namespace XamlTest.Internal
 {
-    internal class Window : VisualElement<Window>, IWindow
+    internal class Window : VisualElement<System.Windows.Window>, IWindow
     {
         public Window(Protocol.ProtocolClient client, string id, 
             Serializer serializer, Action<string>? logMessage)
@@ -14,7 +13,6 @@ namespace XamlTest.Internal
 
         public bool Equals([AllowNull] IWindow other)
             => base.Equals(other);
-        public Task RemoteExecute(Action<System.Windows.Window> action) => throw new NotImplementedException();
         protected override ElementQuery GetFindElementQuery(string query)
             => new ElementQuery
             {

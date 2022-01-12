@@ -494,7 +494,7 @@ namespace XamlTest.Internal
                 ElementId = Id,
                 MethodName = action.Method.Name,
                 MethodContainerType = action.Method.DeclaringType!.AssemblyQualifiedName,
-                Assembly = action.Method.DeclaringType.Assembly.Location,
+                Assembly = action.Method.DeclaringType.Assembly.FullName,
             };
             if (await Client.RemoteInvocationAsync(request) is { } reply)
             {
