@@ -7,7 +7,7 @@ namespace XamlTest
 {
     public interface IVisualElement<TElement> : IVisualElement
     {
-
+        Task RemoteExecute(Action<TElement> action);
     }
 
     public interface IVisualElement : IEquatable<IVisualElement>

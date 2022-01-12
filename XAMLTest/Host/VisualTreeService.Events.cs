@@ -7,6 +7,7 @@ using XamlTest.Event;
 
 namespace XamlTest.Host
 {
+
     partial class VisualTreeService
     {
         public override async Task<EventRegistrationResponse> RegisterForEvent(EventRegistrationRequest request, ServerCallContext context)

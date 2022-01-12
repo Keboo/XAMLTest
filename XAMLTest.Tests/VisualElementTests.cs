@@ -472,10 +472,24 @@ namespace XamlTest.Tests
             //Act
             IVisualElement<FrameworkElement> frameworkElement = panel.As<FrameworkElement>();
 
-
             //Assert
             Assert.AreEqual("Panel", await frameworkElement.GetName());
             recorder.Success();
+        }
+
+        [TestMethod]
+        public async Task OnRemoteExecute_CanExecuteRemoteCode()
+        {
+            // Arrange
+            await using TestRecorder recorder = new(App);
+
+            //Act
+            await Window.RemoteExecute(static window => window.Title = "Test Title");
+
+            //Assert
+            Assert.AreEqual("Test Title", await Window.GetTitle());
+            recorder.Success();
+
         }
     }
 }

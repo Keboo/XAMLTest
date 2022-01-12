@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 using XamlTest.Host;
 
 namespace XamlTest.Internal
@@ -13,7 +14,7 @@ namespace XamlTest.Internal
 
         public bool Equals([AllowNull] IWindow other)
             => base.Equals(other);
-
+        public Task RemoteExecute(Action<System.Windows.Window> action) => throw new NotImplementedException();
         protected override ElementQuery GetFindElementQuery(string query)
             => new ElementQuery
             {
