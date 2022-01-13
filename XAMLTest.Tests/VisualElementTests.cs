@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -490,7 +491,10 @@ namespace XamlTest.Tests
             Assert.AreEqual("Test Title", await Window.GetTitle());
             recorder.Success();
 
-            static void ChangeTitle(Window window) => window.Title = "Test Title";
+            static void ChangeTitle(Window window)
+            {
+                window.Title = "Test Title";
+            }
         }
     }
 }

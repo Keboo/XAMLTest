@@ -1,6 +1,5 @@
 ﻿using Grpc.Core;
 using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -15,7 +14,6 @@ namespace XamlTest.Host
             RemoteInvocationResponse reply = new();
             await Application.Dispatcher.InvokeAsync(() =>
             {
-                Debugger.Launch();
                 try
                 {
                     DependencyObject? element = GetCachedElement<DependencyObject>(request.ElementId);
