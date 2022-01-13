@@ -36,7 +36,7 @@
   <ItemGroup>
     <EmbeddedFiles Include="$(GeneratedAssemblyInfoFile)" />
     <EmbeddedFiles Include="$([System.IO.Path]::Combine('$(IntermediateOutputPath)','*AssemblyAttributes$(DefaultLanguageSourceExtension)'))" />
-    <EmbeddedFiles Include="$([System.IO.Path]::Combine('$(IntermediateOutputPath)','Host\VTspec*$(DefaultLanguageSourceExtension)'))" />
+    <EmbeddedFiles Include="$([System.IO.Path]::Combine('$(IntermediateOutputPath)','Host\XamlTestSpec*$(DefaultLanguageSourceExtension)'))" />
   </ItemGroup>
     
   <Target Name="CopyOutputs" AfterTargets="AfterBuild">
