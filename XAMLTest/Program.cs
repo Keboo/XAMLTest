@@ -1,8 +1,10 @@
 ﻿using System;
+using System.CommandLine;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Windows;
 using XamlTest.Utility;
 
@@ -15,14 +17,29 @@ namespace XamlTest
         [STAThread]
         static int Main(string[] args)
         {
-            if (args.Length < 1 || !int.TryParse(args[0], out int clientPid))
+            Argument<int> clientPid = new("clientPid");
+            Option<string> appPath = new("--application-path");
+            Option<bool> debug = new("--debug");
+            RootCommand command = new()
+            {
+                clientPid,
+                appPath,
+                debug
+            };
+
+            var parseResult = command.Parse(args);
+            if (parseResult.Errors.Count > 0)
             {
                 return -1;
             }
 
+            int pidValue = parseResult.GetValueForArgument(clientPid);
+            string? appPathValue = parseResult.GetValueForOption(appPath);
+            bool waitForDebugger = parseResult.GetValueForOption(debug);
+
             Application application;
-            if (args.Length == 2 &&
-                Path.GetFullPath(args[1]) is { } fullPath &&
+            if (!string.IsNullOrWhiteSpace(appPathValue) &&
+                Path.GetFullPath(appPathValue) is { } fullPath &&
                 File.Exists(fullPath))
             {
                 application = CreateFromAssembly(fullPath);
@@ -45,7 +62,14 @@ namespace XamlTest
             void ApplicationStartup(object sender, StartupEventArgs e)
             {
                 service = Server.Start(application);
-                HeartbeatTimer = new(HeartbeatCheck, clientPid, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+                HeartbeatTimer = new(HeartbeatCheck, pidValue, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+                if (waitForDebugger)
+                {
+                    for (; !Debugger.IsAttached;)
+                    {
+                        Thread.Sleep(100);
+                    }
+                }
             }
 
             void ApplicationExit(object sender, ExitEventArgs e)
@@ -54,11 +78,21 @@ namespace XamlTest
             void HeartbeatCheck(object? state)
             {
                 var pid = (int)state!;
-                using Process p = Process.GetProcessById(pid);
-                if (p is null || p.HasExited)
+                bool shutdown = false;
+                try
                 {
-                    HeartbeatTimer?.Change(0, System.Threading.Timeout.Infinite);
-                    application.Shutdown();
+                    using Process p = Process.GetProcessById(pid);
+                    shutdown = p is null || p.HasExited;
+                }
+                catch
+                {
+                    shutdown = true;
+                }
+
+                if (shutdown)
+                {
+                    HeartbeatTimer?.Change(0, Timeout.Infinite);
+                    application.Dispatcher.Invoke(() => application.Shutdown());
                 }
             }
         }

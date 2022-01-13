@@ -38,7 +38,13 @@ namespace XamlTest
             startInfo.ArgumentList.Add($"{Process.GetCurrentProcess().Id}");
             if (!string.IsNullOrWhiteSpace(remoteApp))
             {
+                startInfo.ArgumentList.Add("--application-path");
                 startInfo.ArgumentList.Add(remoteApp);
+            }
+            bool useDebugger = Debugger.IsAttached;
+            if (useDebugger)
+            {
+                startInfo.ArgumentList.Add($"--debug");
             }
 
             if (Process.Start(startInfo) is Process process)
@@ -48,6 +54,10 @@ namespace XamlTest
                     ConnectionTimeout = 1000
                 });
                 Protocol.ProtocolClient client = new(channel);
+                if (useDebugger)
+                {
+                    VisualStudioAttacher.AttachVisualStudioToProcess(process);
+                }
 
                 return new ManagedApp(process, client, logMessage);
             }

@@ -17,10 +17,12 @@
     </PackageReference>
     <PackageReference Include="GrpcDotNetNamedPipes" Version="1.4.4" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.VisualStudio.Debugger.InteropA" Version="17.0.31902.203" />
     <PackageReference Include="PInvoke.User32" Version="0.7.104" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta2.21617.1" />
     <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
     <ProjectReference Include="..\XAMLTest.Generator\XAMLTest.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-    <Protobuf Include="Host\VTspec.proto" GrpcServices="Both" />
+    <Protobuf Include="Host\XamlTestSpec.proto" GrpcServices="Both" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,7 +36,7 @@
   <ItemGroup>
     <EmbeddedFiles Include="$(GeneratedAssemblyInfoFile)" />
     <EmbeddedFiles Include="$([System.IO.Path]::Combine('$(IntermediateOutputPath)','*AssemblyAttributes$(DefaultLanguageSourceExtension)'))" />
-    <EmbeddedFiles Include="$([System.IO.Path]::Combine('$(IntermediateOutputPath)','Host\VTspec*$(DefaultLanguageSourceExtension)'))" />
+    <EmbeddedFiles Include="$([System.IO.Path]::Combine('$(IntermediateOutputPath)','Host\XamlTestSpec*$(DefaultLanguageSourceExtension)'))" />
   </ItemGroup>
     
   <Target Name="CopyOutputs" AfterTargets="AfterBuild">
