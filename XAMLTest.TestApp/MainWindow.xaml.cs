@@ -1,15 +1,16 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 
-namespace XAMLTest.TestApp
+namespace XAMLTest.TestApp;
+
+/// <summary>
+/// Interaction logic for MainWindow.xaml
+/// </summary>
+public partial class MainWindow : Window
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window
+    public MainWindow()
     {
-        public MainWindow()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
+        Tag = Environment.CommandLine;
     }
 }
