@@ -12,7 +12,7 @@ namespace XamlTest
 {
     internal class Program
     {
-        private static System.Threading.Timer? HeartbeatTimer { get; set; }
+        private static Timer? HeartbeatTimer { get; set; }
 
         [STAThread]
         static int Main(string[] args)

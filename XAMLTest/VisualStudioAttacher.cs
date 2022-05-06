@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
+using System.Threading.Tasks;
 using DTEProcess = EnvDTE.Process;
 using Process = System.Diagnostics.Process;
 
@@ -33,19 +34,30 @@ namespace XamlTest
             return null;
         }
 
-        public static bool AttachVisualStudioToProcess(Process applicationProcess)
+        public static async Task AttachVisualStudioToProcess(Process applicationProcess)
         {
-            if (GetAttachedVisualStudio(Process.GetCurrentProcess()) is { } vsProcess)
-            {
-                DTEProcess processToAttachTo = vsProcess.Parent.LocalProcesses.Cast<DTEProcess>().FirstOrDefault(process => process.ProcessID == applicationProcess.Id);
+            await Wait.For(() => Task.FromResult(AttachVisualStudioToProcessImplementation(applicationProcess)),
+                retry: new Retry(5, TimeSpan.FromSeconds(15)),
+                message: "Failed to attach Visual Studio to the XAMLTest host process");
 
-                if (processToAttachTo != null)
+            static bool AttachVisualStudioToProcessImplementation(Process applicationProcess)
+            {
+                if (GetAttachedVisualStudio(Process.GetCurrentProcess()) is { } vsProcess)
                 {
-                    processToAttachTo.Attach();
-                    return true;
+                    DTEProcess? processToAttachTo = vsProcess
+                        .Parent
+                        .LocalProcesses
+                        .Cast<DTEProcess>()
+                        .FirstOrDefault(process => process.ProcessID == applicationProcess.Id);
+
+                    if (processToAttachTo != null)
+                    {
+                        processToAttachTo.Attach();
+                        return true;
+                    }
                 }
+                return false;
             }
-            return false;
         }
 
         private static DTEProcess? GetAttachedVisualStudio(Process applicationProcess)
@@ -67,8 +79,7 @@ namespace XamlTest
                         }
                     }
                     catch (Exception)
-                    {
-                    }
+                    { }
                 }
             }
             return null;
