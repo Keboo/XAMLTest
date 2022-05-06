@@ -1,5 +1,6 @@
 # XAMLTest
-![Build](https://github.com/Keboo/XAMLTest/workflows/.NET%20Core/badge.svg)
+[![Build](https://github.com/Keboo/XAMLTest/workflows/.NET%20Core/badge.svg)](https://github.com/Keboo/XAMLTest/actions/workflows/dotnet-core.yml)
+[![NuGet](https://img.shields.io/nuget/v/XAMLTest.svg?label=NuGet)](https://www.nuget.org/packages/XAMLTest/)
 
 ## Description
 XAMLTest is a testing framework designed to allow WPF developers a way to directly "unit test" their XAML. In many ways this library is similar to a UI testing library, with some key differences. Rather than leveraging accessibility or automation APIs, this library is designed to load up a small piece of XAML and provide a simple API to make assertions about the run-time state of the UI. This library is NOT DESIGNED to replace UI testing of WPF apps. Instead, it serves as a helpful tool for WPF library and theme developers to have a mechanism to effectively write tests for their XAML.
