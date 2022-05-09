@@ -1,10 +1,9 @@
 ﻿using System.Windows;
 
-namespace XamlTest
+namespace XamlTest;
+
+internal static class RectMixins
 {
-    internal static class RectMixins
-    {
-        public static Point Center(this Rect rect) 
-            => new(rect.Left + rect.Width / 2, rect.Top + rect.Height / 2);
-    }
+    public static Point Center(this Rect rect) 
+        => new(rect.Left + rect.Width / 2, rect.Top + rect.Height / 2);
 }

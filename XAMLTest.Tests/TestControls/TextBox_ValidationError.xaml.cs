@@ -2,37 +2,36 @@
 using System.Globalization;
 using System.Windows.Controls;
 
-namespace XamlTest.Tests.TestControls
-{
-    /// <summary>
-    /// Interaction logic for TextBox_ValidationError.xaml
-    /// </summary>
-    public partial class TextBox_ValidationError : UserControl
-    {
-        public TextBox_ValidationError()
-        {
-            InitializeComponent();
-            DataContext = new ViewModel();
-        }
+namespace XamlTest.Tests.TestControls;
 
-        public class ViewModel : ObservableObject
-        {
-            private string? _name;
-            public string? Name
-            {
-                get => _name;
-                set => SetProperty(ref _name, value);
-            }
-        }
+/// <summary>
+/// Interaction logic for TextBox_ValidationError.xaml
+/// </summary>
+public partial class TextBox_ValidationError : UserControl
+{
+    public TextBox_ValidationError()
+    {
+        InitializeComponent();
+        DataContext = new ViewModel();
     }
 
-    public class NotEmptyValidationRule : ValidationRule
+    public class ViewModel : ObservableObject
     {
-        public override ValidationResult Validate(object value, CultureInfo cultureInfo)
+        private string? _name;
+        public string? Name
         {
-            return string.IsNullOrWhiteSpace((value ?? "").ToString())
-                ? new ValidationResult(false, "Field is required.")
-                : ValidationResult.ValidResult;
+            get => _name;
+            set => SetProperty(ref _name, value);
         }
+    }
+}
+
+public class NotEmptyValidationRule : ValidationRule
+{
+    public override ValidationResult Validate(object value, CultureInfo cultureInfo)
+    {
+        return string.IsNullOrWhiteSpace((value ?? "").ToString())
+            ? new ValidationResult(false, "Field is required.")
+            : ValidationResult.ValidResult;
     }
 }

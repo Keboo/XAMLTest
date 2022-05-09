@@ -3,41 +3,40 @@ using System.Collections.Generic;
 using System.Linq;
 using XamlTest.Transport;
 
-namespace XamlTest.Internal
+namespace XamlTest.Internal;
+
+internal class Serializer
 {
-    internal class Serializer
+    public List<ISerializer> Serializers { get; } = new List<ISerializer>();
+
+    public Serializer()
     {
-        public List<ISerializer> Serializers { get; } = new List<ISerializer>();
+        //NB: Order matters here. Items earlier in the list take precedence
+        Serializers.Add(new BrushSerializer());
+        Serializers.Add(new CharSerializer());
+        Serializers.Add(new GridSerializer());
+        Serializers.Add(new SecureStringSerializer());
+        Serializers.Add(new DefaultSerializer());
+    }
 
-        public Serializer()
+    public void AddSerializer(ISerializer serializer, int index) 
+        => Serializers.Insert(index, serializer);
+
+    public string? Serialize(Type type, object? value)
+    {
+        if (Serializers.FirstOrDefault(x => x.CanSerialize(type)) is { } serializer)
         {
-            //NB: Order matters here. Items earlier in the list take precedence
-            Serializers.Add(new BrushSerializer());
-            Serializers.Add(new CharSerializer());
-            Serializers.Add(new GridSerializer());
-            Serializers.Add(new SecureStringSerializer());
-            Serializers.Add(new DefaultSerializer());
+            return serializer.Serialize(type, value);
         }
+        return null;
+    }
 
-        public void AddSerializer(ISerializer serializer, int index) 
-            => Serializers.Insert(index, serializer);
-
-        public string? Serialize(Type type, object? value)
+    public object? Deserialize(Type type, string value)
+    {
+        if (Serializers.FirstOrDefault(x => x.CanSerialize(type)) is { } serializer)
         {
-            if (Serializers.FirstOrDefault(x => x.CanSerialize(type)) is { } serializer)
-            {
-                return serializer.Serialize(type, value);
-            }
-            return null;
+            return serializer.Deserialize(type, value);
         }
-
-        public object? Deserialize(Type type, string value)
-        {
-            if (Serializers.FirstOrDefault(x => x.CanSerialize(type)) is { } serializer)
-            {
-                return serializer.Deserialize(type, value);
-            }
-            return null;
-        }
+        return null;
     }
 }

@@ -1,10 +1,9 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 
-namespace XamlTest
+namespace XamlTest;
+
+public interface IImage
 {
-    public interface IImage
-    {
-        Task Save(Stream stream);
-    }
+    Task Save(Stream stream);
 }

@@ -8,110 +8,109 @@ using System.Threading;
 using System.Windows;
 using XamlTest.Utility;
 
-namespace XamlTest
+namespace XamlTest;
+
+internal class Program
 {
-    internal class Program
+    private static Timer? HeartbeatTimer { get; set; }
+
+    [STAThread]
+    static int Main(string[] args)
     {
-        private static Timer? HeartbeatTimer { get; set; }
-
-        [STAThread]
-        static int Main(string[] args)
+        Argument<int> clientPid = new("clientPid");
+        Option<string> appPath = new("--application-path");
+        Option<bool> debug = new("--debug");
+        RootCommand command = new()
         {
-            Argument<int> clientPid = new("clientPid");
-            Option<string> appPath = new("--application-path");
-            Option<bool> debug = new("--debug");
-            RootCommand command = new()
+            clientPid,
+            appPath,
+            debug
+        };
+
+        var parseResult = command.Parse(args);
+        if (parseResult.Errors.Count > 0)
+        {
+            return -1;
+        }
+
+        int pidValue = parseResult.GetValueForArgument(clientPid);
+        string? appPathValue = parseResult.GetValueForOption(appPath);
+        bool waitForDebugger = parseResult.GetValueForOption(debug);
+
+        Application application;
+        if (!string.IsNullOrWhiteSpace(appPathValue) &&
+            Path.GetFullPath(appPathValue) is { } fullPath &&
+            File.Exists(fullPath))
+        {
+            application = CreateFromAssembly(fullPath);
+        }
+        else
+        {
+            application = new Application
             {
-                clientPid,
-                appPath,
-                debug
+                ShutdownMode = ShutdownMode.OnLastWindowClose
             };
-
-            var parseResult = command.Parse(args);
-            if (parseResult.Errors.Count > 0)
-            {
-                return -1;
-            }
-
-            int pidValue = parseResult.GetValueForArgument(clientPid);
-            string? appPathValue = parseResult.GetValueForOption(appPath);
-            bool waitForDebugger = parseResult.GetValueForOption(debug);
-
-            Application application;
-            if (!string.IsNullOrWhiteSpace(appPathValue) &&
-                Path.GetFullPath(appPathValue) is { } fullPath &&
-                File.Exists(fullPath))
-            {
-                application = CreateFromAssembly(fullPath);
-            }
-            else
-            {
-                application = new Application
-                {
-                    ShutdownMode = ShutdownMode.OnLastWindowClose
-                };
-            }
-
-            IService? service = null;
-
-            application.Startup += ApplicationStartup;
-            application.Exit += ApplicationExit;
-
-            return application.Run();
-
-            void ApplicationStartup(object sender, StartupEventArgs e)
-            {
-                service = Server.Start(application);
-                HeartbeatTimer = new(HeartbeatCheck, pidValue, TimeSpan.Zero, TimeSpan.FromSeconds(1));
-                if (waitForDebugger)
-                {
-                    for (; !Debugger.IsAttached;)
-                    {
-                        Thread.Sleep(100);
-                    }
-                }
-            }
-
-            void ApplicationExit(object sender, ExitEventArgs e)
-                => service?.Dispose();
-
-            void HeartbeatCheck(object? state)
-            {
-                var pid = (int)state!;
-                bool shutdown = false;
-                try
-                {
-                    using Process p = Process.GetProcessById(pid);
-                    shutdown = p is null || p.HasExited;
-                }
-                catch
-                {
-                    shutdown = true;
-                }
-
-                if (shutdown)
-                {
-                    HeartbeatTimer?.Change(0, Timeout.Infinite);
-                    application.Dispatcher.Invoke(() => application.Shutdown());
-                }
-            }
         }
 
-        private static Application CreateFromAssembly(string assemblyPath)
+        IService? service = null;
+
+        application.Startup += ApplicationStartup;
+        application.Exit += ApplicationExit;
+
+        return application.Run();
+
+        void ApplicationStartup(object sender, StartupEventArgs e)
         {
-            AppDomain.CurrentDomain.IncludeAssembliesIn(Path.GetDirectoryName(assemblyPath)!);
-
-            var targetAssembly = Assembly.LoadFile(assemblyPath);
-
-            var appType = targetAssembly.GetTypes().Where(x => x.IsSubclassOf(typeof(Application))).Single();
-            var application = (Application)appType.GetConstructors().Single().Invoke(new object[0]);
-
-            if (appType.GetMethod("InitializeComponent") is { } initMethod)
+            service = Server.Start(application);
+            HeartbeatTimer = new(HeartbeatCheck, pidValue, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+            if (waitForDebugger)
             {
-                initMethod.Invoke(application, Array.Empty<object>());
+                for (; !Debugger.IsAttached;)
+                {
+                    Thread.Sleep(100);
+                }
+            }
+        }
+
+        void ApplicationExit(object sender, ExitEventArgs e)
+            => service?.Dispose();
+
+        void HeartbeatCheck(object? state)
+        {
+            var pid = (int)state!;
+            bool shutdown = false;
+            try
+            {
+                using Process p = Process.GetProcessById(pid);
+                shutdown = p is null || p.HasExited;
+            }
+            catch
+            {
+                shutdown = true;
             }
 
-            return application;
+            if (shutdown)
+            {
+                HeartbeatTimer?.Change(0, Timeout.Infinite);
+                application.Dispatcher.Invoke(() => application.Shutdown());
+            }
         }
+    }
+
+    private static Application CreateFromAssembly(string assemblyPath)
+    {
+        AppDomain.CurrentDomain.IncludeAssembliesIn(Path.GetDirectoryName(assemblyPath)!);
+
+        var targetAssembly = Assembly.LoadFile(assemblyPath);
+
+        var appType = targetAssembly.GetTypes().Where(x => x.IsSubclassOf(typeof(Application))).Single();
+        var application = (Application)appType.GetConstructors().Single().Invoke(new object[0]);
+
+        if (appType.GetMethod("InitializeComponent") is { } initMethod)
+        {
+            initMethod.Invoke(application, Array.Empty<object>());
+        }
+
+        return application;
     }
 }

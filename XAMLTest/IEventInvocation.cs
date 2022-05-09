@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace XamlTest
+namespace XamlTest;
+
+public interface IEventInvocation
 {
-    public interface IEventInvocation
-    {
-        IReadOnlyList<object> Parameters { get; }
-    }
+    IReadOnlyList<object> Parameters { get; }
 }

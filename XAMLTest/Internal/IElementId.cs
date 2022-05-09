@@ -1,7 +1,6 @@
-﻿namespace XamlTest.Internal
+﻿namespace XamlTest.Internal;
+
+internal interface IElementId
 {
-    internal interface IElementId
-    {
-        string Id { get; }
-    }
+    string Id { get; }
 }

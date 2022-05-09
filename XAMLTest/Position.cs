@@ -1,12 +1,11 @@
-﻿namespace XamlTest
+﻿namespace XamlTest;
+
+public enum Position
 {
-    public enum Position
-    {
-        None,
-        TopLeft,
-        TopRight,
-        BottomRight,
-        BottomLeft,
-        Center
-    }
+    None,
+    TopLeft,
+    TopRight,
+    BottomRight,
+    BottomLeft,
+    Center
 }

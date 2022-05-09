@@ -1,7 +1,6 @@
-﻿namespace XamlTest
+﻿namespace XamlTest;
+
+public interface IResource : IValue
 {
-    public interface IResource : IValue
-    {
-        string Key { get; }
-    }
+    string Key { get; }
 }

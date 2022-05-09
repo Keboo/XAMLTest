@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace XamlTest
+namespace XamlTest;
+
+public interface IEventRegistration : IAsyncDisposable
 {
-    public interface IEventRegistration : IAsyncDisposable
-    {
-        Task<IList<IEventInvocation>> GetInvocations();
-    }
+    Task<IList<IEventInvocation>> GetInvocations();
 }
