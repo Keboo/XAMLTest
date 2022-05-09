@@ -1,7 +1,6 @@
-﻿namespace XamlTest
+﻿namespace XamlTest;
+
+public interface IVisualElementConverter
 {
-    public interface IVisualElementConverter
-    {
-        TVisualElement Convert<TVisualElement>();
-    }
+    TVisualElement Convert<TVisualElement>();
 }

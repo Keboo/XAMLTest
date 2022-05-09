@@ -119,18 +119,17 @@ using XamlTest;
 [assembly: GenerateHelpers(typeof(System.Windows.Controls.Primitives.UniformGrid))]
 
 
-namespace XamlTest
+namespace XamlTest;
+
+[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
+public class GenerateHelpersAttribute : Attribute
 {
-    [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-    public class GenerateHelpersAttribute : Attribute
+    public Type ControlType { get; set; }
+
+    public string? Namespace { get; set; }
+
+    public GenerateHelpersAttribute(Type controlType)
     {
-        public Type ControlType { get; set; }
-
-        public string? Namespace { get; set; }
-
-        public GenerateHelpersAttribute(Type controlType)
-        {
-            ControlType = controlType;
-        }
+        ControlType = controlType;
     }
 }

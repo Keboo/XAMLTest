@@ -1,21 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Text;
+﻿namespace XamlTest.Tests.Generated;
 
-namespace XamlTest.Tests.Generated
+partial class ContextMenuGeneratedExtensionsTests
 {
-    partial class ContextMenuGeneratedExtensionsTests
+    static partial void OnClassInitialize()
     {
-        static partial void OnClassInitialize()
+        GetWindowContent = x =>
         {
-            GetWindowContent = x =>
-            {
-                return @$"
+            return @$"
     <Window.ContextMenu>
         {x}
     </Window.ContextMenu>";
-            };
-        }
+        };
     }
 }

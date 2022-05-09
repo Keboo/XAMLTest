@@ -1,5 +1,4 @@
-﻿namespace XamlTest.Input
-{
-    internal interface IInput
-    { }
-}
+﻿namespace XamlTest.Input;
+
+internal interface IInput
+{ }

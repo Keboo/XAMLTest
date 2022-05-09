@@ -1,7 +1,6 @@
 ﻿using System;
 
-namespace XamlTest
-{
-    public interface IService : IDisposable
-    { }
-}
+namespace XamlTest;
+
+public interface IService : IDisposable
+{ }

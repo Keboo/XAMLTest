@@ -1,7 +1,6 @@
-﻿namespace XamlTest
+﻿namespace XamlTest;
+
+public interface IProperty : IValue
 {
-    public interface IProperty : IValue
-    {
-        string PropertyType { get; }
-    }
+    string PropertyType { get; }
 }

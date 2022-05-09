@@ -5,52 +5,51 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace XamlTest.Host
+namespace XamlTest.Host;
+
+partial class VisualTreeService
 {
-    partial class VisualTreeService
+    public override async Task<RemoteInvocationResponse> RemoteInvocation(RemoteInvocationRequest request, ServerCallContext context)
     {
-        public override async Task<RemoteInvocationResponse> RemoteInvocation(RemoteInvocationRequest request, ServerCallContext context)
+        RemoteInvocationResponse reply = new();
+        await Application.Dispatcher.InvokeAsync(() =>
         {
-            RemoteInvocationResponse reply = new();
-            await Application.Dispatcher.InvokeAsync(() =>
+            try
             {
-                try
+                DependencyObject? element = GetCachedElement<DependencyObject>(request.ElementId);
+                if (element is null)
                 {
-                    DependencyObject? element = GetCachedElement<DependencyObject>(request.ElementId);
-                    if (element is null)
+                    reply.ErrorMessages.Add("Failed to find element to execute remote code");
+                }
+                Assembly? assembly = LoadedAssemblies.FirstOrDefault(x => x.GetName().FullName == request.Assembly);
+                if (assembly is null)
+                {
+                    reply.ErrorMessages.Add($"Failed to find assembly '{request.Assembly}' for remote code");
+                }
+                else
+                {
+                    if (Type.GetType(request.MethodContainerType) is { } containingType)
                     {
-                        reply.ErrorMessages.Add("Failed to find element to execute remote code");
-                    }
-                    Assembly? assembly = LoadedAssemblies.FirstOrDefault(x => x.GetName().FullName == request.Assembly);
-                    if (assembly is null)
-                    {
-                        reply.ErrorMessages.Add($"Failed to find assembly '{request.Assembly}' for remote code");
-                    }
-                    else
-                    {
-                        if (Type.GetType(request.MethodContainerType) is { } containingType)
+                        if (containingType.GetMethod(request.MethodName, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy) is { } method)
                         {
-                            if (containingType.GetMethod(request.MethodName, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy) is { } method)
-                            {
-                                method.Invoke(null, new object?[] { element });
-                            }
-                            else
-                            {
-                                reply.ErrorMessages.Add($"Could not find method '{request.MethodName}' on {containingType.FullName}");
-                            }
+                            method.Invoke(null, new object?[] { element });
                         }
                         else
                         {
-                            reply.ErrorMessages.Add($"Could not find method containing type '{request.MethodContainerType}'");
+                            reply.ErrorMessages.Add($"Could not find method '{request.MethodName}' on {containingType.FullName}");
                         }
                     }
+                    else
+                    {
+                        reply.ErrorMessages.Add($"Could not find method containing type '{request.MethodContainerType}'");
+                    }
                 }
-                catch (Exception e)
-                {
-                    reply.ErrorMessages.Add(e.ToString());
-                }
-            });
-            return reply;
-        }
+            }
+            catch (Exception e)
+            {
+                reply.ErrorMessages.Add(e.ToString());
+            }
+        });
+        return reply;
     }
 }

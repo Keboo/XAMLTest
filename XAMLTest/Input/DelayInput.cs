@@ -1,7 +1,6 @@
-﻿namespace XamlTest.Input
-{
-    internal class DelayInput : IInput
-    {
+﻿namespace XamlTest.Input;
 
-    }
+internal class DelayInput : IInput
+{
+
 }

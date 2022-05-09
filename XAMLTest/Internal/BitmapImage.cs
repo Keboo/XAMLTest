@@ -2,18 +2,17 @@
 using System.Threading.Tasks;
 using Google.Protobuf;
 
-namespace XamlTest.Internal
+namespace XamlTest.Internal;
+
+internal class BitmapImage : IImage
 {
-    internal class BitmapImage : IImage
+    private ByteString Data { get; }
+
+    public BitmapImage(ByteString data) => Data = data ?? throw new System.ArgumentNullException(nameof(data));
+
+    public Task Save(Stream stream)
     {
-        private ByteString Data { get; }
-
-        public BitmapImage(ByteString data) => Data = data ?? throw new System.ArgumentNullException(nameof(data));
-
-        public Task Save(Stream stream)
-        {
-            Data.WriteTo(stream);
-            return Task.CompletedTask;
-        }
+        Data.WriteTo(stream);
+        return Task.CompletedTask;
     }
 }

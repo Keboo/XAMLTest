@@ -1,7 +1,6 @@
-﻿namespace XamlTest
+﻿namespace XamlTest;
+
+public static class Types
 {
-    public static class Types
-    {
-        public const string XamlString = ".XamlString";
-    }
+    public const string XamlString = ".XamlString";
 }

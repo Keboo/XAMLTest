@@ -5,38 +5,38 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace XAMLTest.UnitTestGenerator
+namespace XAMLTest.UnitTestGenerator;
+
+[Generator]
+public class UnitTestGenerator : ISourceGenerator
 {
-    [Generator]
-    public class UnitTestGenerator : ISourceGenerator
+    public void Execute(GeneratorExecutionContext context)
     {
-        public void Execute(GeneratorExecutionContext context)
-        {
 #if DEBUG
-            if (!Debugger.IsAttached)
-            {
-                //Debugger.Launch();
-            }
+        if (!Debugger.IsAttached)
+        {
+            //Debugger.Launch();
+        }
 #endif
-            SyntaxReceiver rx = (SyntaxReceiver)context.SyntaxContextReceiver!;
-            foreach (TypeInfo targetType in rx.GeneratedTypes)
-            {
-                if (targetType.Type?.IsAbstract == true) continue;
+        SyntaxReceiver rx = (SyntaxReceiver)context.SyntaxContextReceiver!;
+        foreach (TypeInfo targetType in rx.GeneratedTypes)
+        {
+            if (targetType.Type?.IsAbstract == true) continue;
 
-                StringBuilder sb = new();
-                const string suffix = "GeneratedExtensions";
-                string targetTypeFullName = $"{targetType.Type}";
-                string targetTypeName = targetType.Type!.Name;
-                var extensionClass = context.Compilation.GetTypeByMetadataName($"XamlTest.{targetTypeName}{suffix}");
-                if (extensionClass is null) continue;
+            StringBuilder sb = new();
+            const string suffix = "GeneratedExtensions";
+            string targetTypeFullName = $"{targetType.Type}";
+            string targetTypeName = targetType.Type!.Name;
+            var extensionClass = context.Compilation.GetTypeByMetadataName($"XamlTest.{targetTypeName}{suffix}");
+            if (extensionClass is null) continue;
 
-                string variableTargetTypeName = 
-                    char.ToLowerInvariant(targetType.Type.Name[0]) 
-                    + targetType.Type.Name.Substring(1);
+            string variableTargetTypeName = 
+                char.ToLowerInvariant(targetType.Type.Name[0]) 
+                + targetType.Type.Name.Substring(1);
 
-                string className = $"{targetType.Type.Name}{suffix}Tests";
+            string className = $"{targetType.Type.Name}{suffix}Tests";
 
-                sb.AppendLine($@"
+            sb.AppendLine($@"
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -88,11 +88,11 @@ namespace XamlTest.Tests.Generated
 
 ");
 
-                foreach (IMethodSymbol getMethod in GetTestMethods(extensionClass))
-                {
-                    string methodReturnType = ((INamedTypeSymbol)getMethod.ReturnType).TypeArguments[0].ToString();
+            foreach (IMethodSymbol getMethod in GetTestMethods(extensionClass))
+            {
+                string methodReturnType = ((INamedTypeSymbol)getMethod.ReturnType).TypeArguments[0].ToString();
 
-                    sb.AppendLine($@"
+                sb.AppendLine($@"
         [TestMethod]
         public async Task CanInvoke_{getMethod.Name}_ReturnsValue()
         {{
@@ -109,75 +109,74 @@ namespace XamlTest.Tests.Generated
             recorder.Success();
         }}
 ");
-                }
+            }
 
 
-                    sb.AppendLine($@"
+                sb.AppendLine($@"
     }}
 }}");
 
-                //System.IO.File.WriteAllText($@"D:\Dev\XAMLTest\XAMLTest.UnitTestGenerator\obj\{className}.cs", sb.ToString());
+            //System.IO.File.WriteAllText($@"D:\Dev\XAMLTest\XAMLTest.UnitTestGenerator\obj\{className}.cs", sb.ToString());
 
-                context.AddSource($"{className}.cs", sb.ToString());
-            }
+            context.AddSource($"{className}.cs", sb.ToString());
+        }
 
-            static IEnumerable<IMethodSymbol> GetTestMethods(INamedTypeSymbol extensionClass)
+        static IEnumerable<IMethodSymbol> GetTestMethods(INamedTypeSymbol extensionClass)
+        {
+            for (INamedTypeSymbol? type = extensionClass;
+                type != null;
+                type = type.BaseType)
             {
-                for (INamedTypeSymbol? type = extensionClass;
-                    type != null;
-                    type = type.BaseType)
+                //Pick up the abstract base stuff
+                if (type.IsAbstract) continue;
+                foreach (IMethodSymbol getMethod in type.GetMembers()
+                    .OfType<IMethodSymbol>()
+                    .Where(x => x.Name.StartsWith("Get") && x.IsStatic))
                 {
-                    //Pick up the abstract base stuff
-                    if (type.IsAbstract) continue;
-                    foreach (IMethodSymbol getMethod in type.GetMembers()
-                        .OfType<IMethodSymbol>()
-                        .Where(x => x.Name.StartsWith("Get") && x.IsStatic))
-                    {
-                        yield return getMethod;
-                    }
+                    yield return getMethod;
                 }
             }
         }
+    }
 
-        public void Initialize(GeneratorInitializationContext context)
+    public void Initialize(GeneratorInitializationContext context)
+    {
+        context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
+    }
+
+    private static string GetAssertion(string propertyName, string returnType)
+    {
+        switch(propertyName)
         {
-            context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
+            case "ActualHeight":
+            case "ActualWidth":
+                return "Assert.IsTrue(actual > 0);";
+            case "Width":
+            case "Height":
+                return "Assert.IsTrue(double.IsNaN(actual) || actual >= 0);";
+            case "VerticalAlignment":
+            case "HorizontalAlignment":
+                
+            default:
+                return $"Assert.AreEqual(default({returnType}), actual);";
         }
+    }
 
-        private static string GetAssertion(string propertyName, string returnType)
+    public class SyntaxReceiver : ISyntaxContextReceiver
+    {
+        public List<TypeInfo> GeneratedTypes { get; } = new();
+
+        public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
         {
-            switch(propertyName)
+            if (context.Node is AttributeSyntax attrib
+                && attrib.ArgumentList?.Arguments.Count >= 1
+                && context.SemanticModel.GetTypeInfo(attrib).Type?.Name == "GenerateTestsAttribute")
             {
-                case "ActualHeight":
-                case "ActualWidth":
-                    return "Assert.IsTrue(actual > 0);";
-                case "Width":
-                case "Height":
-                    return "Assert.IsTrue(double.IsNaN(actual) || actual >= 0);";
-                case "VerticalAlignment":
-                case "HorizontalAlignment":
-                    
-                default:
-                    return $"Assert.AreEqual(default({returnType}), actual);";
-            }
-        }
+                TypeOfExpressionSyntax typeArgument = (TypeOfExpressionSyntax)attrib.ArgumentList.Arguments[0].Expression;
+                TypeInfo info = context.SemanticModel.GetTypeInfo(typeArgument.Type);
+                if (info.Type is null) return;
 
-        public class SyntaxReceiver : ISyntaxContextReceiver
-        {
-            public List<TypeInfo> GeneratedTypes { get; } = new();
-
-            public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
-            {
-                if (context.Node is AttributeSyntax attrib
-                    && attrib.ArgumentList?.Arguments.Count >= 1
-                    && context.SemanticModel.GetTypeInfo(attrib).Type?.Name == "GenerateTestsAttribute")
-                {
-                    TypeOfExpressionSyntax typeArgument = (TypeOfExpressionSyntax)attrib.ArgumentList.Arguments[0].Expression;
-                    TypeInfo info = context.SemanticModel.GetTypeInfo(typeArgument.Type);
-                    if (info.Type is null) return;
-
-                    GeneratedTypes.Add(info);
-                }
+                GeneratedTypes.Add(info);
             }
         }
     }

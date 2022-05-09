@@ -119,16 +119,15 @@ using XamlTest.Tests;
 [assembly: GenerateTests(typeof(System.Windows.Controls.Primitives.Track))]
 [assembly: GenerateTests(typeof(System.Windows.Controls.Primitives.UniformGrid))]
 
-namespace XamlTest.Tests
-{
-    [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-    public class GenerateTestsAttribute : Attribute
-    {
-        public Type ControlType { get; set; }
+namespace XamlTest.Tests;
 
-        public GenerateTestsAttribute(Type controlType)
-        {
-            ControlType = controlType;
-        }
+[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
+public class GenerateTestsAttribute : Attribute
+{
+    public Type ControlType { get; set; }
+
+    public GenerateTestsAttribute(Type controlType)
+    {
+        ControlType = controlType;
     }
 }

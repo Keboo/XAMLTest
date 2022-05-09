@@ -1,17 +1,16 @@
 ﻿using System;
 
-namespace XamlTest.Input
+namespace XamlTest.Input;
+
+internal class TextInput : IInput
 {
-    internal class TextInput : IInput
+    public string Text { get; }
+
+    public TextInput(string text)
     {
-        public string Text { get; }
-
-        public TextInput(string text)
-        {
-            Text = text ?? throw new ArgumentNullException(nameof(text));
-        }
-
-        public override string ToString()
-            => $"Text:{Text}";
+        Text = text ?? throw new ArgumentNullException(nameof(text));
     }
+
+    public override string ToString()
+        => $"Text:{Text}";
 }
