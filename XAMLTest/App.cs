@@ -83,7 +83,8 @@ public static class App
         {
             NamedPipeChannel channel = new(".", Server.PipePrefix + process.Id, new NamedPipeChannelOptions
             {
-                ConnectionTimeout = (int)(connectionTimeout ?? DefaultConnectionTimeout).TotalMilliseconds
+                ConnectionTimeout = (int)(connectionTimeout ?? DefaultConnectionTimeout).TotalMilliseconds,
+                CurrentUserOnly = true
             });
             Protocol.ProtocolClient client = new(channel);
             if (useDebugger)
@@ -91,7 +92,11 @@ public static class App
                 await VisualStudioAttacher.AttachVisualStudioToProcess(process);
             }
 
-            return new ManagedApp(process, client, logMessage);
+            var app = new ManagedApp(process, client, logMessage);
+
+            await app.GetVersion(waitForReady:true);
+
+            return app;
         }
         throw new XAMLTestException("Failed to start remote app");
     }
