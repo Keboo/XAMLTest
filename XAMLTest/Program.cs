@@ -52,7 +52,7 @@ internal class Program
             };
         }
 
-        IService? service = null;
+        IDisposable? service = null;
 
         application.Startup += ApplicationStartup;
         application.Exit += ApplicationExit;

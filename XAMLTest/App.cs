@@ -11,6 +11,8 @@ namespace XamlTest;
 
 public static class App
 {
+    public static readonly TimeSpan DefaultConnectionTimeout = TimeSpan.FromSeconds(1);
+
     public static IApp StartRemote<TApp>(
         string? xamlTestPath = null,
         Action<string>? logMessage = null)
@@ -22,8 +24,9 @@ public static class App
     public static IApp StartRemote(
         string? remoteApp = null,
         string ? xamlTestPath = null,
-        Action<string>? logMessage = null)
-        => StartRemoteApp(remoteApp, xamlTestPath, logMessage, false).Result;
+        Action<string>? logMessage = null,
+        TimeSpan? connectionTimeout = null)
+        => StartRemoteApp(remoteApp, xamlTestPath, logMessage, false, connectionTimeout).Result;
 
     public static async Task<IApp> StartWithDebugger<TApp>(
         string? xamlTestPath = null,
@@ -36,14 +39,16 @@ public static class App
     public static async Task<IApp> StartWithDebugger(
         string? remoteApp = null,
         string? xamlTestPath = null,
-        Action<string>? logMessage = null)
-        => await StartRemoteApp(remoteApp, xamlTestPath, logMessage, true);
+        Action<string>? logMessage = null,
+        TimeSpan? connectionTimeout = null)
+        => await StartRemoteApp(remoteApp, xamlTestPath, logMessage, true, connectionTimeout);
 
     private static async Task<IApp> StartRemoteApp(
         string? remoteApp,
         string? xamlTestPath,
         Action<string>? logMessage,
-        bool allowDebuggerAttach)
+        bool allowDebuggerAttach,
+        TimeSpan? connectionTimeout)
     {
         xamlTestPath ??= Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".exe");
         xamlTestPath = Path.GetFullPath(xamlTestPath);
@@ -69,11 +74,16 @@ public static class App
             startInfo.ArgumentList.Add($"--debug");
         }
 
+        if (logMessage is not null)
+        {
+            logMessage($"Starting XAML Test: {startInfo.FileName} {string.Join(' ', startInfo.ArgumentList)}");
+        }
+
         if (Process.Start(startInfo) is Process process)
         {
             NamedPipeChannel channel = new(".", Server.PipePrefix + process.Id, new NamedPipeChannelOptions
             {
-                ConnectionTimeout = 1000
+                ConnectionTimeout = (int)(connectionTimeout ?? DefaultConnectionTimeout).TotalMilliseconds
             });
             Protocol.ProtocolClient client = new(channel);
             if (useDebugger)

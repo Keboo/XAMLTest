@@ -5,7 +5,7 @@ using XamlTest.Host;
 
 namespace XamlTest.Internal;
 
-internal class Service : IService
+internal class Service : IDisposable
 {
     private NamedPipeServer Server { get; }
     private bool IsDisposed { get; set; }
