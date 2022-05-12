@@ -15,10 +15,11 @@ public static class App
 
     public static IApp StartRemote<TApp>(
         string? xamlTestPath = null,
-        Action<string>? logMessage = null)
+        Action<string>? logMessage = null, 
+        TimeSpan? connectionTimeout = null)
     {
         string location = typeof(TApp).Assembly.Location;
-        return StartRemote(location, xamlTestPath, logMessage);
+        return StartRemote(location, xamlTestPath, logMessage, connectionTimeout);
     }
 
     public static IApp StartRemote(
@@ -30,10 +31,11 @@ public static class App
 
     public static async Task<IApp> StartWithDebugger<TApp>(
         string? xamlTestPath = null,
-        Action<string>? logMessage = null)
+        Action<string>? logMessage = null,
+        TimeSpan? connectionTimeout = null)
     {
         string location = typeof(TApp).Assembly.Location;
-        return await StartWithDebugger(location, xamlTestPath, logMessage);
+        return await StartWithDebugger(location, xamlTestPath, logMessage, connectionTimeout);
     }
 
     public static async Task<IApp> StartWithDebugger(
