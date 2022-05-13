@@ -657,6 +657,21 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
         return Task.FromResult(reply);
     }
 
+    public override Task<VersionResponse> GetVersion(VersionRequest request, ServerCallContext context)
+    {
+        VersionResponse reply = new();
+        try
+        {
+            reply.XamlTestVersion = "????";
+            reply.AppVersion = "xxxx";
+        }
+        catch (Exception e)
+        {
+            reply.ErrorMessages.Add(e.ToString());
+        }
+        return Task.FromResult(reply);
+    }
+
     private Assembly? CurrentDomain_AssemblyResolve(object? sender, ResolveEventArgs args)
     {
         Assembly? found = LoadedAssemblies.FirstOrDefault(x => x.GetName().FullName == args.Name);

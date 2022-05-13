@@ -64,16 +64,22 @@ internal class App : IApp
         };
         request.AssembliesToLoad.AddRange(assemblies);
         LogMessage?.Invoke($"{nameof(IApp)}.{nameof(Initialize)}(...)");
-
-        if (await Client.InitializeApplicationAsync(request) is { } reply)
+        try
         {
-            if (reply.ErrorMessages.Any())
+            if (await Client.InitializeApplicationAsync(request) is { } reply)
             {
-                throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                if (reply.ErrorMessages.Any())
+                {
+                    throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                }
+                return;
             }
-            return;
+            throw new XAMLTestException("Failed to get a reply");
         }
-        throw new XAMLTestException("Failed to get a reply");
+        catch (RpcException e)
+        {
+            throw new XAMLTestException($"Error communicating with host process", e);
+        }
     }
 
     public async Task<IWindow> CreateWindow(string windowXaml)
@@ -174,8 +180,8 @@ internal class App : IApp
 
     public async Task<IImage> GetScreenshot()
     {
-        ImageQuery imageQuery = new();
         LogMessage?.Invoke($"{nameof(GetScreenshot)}()");
+        ImageQuery imageQuery = new();
         try
         {
             if (await Client.GetScreenshotAsync(imageQuery) is { } reply)
@@ -216,4 +222,27 @@ internal class App : IApp
 
     public Task<IReadOnlyList<ISerializer>> GetSerializers()
         => Task.FromResult<IReadOnlyList<ISerializer>>(Serializer.Serializers.AsReadOnly());
+
+    public async Task GetVersion(bool waitForReady = false)
+    {
+        LogMessage?.Invoke($"{nameof(GetVersion)}()");
+        VersionRequest versionRequest = new();
+        try
+        {
+            var callOptions = new CallOptions().WithWaitForReady(waitForReady);
+            if (await Client.GetVersionAsync(versionRequest) is { } reply)
+            {
+                if (reply.ErrorMessages.Any())
+                {
+                    throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                }
+                return;
+            }
+            throw new XAMLTestException("Failed to receive a reply");
+        }
+        catch (RpcException e)
+        {
+            throw new XAMLTestException($"Error communicating with host process", e);
+        }
+    }
 }

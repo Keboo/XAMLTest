@@ -63,6 +63,9 @@ service Protocol {
 
   //Invoke remote callback
   rpc RemoteInvocation(RemoteInvocationRequest) returns (RemoteInvocationResponse);
+
+  //Simple heartbeat
+  rpc GetVersion(VersionRequest) returns (VersionResponse);
 }
 
 message GetWindowsQuery {
@@ -282,4 +285,13 @@ message RemoteInvocationRequest {
 
 message RemoteInvocationResponse {
   repeated string errorMessages = 1;
+}
+
+message VersionRequest {
+}
+
+message VersionResponse {
+  repeated string errorMessages = 1;
+  string xamlTestVersion = 2;
+  string appVersion = 3;
 }

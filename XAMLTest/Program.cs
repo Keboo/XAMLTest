@@ -52,7 +52,7 @@ internal class Program
             };
         }
 
-        IService? service = null;
+        IDisposable? service = null;
 
         application.Startup += ApplicationStartup;
         application.Exit += ApplicationExit;
@@ -104,7 +104,7 @@ internal class Program
         var targetAssembly = Assembly.LoadFile(assemblyPath);
 
         var appType = targetAssembly.GetTypes().Where(x => x.IsSubclassOf(typeof(Application))).Single();
-        var application = (Application)appType.GetConstructors().Single().Invoke(new object[0]);
+        var application = (Application)appType.GetConstructors().Single().Invoke(Array.Empty<object>());
 
         if (appType.GetMethod("InitializeComponent") is { } initMethod)
         {

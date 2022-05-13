@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Windows;
 using XamlTest.Internal;
 
@@ -8,7 +9,7 @@ public static class Server
 {
     internal const string PipePrefix = nameof(DependencyObjectTracker) + "ComminicationPipe";
 
-    internal static IService Start(Application? app = null)
+    internal static IDisposable Start(Application? app = null)
     {
         var process = Process.GetCurrentProcess();
         Service service = new(process.Id.ToString(), app ?? Application.Current);

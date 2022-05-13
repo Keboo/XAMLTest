@@ -17,7 +17,7 @@ public class AppTests
     [TestMethod]
     public async Task OnStartRemote_LaunchesRemoteApp()
     {
-        await using var app = App.StartRemote<XAMLTest.TestApp.App>();
+        await using var app = await App.StartWithDebugger<XAMLTest.TestApp.App>();
         IWindow? window = await app.GetMainWindow();
         Assert.AreEqual("Test App Window", await window!.GetTitle());
     }
@@ -25,7 +25,7 @@ public class AppTests
     [TestMethod]
     public async Task CanGenerateTypedElement_ForCustomControlInRemoteApp()
     {
-        await using var app = App.StartRemote<XAMLTest.TestApp.App>();
+        await using var app = await App.StartWithDebugger<XAMLTest.TestApp.App>();
         IWindow? window = await app.GetMainWindow();
         Assert.IsNotNull(window);
 
