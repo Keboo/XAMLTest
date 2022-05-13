@@ -3,6 +3,7 @@ using Grpc.Core;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -662,8 +663,11 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
         VersionResponse reply = new();
         try
         {
-            reply.XamlTestVersion = "????";
-            reply.AppVersion = "xxxx";
+            var fvi = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
+            reply.XamlTestVersion = fvi.FileVersion;
+
+            fvi = FileVersionInfo.GetVersionInfo(Application.GetType().Assembly.Location);
+            reply.AppVersion = fvi.FileVersion;
         }
         catch (Exception e)
         {

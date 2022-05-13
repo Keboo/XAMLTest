@@ -4,7 +4,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Windows.Media;
 using XamlTest.Transport;
 
 namespace XamlTest.Tests;
@@ -21,7 +20,7 @@ public class SerializerTests
     [ClassInitialize]
     public static async Task ClassInitialize(TestContext context)
     {
-        App = XamlTest.App.StartRemote(logMessage: msg => context.WriteLine(msg));
+        App = await XamlTest.App.StartRemote(logMessage: msg => context.WriteLine(msg));
 
         await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
 

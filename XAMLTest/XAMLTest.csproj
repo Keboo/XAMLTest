@@ -8,6 +8,7 @@
     <RootNamespace>XamlTest</RootNamespace>
     <IncludePackageReferencesDuringMarkupCompilation>true</IncludePackageReferencesDuringMarkupCompilation>
     <ApplicationIcon>..\Images\Icon.ico</ApplicationIcon>
+    <Version>1.2.3</Version>
   </PropertyGroup>
 
   <ItemGroup>
