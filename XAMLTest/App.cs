@@ -96,7 +96,7 @@ public static class App
 
             var app = new ManagedApp(process, client, logMessage);
 
-            await app.GetVersion(waitForReady:true);
+            await Wait.For(() => app.GetVersion(true));
 
             return app;
         }

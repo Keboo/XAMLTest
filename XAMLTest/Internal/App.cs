@@ -236,6 +236,7 @@ internal class App : IApp
                 {
                     throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
                 }
+                return;
             }
             throw new XAMLTestException("Failed to receive a reply");
         }
