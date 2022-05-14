@@ -1,9 +1,8 @@
-﻿using System;
+﻿using GrpcDotNetNamedPipes;
+using System;
 using System.Diagnostics;
 using System.IO;
-using System.Reflection;
 using System.Threading.Tasks;
-using GrpcDotNetNamedPipes;
 using XamlTest.Host;
 using XamlTest.Internal;
 
@@ -11,70 +10,50 @@ namespace XamlTest;
 
 public static class App
 {
-    public static readonly TimeSpan DefaultConnectionTimeout = TimeSpan.FromSeconds(1);
-
-    public static IApp StartRemote<TApp>(
-        string? xamlTestPath = null,
-        Action<string>? logMessage = null, 
-        TimeSpan? connectionTimeout = null)
+    public static Task<IApp> StartRemote<TApp>(Action<string>? logMessage = null)
     {
-        string location = typeof(TApp).Assembly.Location;
-        return StartRemote(location, xamlTestPath, logMessage, connectionTimeout);
-    }
-
-    public static IApp StartRemote(
-        string? remoteApp = null,
-        string ? xamlTestPath = null,
-        Action<string>? logMessage = null,
-        TimeSpan? connectionTimeout = null)
-        => StartRemoteApp(remoteApp, xamlTestPath, logMessage, false, connectionTimeout).Result;
-
-    public static async Task<IApp> StartWithDebugger<TApp>(
-        string? xamlTestPath = null,
-        Action<string>? logMessage = null,
-        TimeSpan? connectionTimeout = null)
-    {
-        string location = typeof(TApp).Assembly.Location;
-        return await StartWithDebugger(location, xamlTestPath, logMessage, connectionTimeout);
-    }
-
-    public static async Task<IApp> StartWithDebugger(
-        string? remoteApp = null,
-        string? xamlTestPath = null,
-        Action<string>? logMessage = null,
-        TimeSpan? connectionTimeout = null)
-        => await StartRemoteApp(remoteApp, xamlTestPath, logMessage, true, connectionTimeout);
-
-    private static async Task<IApp> StartRemoteApp(
-        string? remoteApp,
-        string? xamlTestPath,
-        Action<string>? logMessage,
-        bool allowDebuggerAttach,
-        TimeSpan? connectionTimeout)
-    {
-        xamlTestPath ??= Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".exe");
-        xamlTestPath = Path.GetFullPath(xamlTestPath);
-        if (!File.Exists(xamlTestPath))
+        AppOptions options = new()
         {
-            throw new XAMLTestException($"Could not find test app '{xamlTestPath}'");
+            LogMessage = logMessage
+        };
+        options.WithRemoteApp<TApp>();
+        return StartRemote(options);
+    }
+
+    public static Task<IApp> StartRemote(Action<string>? logMessage = null)
+    {
+        AppOptions options = new()
+        {
+            LogMessage = logMessage
+        };
+        return StartRemote(options);
+    }
+
+    public static async Task<IApp> StartRemote(AppOptions options)
+    {
+        if (!File.Exists(options.XamlTestPath))
+        {
+            throw new XAMLTestException($"Could not find test app '{options.XamlTestPath}'");
         }
 
-        ProcessStartInfo startInfo = new(xamlTestPath)
+        ProcessStartInfo startInfo = new(options.XamlTestPath)
         {
-            WorkingDirectory = Path.GetDirectoryName(xamlTestPath) + Path.DirectorySeparatorChar,
+            WorkingDirectory = Path.GetDirectoryName(options.XamlTestPath) + Path.DirectorySeparatorChar,
             UseShellExecute = true
         };
         startInfo.ArgumentList.Add($"{Process.GetCurrentProcess().Id}");
-        if (!string.IsNullOrWhiteSpace(remoteApp))
+        if (!string.IsNullOrWhiteSpace(options.RemoteAppPath))
         {
             startInfo.ArgumentList.Add("--application-path");
-            startInfo.ArgumentList.Add(remoteApp);
+            startInfo.ArgumentList.Add(options.RemoteAppPath);
         }
-        bool useDebugger = allowDebuggerAttach && Debugger.IsAttached;
+        bool useDebugger = options.AllowVisualStudioDebuggerAttach && Debugger.IsAttached;
         if (useDebugger)
         {
             startInfo.ArgumentList.Add($"--debug");
         }
+
+        var logMessage = options.LogMessage;
 
         if (logMessage is not null)
         {
@@ -85,7 +64,7 @@ public static class App
         {
             NamedPipeChannel channel = new(".", Server.PipePrefix + process.Id, new NamedPipeChannelOptions
             {
-                ConnectionTimeout = (int)(connectionTimeout ?? DefaultConnectionTimeout).TotalMilliseconds,
+                ConnectionTimeout = (int)options.ConnectionTimeout.TotalMilliseconds,
                 CurrentUserOnly = true
             });
             Protocol.ProtocolClient client = new(channel);
@@ -94,10 +73,13 @@ public static class App
                 await VisualStudioAttacher.AttachVisualStudioToProcess(process);
             }
 
-            var app = new ManagedApp(process, client, logMessage);
+            var app = new ManagedApp(process, client, options.LogMessage);
 
-            await Wait.For(() => app.GetVersion(true));
-
+            IVersion version = await Wait.For(() => app.GetVersion(true));
+            if (logMessage is not null)
+            {
+                logMessage($"XAML Test v{version.XamlTestVersion}, App Version v{version.AppVersion}");
+            }
             return app;
         }
         throw new XAMLTestException("Failed to start remote app");

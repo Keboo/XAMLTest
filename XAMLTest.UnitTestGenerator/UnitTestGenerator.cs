@@ -65,7 +65,7 @@ namespace XamlTest.Tests.Generated
         public static async Task ClassInitialize(TestContext context)
         {{
             OnClassInitialize();
-            App = XamlTest.App.StartRemote(logMessage: msg => context.WriteLine(msg));
+            App = await XamlTest.App.StartRemote(logMessage: msg => context.WriteLine(msg));
 
             await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
 

@@ -6,6 +6,7 @@
     <UseWPF>true</UseWPF>
     <IsPackable>false</IsPackable>
     <DeterministicSourcePaths Condition="'$(EnableSourceLink)' == ''">false</DeterministicSourcePaths>
+    <Version>3.2.1</Version>
   </PropertyGroup>
 
   <ItemGroup>

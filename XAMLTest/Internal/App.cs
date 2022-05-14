@@ -223,7 +223,7 @@ internal class App : IApp
     public Task<IReadOnlyList<ISerializer>> GetSerializers()
         => Task.FromResult<IReadOnlyList<ISerializer>>(Serializer.Serializers.AsReadOnly());
 
-    public async Task GetVersion(bool waitForReady = false)
+    public async Task<IVersion> GetVersion(bool waitForReady = false)
     {
         LogMessage?.Invoke($"{nameof(GetVersion)}()");
         VersionRequest versionRequest = new();
@@ -236,7 +236,7 @@ internal class App : IApp
                 {
                     throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
                 }
-                return;
+                return new Version(reply.AppVersion, reply.XamlTestVersion);
             }
             throw new XAMLTestException("Failed to receive a reply");
         }

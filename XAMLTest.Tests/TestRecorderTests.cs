@@ -81,12 +81,10 @@ public class TestRecorderTests
     [TestMethod]
     public async Task TestRecorder_WithInvalidXAML_DoesNotRethrow()
     {
-        await using var app = App.StartRemote();
-        await using (TestRecorder testRecorder = new(app))
-        {
-            await app.InitializeWithDefaults();
-            var ex = await Assert.ThrowsExceptionAsync<XAMLTestException>(async () => await app.CreateWindowWithContent("<InvalidContent />"));
-        }
+        await using var app = await App.StartRemote();
+        await using TestRecorder testRecorder = new(app);
+        await app.InitializeWithDefaults();
+        var ex = await Assert.ThrowsExceptionAsync<XAMLTestException>(async () => await app.CreateWindowWithContent("<InvalidContent />"));
     }
 
     [TestMethod]

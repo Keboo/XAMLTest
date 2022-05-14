@@ -18,7 +18,7 @@ public class GetEffectiveBackgroundTests
     [ClassInitialize]
     public static async Task ClassInitialize(TestContext context)
     {
-        App = XamlTest.App.StartRemote(logMessage: msg => context.WriteLine(msg));
+        App = await XamlTest.App.StartRemote(logMessage: msg => context.WriteLine(msg));
 
         await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
 

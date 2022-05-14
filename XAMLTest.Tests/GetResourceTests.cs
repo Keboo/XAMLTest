@@ -22,7 +22,7 @@ public class GetResourceTests
     [ClassInitialize]
     public static async Task ClassInitialize(TestContext context)
     {
-        App = XamlTest.App.StartRemote(logMessage: msg => context.WriteLine(msg));
+        App = await XamlTest.App.StartRemote(logMessage: msg => context.WriteLine(msg));
 
         await App.InitializeWithResources(@"
 <Color x:Key=""TestColor"">Red</Color>
