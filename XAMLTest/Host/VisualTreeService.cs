@@ -614,9 +614,9 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
         return reply;
     }
 
-    public override Task<ShutdownResponse> Shutdown(ShutdownRequest request, ServerCallContext context)
+    public override Task<ShutdownResult> Shutdown(ShutdownRequest request, ServerCallContext context)
     {
-        ShutdownResponse reply = new();
+        ShutdownResult reply = new();
         try
         {
             _ = Application.Dispatcher.InvokeAsync(() =>
@@ -631,9 +631,9 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
         return Task.FromResult(reply);
     }
 
-    public override Task<SerializerResponse> RegisterSerializer(SerializerRequest request, ServerCallContext context)
+    public override Task<SerializerResult> RegisterSerializer(SerializerRequest request, ServerCallContext context)
     {
-        SerializerResponse reply = new();
+        SerializerResult reply = new();
         try
         {
             if (string.IsNullOrWhiteSpace(request.SerializerType))
@@ -658,9 +658,9 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
         return Task.FromResult(reply);
     }
 
-    public override Task<VersionResponse> GetVersion(VersionRequest request, ServerCallContext context)
+    public override Task<VersionResult> GetVersion(VersionRequest request, ServerCallContext context)
     {
-        VersionResponse reply = new();
+        VersionResult reply = new();
         try
         {
             var fvi = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
@@ -674,6 +674,42 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
             reply.ErrorMessages.Add(e.ToString());
         }
         return Task.FromResult(reply);
+    }
+
+    public override async Task<HighlightResult> HighlightElement(HighlightRequest request, ServerCallContext context)
+    {
+        HighlightResult reply = new();
+        await Application.Dispatcher.Invoke(async () =>
+        {
+            DependencyObject? dependencyObject = GetCachedElement<DependencyObject>(request.ElementId);
+            if (dependencyObject is null)
+            {
+                reply.ErrorMessages.Add("Could not find element");
+                return;
+            }
+
+            if (dependencyObject is not UIElement uiElement)
+            {
+                reply.ErrorMessages.Add($"Element {dependencyObject.GetType().FullName} is not a {typeof(UIElement).FullName}");
+                return;
+            }
+
+            var adornerLayer = AdornerLayer.GetAdornerLayer(uiElement);
+
+            if (adornerLayer is null)
+            {
+                reply.ErrorMessages.Add("Could not find adnorner layer");
+                return;
+            }
+
+            var selectionAdorner = new SelectionAdorner(uiElement)
+            {
+                AdornerLayer = adornerLayer
+            };
+
+            adornerLayer.Add(selectionAdorner);
+        });
+        return reply;
     }
 
     private Assembly? CurrentDomain_AssemblyResolve(object? sender, ResolveEventArgs args)

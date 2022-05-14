@@ -504,6 +504,21 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
             }
             return;
         }
+    }
 
+    public async Task Highlight()
+    {
+        var request = new HighlightRequest()
+        {
+            ElementId = Id
+        };
+        if (await Client.HighlightElementAsync(request) is { } reply)
+        {
+            if (reply.ErrorMessages.Any())
+            {
+                throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+            }
+            return;
+        }
     }
 }
