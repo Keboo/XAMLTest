@@ -87,14 +87,18 @@ partial class VisualTreeService
                                     Position position = Position.Center;
                                     if (!string.IsNullOrEmpty(mouseData.Value))
                                     {
-                                        Enum.TryParse(mouseData.Value, out position);
+                                        _ = Enum.TryParse(mouseData.Value, out position);
                                     }
                                     Point location = position switch
                                     {
                                         Position.TopLeft => coordinates.TopLeft,
+                                        Position.TopCenter => new Point(coordinates.Center().X, coordinates.Top),
                                         Position.TopRight => coordinates.TopRight,
+                                        Position.RightCenter => new Point(coordinates.Right, coordinates.Center().Y),
                                         Position.BottomRight => coordinates.BottomRight,
+                                        Position.BottomCenter => new Point(coordinates.Center().X, coordinates.Bottom),
                                         Position.BottomLeft => coordinates.BottomLeft,
+                                        Position.LeftCenter => new Point(coordinates.Left, coordinates.Center().Y),
                                         _ => coordinates.Center()
                                     };
                                     Input.MouseInput.MoveCursor(location);
