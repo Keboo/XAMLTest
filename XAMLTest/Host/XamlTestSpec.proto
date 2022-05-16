@@ -280,10 +280,10 @@ message EventInvocationsResult {
 }
 
 message RemoteInvocationRequest {
-    string elementId = 1;
-    string methodContainerType = 2;
-    string methodName = 3;
-    string assembly = 4;
+  string elementId = 1;
+  string methodContainerType = 2;
+  string methodName = 3;
+  string assembly = 4;
 }
 
 message RemoteInvocationResult {
@@ -301,6 +301,10 @@ message VersionResult {
 
 message HighlightRequest {
   string elementId = 1;
+  string borderBrush = 2;
+  double borderThickness = 3;
+  string overlayBrush = 4;
+  bool isVisible = 5;
 }
 
 message HighlightResult {

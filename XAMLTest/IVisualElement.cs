@@ -84,5 +84,9 @@ public interface IVisualElement : IEquatable<IVisualElement>
     /// <returns>The final position of the mouse cursor in screen coordinates.</returns>
     Task<Point> SendInput(MouseInput mouseInput);
 
-    Task Highlight();
+    /// <summary>
+    /// Applys highlighting to the control.
+    /// </summary>
+    /// <returns></returns>
+    Task Highlight(HighlightConfig highlightConfig);
 }

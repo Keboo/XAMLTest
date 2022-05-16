@@ -39,4 +39,13 @@ internal class Serializer
         }
         return null;
     }
+
+    public T? Deserialize<T>(string? value)
+    {
+        if (value is not null)
+        {
+            return (T?)Deserialize(typeof(T), value);
+        }
+        return default;
+    }
 }

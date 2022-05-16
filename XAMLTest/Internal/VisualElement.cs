@@ -506,11 +506,20 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
         }
     }
 
-    public async Task Highlight()
+    public async Task Highlight(HighlightConfig highlightConfig)
     {
+        if (highlightConfig is null)
+        {
+            throw new ArgumentNullException(nameof(highlightConfig));
+        }
+
         var request = new HighlightRequest()
         {
-            ElementId = Id
+            ElementId = Id,
+            BorderBrush = Serializer.Serialize(typeof(Brush), highlightConfig.BorderBrush),
+            BorderThickness = highlightConfig.BorderThickness,
+            OverlayBrush = Serializer.Serialize(typeof(Brush), highlightConfig.OverlayBrush),
+            IsVisible = highlightConfig.IsVisible
         };
         if (await Client.HighlightElementAsync(request) is { } reply)
         {

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
@@ -17,11 +15,11 @@ internal class SelectionAdorner : Adorner, IDisposable
 
     public SelectionAdorner(UIElement adornedElement)
         : base(adornedElement)
-    {
-        
-    }
+    { }
 
-    public Brush Brush { get; set; } = new SolidColorBrush(Colors.Red);
+    public Brush? BorderBrush { get; set; }
+    public double? BorderThickness { get; set; }
+    public Brush? OverlayBrush { get; set; }
 
     public AdornerLayer? AdornerLayer { get; set; }
 
@@ -31,10 +29,14 @@ internal class SelectionAdorner : Adorner, IDisposable
         {
             return;
         }
+        Pen? pen = null;
+        if (BorderBrush is { } borderBrush && 
+            BorderThickness is { } borderThickness)
+        {
+            pen = new Pen(borderBrush, borderThickness);
+        }
 
-        var pen = new Pen(Brush, 5);
-
-        drawingContext.DrawRectangle(null, pen, new Rect(0, 0, ActualWidth, ActualHeight));
+        drawingContext.DrawRectangle(OverlayBrush, pen, new Rect(0, 0, ActualWidth, ActualHeight));
     }
 
     public void Dispose()
