@@ -217,115 +217,6 @@ public class VisualElementTests
     }
 
     [TestMethod]
-    public async Task OnGetElement_ItRetrievesItemsByType()
-    {
-        await Window.SetXamlContent(
-            @"<ListBox MinWidth=""200"">
-    <ListBoxItem Content=""Item1"" />
-    <ListBoxItem Content=""Item2"" />
-    <ListBoxItem Content=""Item3"" />
-    <ListBoxItem Content=""Item4"" />
-</ListBox>");
-
-        IVisualElement<ListBoxItem> element = await Window.GetElement<ListBoxItem>("/ListBoxItem");
-
-        Assert.AreEqual("Item1", await element.GetContent());
-    }
-
-    [TestMethod]
-    [Description("Issue 27")]
-    public async Task OnGetElement_ItRetrievesItemsByBaseType()
-    {
-        await Window.SetXamlContent(@"<TextBox x:Name=""TestName""/>");
-
-        IVisualElement<TextBoxBase> element = await Window.GetElement<TextBoxBase>("/TextBoxBase");
-
-        Assert.AreEqual("TestName", await element.GetName());
-    }
-
-    [TestMethod]
-    public async Task OnGetElement_ItRetrievesNestedItemsByType()
-    {
-        await Window.SetXamlContent(@"
-<Grid x:Name=""Parent"">
-    <Grid x:Name=""Child"">
-        <TextBlock />
-    </Grid>
-</Grid>
-");
-        IVisualElement child = await Window.GetElement("Child");
-
-        IVisualElement nestedElement = await Window.GetElement("/Grid/Grid");
-
-        Assert.AreEqual(child, nestedElement);
-    }
-
-    [TestMethod]
-    public async Task OnGetElement_ItRetrievesItemsByTypeAndIndex()
-    {
-        await Window.SetXamlContent(
-            @"<ListBox MinWidth=""200"">
-    <ListBoxItem Content=""Item1"" />
-    <ListBoxItem Content=""Item2"" />
-    <ListBoxItem Content=""Item3"" />
-    <ListBoxItem Content=""Item4"" />
-</ListBox>");
-        IVisualElement<ListBoxItem> element = await Window.GetElement<ListBoxItem>("/ListBoxItem[2]");
-
-        Assert.AreEqual("Item3", await element.GetContent());
-    }
-
-    [TestMethod]
-    public async Task OnGetElement_ItRetrievesItemsByProperty()
-    {
-        await Window.SetXamlContent(@"
-<Border>
-  <TextBlock Text=""Text"" />
-</Border>");
-
-        IVisualElement<TextBlock> element = await Window.GetElement<TextBlock>("/Border.Child/TextBlock");
-
-        Assert.AreEqual("Text", await element.GetText());
-    }
-
-    [TestMethod]
-    public async Task OnGetElement_ItRetrievesItemsByName()
-    {
-        await Window.SetXamlContent(@"
-<Grid>
-  <TextBox x:Name=""MyTextBox"" Text=""Text"" />
-</Grid>");
-
-        IVisualElement<TextBox> element = await Window.GetElement<TextBox>("/Grid~MyTextBox");
-
-        Assert.AreEqual("Text", await element.GetText());
-    }
-
-    [TestMethod]
-    public async Task OnGetElement_ItRetrieveElementFromAdornerLayer()
-    {
-        IWindow window = await App.CreateWindowWithUserControl<TextBox_ValidationError>();
-        IVisualElement<TextBox> textBox = await window.GetElement<TextBox>("/TextBox");
-
-        IVisualElement<TextBlock> validationMessage = await textBox.GetElement<TextBlock>("ErrorMessageText");
-
-        Assert.IsTrue(await validationMessage.GetIsVisible());
-    }
-
-    [TestMethod]
-    public async Task OnGetElement_ItRetrievesElementByAutomationIdValue()
-    {
-        await Window.SetXamlContent(@"
-<Grid>
-  <TextBox x:Name=""MyTextBox"" Text=""Text"" AutomationProperties.AutomationId=""TextBoxId""/>
-</Grid>");
-
-        IVisualElement<TextBox> element = await Window.GetElement<TextBox>("[AutomationProperties.AutomationId=\"TextBoxId\"]");
-
-        Assert.AreEqual("MyTextBox", await element.GetName());
-    }
-
-    [TestMethod]
     public async Task OnMoveKeyboardFocus_ItReceivesKeyboardFocus()
     {
         await Window.SetXamlContent(@"
@@ -379,48 +270,6 @@ public class VisualElementTests
     }
 
     [TestMethod]
-    public async Task OnGetTypedElement_GetsTypedElement()
-    {
-        // Arrange
-        await using TestRecorder recorder = new(App);
-
-        await Window.SetXamlContent(@"
-<Grid>
-  <Button x:Name=""MyButton"" IsDefault=""True"" VerticalAlignment=""Center"" HorizontalAlignment=""Center"" />
-</Grid>");
-
-        //Act
-        IVisualElement<Button> button = await Window.GetElement<Button>("MyButton");
-        //Assert
-        Assert.IsNotNull(button);
-
-        Assert.IsTrue(await button.GetActualWidth() > 0);
-        Assert.IsTrue(await button.GetIsDefault());
-        Assert.IsFalse(await button.GetIsPressed());
-        recorder.Success();
-    }
-
-    [TestMethod]
-    public async Task OnGetTypedElement_GetsTypedElementByBaseType()
-    {
-        // Arrange
-        await using TestRecorder recorder = new(App);
-
-        await Window.SetXamlContent(@"
-<Grid>
-  <Button x:Name=""MyButton"" IsDefault=""True"" VerticalAlignment=""Center"" HorizontalAlignment=""Center"" />
-</Grid>");
-
-        //Act
-        IVisualElement<ButtonBase> button = await Window.GetElement<ButtonBase>("MyButton");
-
-        //Assert
-        Assert.IsNotNull(button);
-        Assert.IsTrue(await button.GetActualWidth() > 0);
-        recorder.Success();
-    }
-
-    [TestMethod]
     public async Task OnGetProperty_WhenPropertyIsDependencyObject_GetVisualElement()
     {
         // Arrange
@@ -440,40 +289,6 @@ public class VisualElementTests
         //Assert
         Assert.IsNotNull(contextMenu);
         Assert.AreEqual("TestContextMenu", await contextMenu.GetName());
-        recorder.Success();
-    }
-
-    [TestMethod]
-    public async Task OnGetElement_WithNonGenericReference_CanCastToGeneric()
-    {
-        // Arrange
-        await using TestRecorder recorder = new(App);
-
-        await Window.SetXamlContent(@"<StackPanel x:Name=""Panel"" />");
-        IVisualElement panel = await Window.GetElement("Panel");
-
-        //Act
-        IVisualElement<StackPanel> stackPanel = panel.As<StackPanel>();
-
-        //Assert
-        Assert.AreEqual("Panel", await stackPanel.GetName());
-        recorder.Success();
-    }
-
-    [TestMethod]
-    public async Task OnGetElement_WithNonGenericReference_CanCastToGenericBaseType()
-    {
-        // Arrange
-        await using TestRecorder recorder = new(App);
-
-        await Window.SetXamlContent(@"<StackPanel x:Name=""Panel"" />");
-        IVisualElement panel = await Window.GetElement("Panel");
-
-        //Act
-        IVisualElement<FrameworkElement> frameworkElement = panel.As<FrameworkElement>();
-
-        //Assert
-        Assert.AreEqual("Panel", await frameworkElement.GetName());
         recorder.Success();
     }
 
