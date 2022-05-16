@@ -14,13 +14,23 @@ public sealed class HighlightConfig
     public double BorderThickness { get; set; }
     public Brush? OverlayBrush { get; set; }
 
-    public static HighlightConfig Default { get; } = new()
+    static HighlightConfig()
     {
-        IsVisible = true,
-        BorderBrush = new SolidColorBrush(DefaultBorderColor),
-        BorderThickness = DefaultBorderWidth,
-        OverlayBrush = new SolidColorBrush(DefaultOverlayColor)
-    };
+        Brush borderBrush = new SolidColorBrush(DefaultBorderColor);
+        borderBrush.Freeze();
+        Brush overlayBrush = new SolidColorBrush(DefaultOverlayColor);
+        overlayBrush.Freeze();
+
+        Default = new()
+        {
+            IsVisible = true,
+            BorderBrush = borderBrush,
+            BorderThickness = DefaultBorderWidth,
+            OverlayBrush = overlayBrush
+        };
+    }
+
+    public static HighlightConfig Default { get; }
 
     public static HighlightConfig None { get; } = new()
     {
