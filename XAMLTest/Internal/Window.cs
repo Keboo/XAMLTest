@@ -13,8 +13,8 @@ internal class Window : VisualElement<System.Windows.Window>, IWindow
 
     public bool Equals([AllowNull] IWindow other)
         => base.Equals(other);
-    protected override ElementQuery GetFindElementQuery(string query)
-        => new ElementQuery
+    protected override Host.ElementQuery GetFindElementQuery(string query)
+        => new Host.ElementQuery
         {
             WindowId = Id,
             Query = query

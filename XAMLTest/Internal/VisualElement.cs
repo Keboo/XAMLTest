@@ -53,7 +53,7 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
 
     private async Task<IVisualElement> GetElement(string query, Type? desiredType)
     {
-        ElementQuery elementQuery = GetFindElementQuery(query);
+        Host.ElementQuery elementQuery = GetFindElementQuery(query);
         LogMessage?.Invoke($"{nameof(GetElement)}({query})");
         if (await Client.GetElementAsync(elementQuery) is { } reply)
         {
@@ -391,8 +391,8 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
         throw new XAMLTestException("Failed to receive a reply");
     }
 
-    protected virtual ElementQuery GetFindElementQuery(string query)
-        => new ElementQuery
+    protected virtual Host.ElementQuery GetFindElementQuery(string query)
+        => new Host.ElementQuery
         {
             ParentId = Id,
             Query = query
