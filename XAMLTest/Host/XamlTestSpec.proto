@@ -23,7 +23,7 @@ service Protocol {
   rpc MoveKeyboardFocus (KeyboardFocusRequest) returns (KeyboardFocusResult);
 
   //Simulate keyboard input
-  rpc SendInput (InputRequest) returns (InputResponse);
+  rpc SendInput (InputRequest) returns (InputResult);
 
   // Returns the effective background color, by attempting to look at the backgrounds of parent elements
   rpc GetEffectiveBackground (EffectiveBackgroundQuery) returns (EffectiveBackgroundResult);
@@ -47,25 +47,28 @@ service Protocol {
   rpc GetScreenshot (ImageQuery) returns (ImageResult);
 
   //Request an application shutdown
-  rpc Shutdown (ShutdownRequest) returns (ShutdownResponse);
+  rpc Shutdown (ShutdownRequest) returns (ShutdownResult);
 
   //Register a new serializer
-  rpc RegisterSerializer (SerializerRequest) returns (SerializerResponse);
+  rpc RegisterSerializer (SerializerRequest) returns (SerializerResult);
 
   //Register for an event
-  rpc RegisterForEvent(EventRegistrationRequest) returns (EventRegistrationResponse);
+  rpc RegisterForEvent(EventRegistrationRequest) returns (EventRegistrationResult);
 
   //Un-register for an event
-  rpc UnregisterForEvent(EventUnregisterRequest) returns (EventUnregisterResponse);
+  rpc UnregisterForEvent(EventUnregisterRequest) returns (EventUnregisterResult);
 
   //Get invocations for an event
-  rpc GetEventInvocations(EventInvocationsQuery) returns (EventInvocationsResponse);
+  rpc GetEventInvocations(EventInvocationsQuery) returns (EventInvocationsResult);
 
   //Invoke remote callback
-  rpc RemoteInvocation(RemoteInvocationRequest) returns (RemoteInvocationResponse);
+  rpc RemoteInvocation(RemoteInvocationRequest) returns (RemoteInvocationResult);
 
-  //Simple heartbeat
-  rpc GetVersion(VersionRequest) returns (VersionResponse);
+  //Simple check of versions; useful as a heartbeet
+  rpc GetVersion(VersionRequest) returns (VersionResult);
+
+  //Highlight an element
+  rpc HighlightElement(HighlightRequest) returns (HighlightResult);
 }
 
 message GetWindowsQuery {
@@ -198,7 +201,7 @@ message InputRequest {
   repeated MouseData mouseData = 3;
 }
 
-message InputResponse {
+message InputResult {
   repeated string errorMessages = 1;
   repeated string logMessages = 2;
   int32 cursorX = 3;
@@ -231,7 +234,7 @@ message ShutdownRequest {
   int32 exitCode = 1;
 }
 
-message ShutdownResponse {
+message ShutdownResult {
   repeated string errorMessages = 1;
 }
 
@@ -240,7 +243,7 @@ message SerializerRequest {
   int32 insertIndex = 2;
 }
 
-message SerializerResponse {
+message SerializerResult {
   repeated string errorMessages = 1;
 }
 
@@ -249,7 +252,7 @@ message EventRegistrationRequest {
   string eventName = 2;
 }
 
-message EventRegistrationResponse {
+message EventRegistrationResult {
   repeated string errorMessages = 1;
   string eventId = 2;
 }
@@ -258,7 +261,7 @@ message EventUnregisterRequest {
   string eventId = 1;
 }
 
-message EventUnregisterResponse {
+message EventUnregisterResult {
   repeated string errorMessages = 1;
 }
 
@@ -270,28 +273,40 @@ message EventInvocation {
   repeated string parameters = 1;
 }
 
-message EventInvocationsResponse {
+message EventInvocationsResult {
   repeated string errorMessages = 1;
   string eventId = 2;
   repeated EventInvocation eventInvocations = 3;
 }
 
 message RemoteInvocationRequest {
-    string elementId = 1;
-    string methodContainerType = 2;
-    string methodName = 3;
-    string assembly = 4;
+  string elementId = 1;
+  string methodContainerType = 2;
+  string methodName = 3;
+  string assembly = 4;
 }
 
-message RemoteInvocationResponse {
+message RemoteInvocationResult {
   repeated string errorMessages = 1;
 }
 
 message VersionRequest {
 }
 
-message VersionResponse {
+message VersionResult {
   repeated string errorMessages = 1;
   string xamlTestVersion = 2;
   string appVersion = 3;
+}
+
+message HighlightRequest {
+  string elementId = 1;
+  string borderBrush = 2;
+  double borderThickness = 3;
+  string overlayBrush = 4;
+  bool isVisible = 5;
+}
+
+message HighlightResult {
+  repeated string errorMessages = 1;
 }

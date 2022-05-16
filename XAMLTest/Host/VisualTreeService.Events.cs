@@ -9,9 +9,9 @@ namespace XamlTest.Host;
 
 partial class VisualTreeService
 {
-    public override async Task<EventRegistrationResponse> RegisterForEvent(EventRegistrationRequest request, ServerCallContext context)
+    public override async Task<EventRegistrationResult> RegisterForEvent(EventRegistrationRequest request, ServerCallContext context)
     {
-        EventRegistrationResponse reply = new()
+        EventRegistrationResult reply = new()
         {
             EventId = Guid.NewGuid().ToString()
         };
@@ -32,9 +32,9 @@ partial class VisualTreeService
         return reply;
     }
 
-    public override Task<EventUnregisterResponse> UnregisterForEvent(EventUnregisterRequest request, ServerCallContext context)
+    public override Task<EventUnregisterResult> UnregisterForEvent(EventUnregisterRequest request, ServerCallContext context)
     {
-        EventUnregisterResponse reply = new();
+        EventUnregisterResult reply = new();
         if (!EventRegistrar.Unregister(request.EventId))
         {
             reply.ErrorMessages.Add("Failed to unregister event");
@@ -42,9 +42,9 @@ partial class VisualTreeService
         return Task.FromResult(reply);
     }
 
-    public override Task<EventInvocationsResponse> GetEventInvocations(EventInvocationsQuery request, ServerCallContext context)
+    public override Task<EventInvocationsResult> GetEventInvocations(EventInvocationsQuery request, ServerCallContext context)
     {
-        EventInvocationsResponse reply = new()
+        EventInvocationsResult reply = new()
         {
             EventId = request.EventId,
         };

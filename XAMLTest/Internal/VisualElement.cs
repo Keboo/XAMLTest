@@ -504,6 +504,30 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
             }
             return;
         }
+    }
 
+    public async Task Highlight(HighlightConfig highlightConfig)
+    {
+        if (highlightConfig is null)
+        {
+            throw new ArgumentNullException(nameof(highlightConfig));
+        }
+
+        var request = new HighlightRequest()
+        {
+            ElementId = Id,
+            BorderBrush = Serializer.Serialize(typeof(Brush), highlightConfig.BorderBrush),
+            BorderThickness = highlightConfig.BorderThickness,
+            OverlayBrush = Serializer.Serialize(typeof(Brush), highlightConfig.OverlayBrush),
+            IsVisible = highlightConfig.IsVisible
+        };
+        if (await Client.HighlightElementAsync(request) is { } reply)
+        {
+            if (reply.ErrorMessages.Any())
+            {
+                throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+            }
+            return;
+        }
     }
 }

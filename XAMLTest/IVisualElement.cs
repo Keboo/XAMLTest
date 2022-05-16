@@ -76,10 +76,17 @@ public interface IVisualElement : IEquatable<IVisualElement>
     /// <param name="keyboardInput">The keyboard input commands.</param>
     /// <returns></returns>
     Task SendInput(KeyboardInput keyboardInput);
+
     /// <summary>
     /// Send mouse input commands.
     /// </summary>
     /// <param name="mouseInput">The mouse input commands.</param>
     /// <returns>The final position of the mouse cursor in screen coordinates.</returns>
     Task<Point> SendInput(MouseInput mouseInput);
+
+    /// <summary>
+    /// Applys highlighting to the control.
+    /// </summary>
+    /// <returns></returns>
+    Task Highlight(HighlightConfig highlightConfig);
 }

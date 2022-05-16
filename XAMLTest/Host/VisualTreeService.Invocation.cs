@@ -9,9 +9,9 @@ namespace XamlTest.Host;
 
 partial class VisualTreeService
 {
-    public override async Task<RemoteInvocationResponse> RemoteInvocation(RemoteInvocationRequest request, ServerCallContext context)
+    public override async Task<RemoteInvocationResult> RemoteInvocation(RemoteInvocationRequest request, ServerCallContext context)
     {
-        RemoteInvocationResponse reply = new();
+        RemoteInvocationResult reply = new();
         await Application.Dispatcher.InvokeAsync(() =>
         {
             try

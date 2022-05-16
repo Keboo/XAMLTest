@@ -46,9 +46,9 @@ partial class VisualTreeService
         return reply;
     }
 
-    public override async Task<InputResponse> SendInput(InputRequest request, ServerCallContext context)
+    public override async Task<InputResult> SendInput(InputRequest request, ServerCallContext context)
     {
-        InputResponse reply = new();
+        InputResult reply = new();
         await Application.Dispatcher.Invoke(async () =>
         {
             try

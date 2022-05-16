@@ -614,9 +614,9 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
         return reply;
     }
 
-    public override Task<ShutdownResponse> Shutdown(ShutdownRequest request, ServerCallContext context)
+    public override Task<ShutdownResult> Shutdown(ShutdownRequest request, ServerCallContext context)
     {
-        ShutdownResponse reply = new();
+        ShutdownResult reply = new();
         try
         {
             _ = Application.Dispatcher.InvokeAsync(() =>
@@ -631,9 +631,9 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
         return Task.FromResult(reply);
     }
 
-    public override Task<SerializerResponse> RegisterSerializer(SerializerRequest request, ServerCallContext context)
+    public override Task<SerializerResult> RegisterSerializer(SerializerRequest request, ServerCallContext context)
     {
-        SerializerResponse reply = new();
+        SerializerResult reply = new();
         try
         {
             if (string.IsNullOrWhiteSpace(request.SerializerType))
@@ -658,9 +658,9 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
         return Task.FromResult(reply);
     }
 
-    public override Task<VersionResponse> GetVersion(VersionRequest request, ServerCallContext context)
+    public override Task<VersionResult> GetVersion(VersionRequest request, ServerCallContext context)
     {
-        VersionResponse reply = new();
+        VersionResult reply = new();
         try
         {
             var fvi = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
