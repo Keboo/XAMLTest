@@ -30,6 +30,9 @@ service Protocol {
 
   //Sets a property
   rpc SetProperty (SetPropertyRequest) returns (PropertyResult);
+  
+  //Set a property with XAML content
+  rpc SetXamlProperty (SetXamlPropertyRequest) returns (ElementResult);
 
   //Get resource
   rpc GetResource (ResourceQuery) returns (ResourceResult);
@@ -127,6 +130,19 @@ message SetPropertyRequest {
   string value = 3;
   string valueType = 4;
   string ownerType = 5;
+}
+
+message XamlNamespace {
+  string prefix = 1;
+  string uri = 2;
+}
+
+message SetXamlPropertyRequest {
+  string elementId = 1;
+  string name = 2;
+  string ownerType = 3;
+  string xaml = 4;
+  repeated XamlNamespace namespaces = 5;
 }
 
 message ResourceQuery {

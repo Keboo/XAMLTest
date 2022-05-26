@@ -38,10 +38,8 @@ public class GetEffectiveBackgroundTests
     [TestMethod]
     public async Task OnGetEffectiveBackground_ReturnsFirstOpaqueColor()
     {
-        await Window.SetXamlContent(@"<Border x:Name=""MyBorder"" />");
+        IVisualElement element = await Window.SetXamlContent(@"<Border x:Name=""MyBorder"" />");
         await Window.SetBackgroundColor(Colors.Red);
-
-        IVisualElement element = await Window.GetElement("MyBorder");
 
         Color background = await element.GetEffectiveBackground();
 

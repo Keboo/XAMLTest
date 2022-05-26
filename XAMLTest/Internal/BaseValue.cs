@@ -5,16 +5,17 @@ namespace XamlTest.Internal;
 
 internal abstract class BaseValue : IValue
 {
-    protected Serializer Serializer { get; }
+    protected AppContext Context { get; }
+    protected Serializer Serializer => Context.Serializer;
 
     public object? Value { get; }
     public string? ValueType { get; }
 
-    protected BaseValue(string? valueType, object? value, Serializer serializer)
+    protected BaseValue(string? valueType, object? value, AppContext context)
     {
         ValueType = valueType;
         Value = value;
-        Serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
+        Context = context ?? throw new ArgumentNullException(nameof(context));
     }
 
     [return: MaybeNull]

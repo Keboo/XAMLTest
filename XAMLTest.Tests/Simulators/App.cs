@@ -21,6 +21,9 @@ public class App : IApp
     { }
 
     private static ValueTask Completed { get; } = new();
+
+    public IList<XmlNamespace> DefaultXmlNamespaces => throw new NotImplementedException();
+
     public ValueTask DisposeAsync() => Completed;
 
     public Task<IWindow?> GetMainWindow()

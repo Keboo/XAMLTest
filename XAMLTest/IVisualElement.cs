@@ -56,6 +56,21 @@ public interface IVisualElement : IEquatable<IVisualElement>
     /// <returns></returns>
     Task<IValue> SetProperty(string name, string value, string? valueType, string? ownerType);
 
+    /// <summary>
+    /// Sets the value of a property by loading XAML content.
+    /// </summary>
+    /// <param name="propertyName">The name of the property</param>
+    /// <param name="xaml">The XAML content to load</param>
+    /// <returns>The root XAML element</returns>
+    Task<IVisualElement> SetXamlProperty(string propertyName, XamlSegment xaml);
+    /// <summary>
+    /// Sets the value of a property by loading XAML content.
+    /// </summary>
+    /// <typeparam name="TElement">The root XAML element type</typeparam>
+    /// <param name="propertyName">The name of the property</param>
+    /// <param name="xaml">The XAML content to load</param>
+    /// <returns>The root XAML element</returns>
+    Task<IVisualElement<TElement>> SetXamlProperty<TElement>(string propertyName, XamlSegment xaml);
     Task<IResource> GetResource(string key);
 
     Task<Color> GetEffectiveBackground(IVisualElement? toElement);

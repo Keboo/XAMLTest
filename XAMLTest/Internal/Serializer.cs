@@ -12,6 +12,7 @@ internal class Serializer
     public Serializer()
     {
         //NB: Order matters here. Items earlier in the list take precedence
+        Serializers.Add(new XamlSegmentSerializer());
         Serializers.Add(new BrushSerializer());
         Serializers.Add(new CharSerializer());
         Serializers.Add(new GridSerializer());

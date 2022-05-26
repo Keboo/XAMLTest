@@ -40,11 +40,9 @@ public class GetCoordinatesTests
     [TestMethod]
     public async Task OnGetCoordinate_ReturnsScreenCoordinatesOfElement()
     {
-        await Window.SetXamlContent(@"<Border x:Name=""MyBorder"" 
+        IVisualElement<Border> element = await Window.SetXamlContent<Border>(@"<Border x:Name=""MyBorder"" 
 Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left""/>");
         
-        IVisualElement<Border> element = await Window.GetElement<Border>("MyBorder");
-
         Rect initialCoordinates = await element.GetCoordinates();
         await element.SetWidth(90);
         await element.SetHeight(80);
@@ -60,10 +58,8 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
     [TestMethod]
     public async Task OnGetCoordinate_ReturnsFractionalCoordinatesOfElement()
     {
-        await Window.SetXamlContent(@"<Border x:Name=""MyBorder"" 
+        IVisualElement<Border> element = await Window.SetXamlContent<Border>(@"<Border x:Name=""MyBorder"" 
 Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left""/>");
-        
-        IVisualElement<Border> element = await Window.GetElement<Border>("MyBorder");
 
         Rect initialCoordinates = await element.GetCoordinates();
         await element.SetWidth(30.7);
@@ -80,14 +76,13 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
     [TestMethod]
     public async Task OnGetCoordinate_ReturnsRotatedElementLocation()
     {
-        await Window.SetXamlContent(@"
+        IVisualElement<Border> element = await Window.SetXamlContent<Border>(@"
 <Border x:Name=""MyBorder"" Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"">
     <Border.LayoutTransform>
         <RotateTransform Angle=""90"" />
     </Border.LayoutTransform>
 </Border>
 ");
-        IVisualElement<Border> element = await Window.GetElement<Border>("MyBorder");
 
         Rect coordinates = await element.GetCoordinates();
         Assert.AreEqual(40, Math.Round(coordinates.Width, 5));
