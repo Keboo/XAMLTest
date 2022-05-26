@@ -35,6 +35,22 @@ public class AppTests
     }
 
     [TestMethod]
+    public async Task CanGenerateTypedElement_ForCustomControlInXaml()
+    {
+        await using var app = await App.StartRemote<XAMLTest.TestApp.App>();
+        app.DefaultXmlNamespaces.Add("materialDesign", "http://materialdesigninxaml.net/winfx/xaml/themes");
+        IWindow? window = await app.GetMainWindow();
+        Assert.IsNotNull(window);
+
+        IVisualElement<ColorZone> colorZone = await window.SetXamlContent<ColorZone>(@"
+<materialDesign:ColorZone Mode=""PrimaryLight"">
+    <TextBlock Text=""Test Header"" x:Name=""Header"" HorizontalAlignment=""Center"" Margin=""0,15"" />
+</materialDesign:ColorZone>");
+
+        Assert.AreEqual(ColorZoneMode.PrimaryLight, await colorZone.GetMode());
+    }
+
+    [TestMethod]
     public async Task OnCreateWindow_CanReadTitle()
     {
         await using var app = await App.StartRemote();

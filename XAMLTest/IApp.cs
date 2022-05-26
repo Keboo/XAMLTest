@@ -18,5 +18,7 @@ public interface IApp : IAsyncDisposable, IDisposable
 
     Task RegisterSerializer<T>(int insertIndex = 0)
         where T : ISerializer, new();
-    Task<IReadOnlyList<ISerializer>> GetSerializers(); 
+    Task<IReadOnlyList<ISerializer>> GetSerializers();
+
+    IList<XmlNamespace> DefaultXmlNamespaces { get; }
 }

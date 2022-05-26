@@ -10,11 +10,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Markup;
 using System.Windows.Media;
 using XamlTest.Internal;
@@ -268,16 +266,69 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
 
         object? GetValue(TypeConverter? propertyConverter)
         {
-            if (request.ValueType == Types.XamlString)
-            {
-                return LoadXaml<object>(request.Value);
-            }
             if (propertyConverter != null)
             {
                 return propertyConverter.ConvertFromString(request.Value);
             }
             return request.Value;
         }
+    }
+
+    public override async Task<ElementResult> SetXamlProperty(SetXamlPropertyRequest request, ServerCallContext context)
+    {
+        ElementResult reply = new();
+        await Application.Dispatcher.InvokeAsync(() =>
+        {
+            try
+            {
+                DependencyObject? element = GetCachedElement<DependencyObject>(request.ElementId);
+                if (element is null)
+                {
+                    reply.ErrorMessages.Add("Could not find element");
+                    return;
+                }
+
+                object? value = LoadXaml<object>(request.Xaml, request.Namespaces);
+                if (!string.IsNullOrWhiteSpace(request.OwnerType))
+                {
+                    if (DependencyPropertyHelper.TryGetDependencyProperty(request.Name, request.OwnerType,
+                        out DependencyProperty? dependencyProperty))
+                    {
+                        element.SetValue(dependencyProperty, value);
+
+                        //Re-retrive the value in case the dependency property coalesced it
+                        value = element.GetValue(dependencyProperty);
+                    }
+                    else
+                    {
+                        reply.ErrorMessages.Add($"Could not find dependency property '{request.Name}' on '{request.OwnerType}'");
+                        return;
+                    }
+                }
+                else
+                {
+                    var properties = TypeDescriptor.GetProperties(element);
+                    PropertyDescriptor? foundProperty = properties.Find(request.Name, false);
+                    if (foundProperty is null)
+                    {
+                        reply.ErrorMessages.Add($"Could not find property with name '{request.Name}'");
+                        return;
+                    }
+                    
+                    foundProperty.SetValue(element, value);
+
+                    //Re-retrive the value in case the dependency property coalesced it
+                    value = foundProperty.GetValue(element);
+                }
+
+                reply.Elements.Add(GetElement(value as DependencyObject));
+            }
+            catch (Exception e)
+            {
+                reply.ErrorMessages.Add(e.ToString());
+            }
+        });
+        return reply;
     }
 
     private void SetValue(PropertyResult reply, Type propertyType, object? value)
@@ -414,6 +465,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
                     try
                     {
                         ResourceDictionary appResourceDictionary = LoadXaml<ResourceDictionary>(xaml);
+                        
                         foreach (var mergedDictionary in appResourceDictionary.MergedDictionaries)
                         {
                             Application.Resources.MergedDictionaries.Add(mergedDictionary);
@@ -505,7 +557,6 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
             {
                 reply.ErrorMessages.Add("Failed to load window");
             }
-
         });
 
         return reply;
@@ -635,14 +686,16 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
     }
 
     private static T LoadXaml<T>(string xaml) where T : class
+        => LoadXaml<T>(xaml, Enumerable.Empty<XamlNamespace>());
+
+    private static T LoadXaml<T>(string xaml, IEnumerable<XamlNamespace> namespaces) where T : class
     {
         using MemoryStream memoryStream = new(Encoding.UTF8.GetBytes(xaml));
-        //TODO: Allow for some control over the context
-        var context = new ParserContext();
-        context.XmlnsDictionary.Add("", "http://schemas.microsoft.com/winfx/2006/xaml/presentation");
-        context.XmlnsDictionary.Add("x", "http://schemas.microsoft.com/winfx/2006/xaml");
-        context.XmlnsDictionary.Add("d", "http://schemas.microsoft.com/expression/blend/2008");
-        context.XmlnsDictionary.Add("mc", "http://schemas.openxmlformats.org/markup-compatibility/2006");
+        ParserContext context = new();
+        foreach(var @namespace in namespaces)
+        {
+            context.XmlnsDictionary.Add(@namespace.Prefix, @namespace.Uri);
+        }
         return (T)XamlReader.Load(memoryStream, context);
     }
 

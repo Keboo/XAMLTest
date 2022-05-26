@@ -7,8 +7,8 @@ namespace XamlTest.Internal;
 internal class Window : VisualElement<System.Windows.Window>, IWindow
 {
     public Window(Protocol.ProtocolClient client, string id, 
-        Serializer serializer, Action<string>? logMessage)
-        : base(client, id, typeof(System.Windows.Window), serializer, logMessage)
+        AppContext context, Action<string>? logMessage)
+        : base(client, id, typeof(System.Windows.Window), context, logMessage)
     { }
 
     public bool Equals([AllowNull] IWindow other)

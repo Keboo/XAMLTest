@@ -17,7 +17,9 @@ internal class App : IApp
 
     protected Protocol.ProtocolClient Client { get; }
     protected Action<string>? LogMessage { get; }
-    protected Serializer Serializer { get; } = new Serializer();
+    protected AppContext Context { get; } = new();
+
+    public IList<XmlNamespace> DefaultXmlNamespaces => Context.DefaultNamespaces;
 
     public virtual void Dispose()
     {
@@ -103,7 +105,7 @@ internal class App : IApp
             {
                 throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages) + Environment.NewLine + windowXaml);
             }
-            return new Window(Client, reply.WindowsId, Serializer, LogMessage);
+            return new Window(Client, reply.WindowsId, Context, LogMessage);
         }
         throw new XAMLTestException("Failed to get a reply");
     }
@@ -129,7 +131,7 @@ internal class App : IApp
             {
                 throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
             }
-            return new Window(Client, reply.WindowsId, Serializer, LogMessage);
+            return new Window(Client, reply.WindowsId, Context, LogMessage);
         }
         throw new XAMLTestException("Failed to get a reply");
     }
@@ -140,7 +142,7 @@ internal class App : IApp
         if (await Client.GetMainWindowAsync(new GetWindowsQuery()) is { } reply &&
             reply.WindowIds.Count == 1)
         {
-            return new Window(Client, reply.WindowIds[0], Serializer, LogMessage);
+            return new Window(Client, reply.WindowIds[0], Context, LogMessage);
         }
         return null;
     }
@@ -160,7 +162,7 @@ internal class App : IApp
             }
             if (!string.IsNullOrWhiteSpace(reply.ValueType))
             {
-                return new Resource(reply.Key, reply.ValueType, reply.Value, Serializer);
+                return new Resource(reply.Key, reply.ValueType, reply.Value, Context);
             }
             throw new XAMLTestException($"Resource with key '{reply.Key}' not found");
         }
@@ -173,7 +175,7 @@ internal class App : IApp
         LogMessage?.Invoke($"{nameof(IApp)}.{nameof(GetWindows)}()");
         if (await Client.GetWindowsAsync(new GetWindowsQuery()) is { } reply)
         {
-            return reply.WindowIds.Select(x => new Window(Client, x, Serializer, LogMessage)).ToList();
+            return reply.WindowIds.Select(x => new Window(Client, x, Context, LogMessage)).ToList();
         }
         return Array.Empty<IWindow>();
     }
@@ -214,14 +216,14 @@ internal class App : IApp
             {
                 throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
             }
-            Serializer.AddSerializer(new T(), insertIndex);
+            Context.Serializer.AddSerializer(new T(), insertIndex);
             return;
         }
         throw new XAMLTestException("Failed to receive a reply");
     }
 
     public Task<IReadOnlyList<ISerializer>> GetSerializers()
-        => Task.FromResult<IReadOnlyList<ISerializer>>(Serializer.Serializers.AsReadOnly());
+        => Task.FromResult<IReadOnlyList<ISerializer>>(Context.Serializer.Serializers.AsReadOnly());
 
     public async Task<IVersion> GetVersion(bool waitForReady = false)
     {
@@ -245,4 +247,6 @@ internal class App : IApp
             throw new XAMLTestException($"Error communicating with host process", e);
         }
     }
+
+    public void AddXamlNamespace(string? prefix, string uri) => throw new NotImplementedException();
 }

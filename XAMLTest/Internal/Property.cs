@@ -10,8 +10,8 @@ internal class Property : BaseValue, IProperty
     public IVisualElement? Element { get; }
 
     public Property(string propertyType, string valueType, object? value, IVisualElement? element, 
-        Serializer serializer)
-        : base(valueType, value, serializer)
+        AppContext context)
+        : base(valueType, value, context)
     {
         PropertyType = propertyType ?? throw new ArgumentNullException(nameof(propertyType));
         Element = element;
