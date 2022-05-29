@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Input;
+﻿using System.Threading.Tasks;
 using XamlTest.Input;
 
 namespace XamlTest;
@@ -95,12 +90,14 @@ public static partial class VisualElementMixins
                 object? argument = input.GetArgument(argumentIndex++);
                 switch (argument)
                 {
+#if WPF
                     case Key key:
                         inputs.Add(new KeysInput(key));
                         break;
                     case IEnumerable<Key> keys:
                         inputs.Add(new KeysInput(keys));
                         break;
+#endif
                     default:
                         string? stringArgument = argument?.ToString();
                         if (!string.IsNullOrEmpty(stringArgument))

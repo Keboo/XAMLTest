@@ -1,11 +1,8 @@
-﻿using System;
-using System.CommandLine;
+﻿using System.CommandLine;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Threading;
-using System.Windows;
 using XamlTest.Utility;
 
 namespace XamlTest;
@@ -48,12 +45,17 @@ internal class Program
         {
             application = new Application
             {
+#if WPF
                 ShutdownMode = ShutdownMode.OnLastWindowClose
+#endif
             };
         }
 
+#if WIN_UI
+        return 0;
+#endif
+#if WPF
         IDisposable? service = null;
-
         application.Startup += ApplicationStartup;
         application.Exit += ApplicationExit;
 
@@ -95,6 +97,7 @@ internal class Program
                 application.Dispatcher.Invoke(() => application.Shutdown());
             }
         }
+#endif
     }
 
     private static Application CreateFromAssembly(string assemblyPath)

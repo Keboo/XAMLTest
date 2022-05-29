@@ -1,13 +1,10 @@
 ﻿using Grpc.Core;
-using System;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Input;
-using System.Windows.Interop;
 
 namespace XamlTest.Host;
 
+#if WPF
 partial class VisualTreeService
 {
     public override async Task<KeyboardFocusResult> MoveKeyboardFocus(KeyboardFocusRequest request, ServerCallContext context)
@@ -204,3 +201,4 @@ partial class VisualTreeService
         }
     }
 }
+#endif

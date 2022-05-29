@@ -1,11 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Media;
 using XamlTest.Host;
 using XamlTest.Input;
 
@@ -298,7 +295,9 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
             switch (i)
             {
                 case KeysInput keysInput:
+#if WPF
                     rv.Keys.AddRange(keysInput.Keys.Cast<int>());
+#endif
                     break;
                 case TextInput textInput:
                     rv.TextInput = textInput.Text;

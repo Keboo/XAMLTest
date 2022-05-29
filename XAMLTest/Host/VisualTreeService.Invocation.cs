@@ -1,12 +1,11 @@
 ﻿using Grpc.Core;
-using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Windows;
 
 namespace XamlTest.Host;
 
+#if WPF
 partial class VisualTreeService
 {
     public override async Task<RemoteInvocationResult> RemoteInvocation(RemoteInvocationRequest request, ServerCallContext context)
@@ -53,3 +52,4 @@ partial class VisualTreeService
         return reply;
     }
 }
+#endif

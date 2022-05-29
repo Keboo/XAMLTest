@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Windows.Media;
 
 namespace XamlTest;
 
@@ -56,10 +55,10 @@ public static class ColorMixins
     {
         if (background.A == 0) return foreground;
 
-        float alpha = foreground.ScA;
+        float alpha = foreground.A / 255f;
         float alphaReverse = 1 - alpha;
 
-        float newAlpha = foreground.ScA + background.ScA * alphaReverse;
+        float newAlpha = (foreground.A / 255f) + (background.A / 255f) * alphaReverse;
         return Color.FromArgb((byte)(newAlpha * byte.MaxValue),
             (byte)(alpha * foreground.R + alphaReverse * background.R),
             (byte)(alpha * foreground.G + alphaReverse * background.G),

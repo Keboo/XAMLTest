@@ -1,7 +1,5 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using System.Windows;
 using Expression = System.Linq.Expressions.Expression;
 
 namespace XamlTest;

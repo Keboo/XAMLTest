@@ -1,18 +1,18 @@
 ﻿using PInvoke;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Input;
 
 namespace XamlTest.Input;
 
 internal static class KeyboardInput
 {
+#if WPF
     public static void SendKeys(IntPtr windowHandle, params Key[] keys)
     {
         IEnumerable<WindowMessage> inputs = keys.SelectMany(k => GetKeyPress(k));
         SendInput(windowHandle, inputs);
     }
+#endif
 
     public static void SendKeysForText(IntPtr windowHandle, string textInput)
     {
@@ -35,6 +35,7 @@ internal static class KeyboardInput
         yield return new WindowMessage(User32.WindowMessage.WM_CHAR, wParam, lParam);
     }
 
+#if WPF
     private static IEnumerable<WindowMessage> GetKeyPress(Key key)
     {
         IntPtr wParam = new(KeyInterop.VirtualKeyFromKey(key));
@@ -42,6 +43,7 @@ internal static class KeyboardInput
         yield return new WindowMessage(User32.WindowMessage.WM_KEYDOWN, wParam, lParam);
         yield return new WindowMessage(User32.WindowMessage.WM_KEYUP, wParam, lParam);
     }
+#endif
 
     private class WindowMessage
     {

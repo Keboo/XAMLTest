@@ -1,6 +1,7 @@
 ﻿using System;
 using XamlTest;
 
+#if WPF
 [assembly: GenerateHelpers(typeof(System.Windows.Window))]
 [assembly: GenerateHelpers(typeof(System.Windows.Controls.AccessText))]
 [assembly: GenerateHelpers(typeof(System.Windows.Controls.Border))]
@@ -117,7 +118,7 @@ using XamlTest;
 [assembly: GenerateHelpers(typeof(System.Windows.Controls.Primitives.ToolBarPanel))]
 [assembly: GenerateHelpers(typeof(System.Windows.Controls.Primitives.Track))]
 [assembly: GenerateHelpers(typeof(System.Windows.Controls.Primitives.UniformGrid))]
-
+#endif
 
 namespace XamlTest;
 

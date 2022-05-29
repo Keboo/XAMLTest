@@ -1,15 +1,20 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+#if WPF
 using System.Windows;
 using System.Windows.Controls;
+#endif
+#if WIN_UI
+using Windows.Foundation;
+#endif
 
 namespace XamlTest;
 
 public static class AppMixins
 {
     public static async Task InitializeWithDefaults(
-        this IApp app, 
+        this IApp app,
         params string[] assemblies)
     {
         await InitializeWithResources(app, "", assemblies);
@@ -29,12 +34,14 @@ xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
     }
 
     public static async Task<IWindow> CreateWindowWithContent(
-        this IApp app, 
+        this IApp app,
         string xamlContent,
         Size? windowSize = null,
         string title = "Test Window",
         string background = "White",
+#if WPF
         WindowStartupLocation startupLocation = WindowStartupLocation.CenterScreen,
+#endif
         string windowAttributes = "",
         params string[] additionalXmlNamespaces)
     {
@@ -57,8 +64,13 @@ mc:Ignorable=""d""
 Height=""{windowSize?.Height ?? 800}"" 
 Width=""{windowSize?.Width ?? 1100}""
 Title=""{title}""
-Background=""{background}""
+Background=""{background}""";
+#if WPF
+        xaml += @$"
 WindowStartupLocation=""{startupLocation}""
+";
+#endif
+        xaml += $@"
 {windowAttributes}>
 {xamlContent}
 </Window>";
@@ -66,6 +78,7 @@ WindowStartupLocation=""{startupLocation}""
         return await app.CreateWindow(xaml);
     }
 
+#if WPF
     public static async Task<IWindow> CreateWindowWithUserControl<TUserControl>(
         this IApp app,
         Size? windowSize = null,
@@ -82,4 +95,5 @@ WindowStartupLocation=""{startupLocation}""
         return await app.CreateWindowWithContent($"<local:{typeof(TUserControl).Name} />",
             windowSize, title, background, startupLocation, additionalXmlNamespaces: @$"local=""clr-namespace:{typeof(TUserControl).Namespace};assembly={typeof(TUserControl).Assembly.GetName().Name}""");
     }
+#endif
 }
