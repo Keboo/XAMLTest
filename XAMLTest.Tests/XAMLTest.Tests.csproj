@@ -1,5 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="../WinUI3.props"/>
+  <Import Project="../WinUI3.props" />
 
   <PropertyGroup>
     <IsPackable>false</IsPackable>
@@ -25,8 +25,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\XAMLTest.TestApp\XAMLTest.TestApp.csproj" />
+    <ProjectReference Include="..\XAMLTest.TestApp\XAMLTest.TestApp.csproj" Condition="$(BuildWinUI) == 'false'"/>
+    <ProjectReference Include="..\XAMLTest.TestApp.WinUI3\XAMLTest.TestApp.WinUI3.csproj" Condition="$(BuildWinUI) == 'true'"/>
     <ProjectReference Include="..\XAMLTest\XAMLTest.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(BuildWinUI) == 'true'">
+    <Using Include="System.Windows.Vector" Alias="Vector" />
+    <Using Include="System.Windows.Point" Alias="Point" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
   </ItemGroup>
 
 </Project>

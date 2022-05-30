@@ -1,11 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using System.Threading.Tasks;
-using System.Windows.Controls;
-using System.Windows.Input;
-
-namespace XamlTest.Tests;
+﻿namespace XamlTest.Tests;
 
 [TestClass]
 public class SendKeyboardInputTests
@@ -59,6 +52,7 @@ public class SendKeyboardInputTests
         Assert.AreEqual("Some Text", await TextBox.GetText());
     }
 
+#if WPF
     [TestMethod]
     public async Task SendInput_WithFormattableStringWithKeys_SetsText()
     {
@@ -66,4 +60,5 @@ public class SendKeyboardInputTests
 
         Assert.AreEqual("Some Text", await TextBox.GetText());
     }
+#endif
 }

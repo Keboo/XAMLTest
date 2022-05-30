@@ -1,12 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-
-namespace XamlTest.Tests;
+﻿namespace XamlTest.Tests;
 
 [TestClass]
 public class SendMouseInputTests
@@ -18,7 +10,7 @@ public class SendMouseInputTests
     private static IVisualElement<Grid>? Grid { get; set; }
 
     [NotNull]
-    private static IVisualElement<MenuItem>? TopMenuItem { get; set; }
+    private static IVisualElement<NativeMenuItem>? TopMenuItem { get; set; }
     
     [ClassInitialize]
     public static async Task ClassInitialize(TestContext context)
@@ -47,7 +39,7 @@ public class SendMouseInputTests
 </Grid>
 ");
         Grid = await window.GetElement<Grid>("Grid");
-        TopMenuItem = await window.GetElement<MenuItem>("TopLevel");
+        TopMenuItem = await window.GetElement<NativeMenuItem>("TopLevel");
     }
 
     [ClassCleanup]
@@ -71,8 +63,12 @@ public class SendMouseInputTests
     {
         await TopMenuItem.LeftClick();
         await Task.Delay(100);
-        var nestedMenuItem = await TopMenuItem.GetElement<MenuItem>("SubMenu");
-        await using IEventRegistration registration = await nestedMenuItem.RegisterForEvent(nameof(MenuItem.Click));
+        var nestedMenuItem = await TopMenuItem.GetElement<NativeMenuItem>("SubMenu");
+#if WPF
+        await using IEventRegistration registration = await nestedMenuItem.RegisterForEvent(nameof(NativeMenuItem.Click));
+#elif WIN_UI
+        await using IEventRegistration registration = await nestedMenuItem.RegisterForEvent(nameof(NativeMenuItem.Tapped));
+#endif
         await nestedMenuItem.LeftClick(clickTime:TimeSpan.FromMilliseconds(100));
 
         await Wait.For(async () =>
@@ -88,7 +84,7 @@ public class SendMouseInputTests
         Rect coordinates = await TopMenuItem.GetCoordinates();
         Point mousePosition = await TopMenuItem.LeftClick(Position.BottomLeft, 15, -5);
 
-        Point expected = coordinates.BottomLeft + new Vector(15, -5);
+        System.Windows.Point expected = new System.Windows.Point(coordinates.Left, coordinates.Bottom) + new Vector(15, -5);
         Assert.IsTrue(Math.Abs(expected.X - mousePosition.X) <= 1);
         Assert.IsTrue(Math.Abs(expected.Y - mousePosition.Y) <= 1);
     }
@@ -99,10 +95,14 @@ public class SendMouseInputTests
         await Grid.RightClick();
         IVisualElement<ContextMenu>? contextMenu = await Grid.GetContextMenu();
         Assert.IsNotNull(contextMenu);
-        var menuItem = await contextMenu.GetElement<MenuItem>("Context1");
+        var menuItem = await contextMenu.GetElement<NativeMenuItem>("Context1");
         await Task.Delay(100);
         Assert.IsNotNull(menuItem);
-        await using IEventRegistration registration = await menuItem.RegisterForEvent(nameof(MenuItem.Click));
+#if WPF
+        await using IEventRegistration registration = await menuItem.RegisterForEvent(nameof(NativeMenuItem.Click));
+#elif WIN_UI
+        await using IEventRegistration registration = await menuItem.RegisterForEvent(nameof(NativeMenuItem.Tapped));
+#endif
         await menuItem.LeftClick(clickTime: TimeSpan.FromMilliseconds(100));
 
         await Wait.For(async () =>
@@ -121,7 +121,7 @@ public class SendMouseInputTests
         Point center = new(
             coordinates.Left + coordinates.Width / 2.0,
             coordinates.Top + coordinates.Height / 2.0);
-        
+
         Point cursorPosition = await Grid.MoveCursorTo(Position.Center);
         Vector distance = center - cursorPosition;
         Assert.IsTrue(distance.Length < tollerance);

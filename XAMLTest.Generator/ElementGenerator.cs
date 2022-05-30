@@ -1,8 +1,8 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
+
+using TypeInfo = Microsoft.CodeAnalysis.TypeInfo;
 
 namespace XAMLTest.Generator;
 
@@ -62,8 +62,7 @@ public class ElementGenerator : ISourceGenerator
                     builder.Append("            ")
                         .AppendLine($"=> await element.GetProperty<{property.TypeFullName}>(nameof({type.Type.FullName}.{property.Name}));");
 
-                    if (property.TypeFullName.StartsWith("System.Windows.Media.SolidColorBrush") ||
-                        property.TypeFullName.StartsWith("System.Windows.Media.Brush"))
+                    if (IsBrushType(property))
                     {
                         builder
                         .Append("        ");
@@ -97,8 +96,7 @@ public class ElementGenerator : ISourceGenerator
                         .Append("            ")
                         .AppendLine($"=> await element.SetProperty(nameof({type.Type.FullName}.{property.Name}), value);");
 
-                    if (property.TypeFullName.StartsWith("System.Windows.Media.SolidColorBrush") ||
-                        property.TypeFullName.StartsWith("System.Windows.Media.Brush"))
+                    if (IsBrushType(property))
                     {
                         builder
                         .Append("        ");
@@ -140,6 +138,18 @@ public class ElementGenerator : ISourceGenerator
 #endif 
         context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
     }
+
+    private static bool IsBrush(string fullTypeName)
+    {
+        return fullTypeName.StartsWith("System.Windows.Media.SolidColorBrush") ||
+               fullTypeName.StartsWith("System.Windows.Media.Brush");
+    }
+
+    private static bool IsBrushType(Property property)
+    {
+        return IsBrush(property.TypeFullName);
+    }
+
 }
 
 public record VisualElement(
@@ -164,6 +174,7 @@ public class SyntaxReceiver : ISyntaxContextReceiver
 
     private static HashSet<string> IgnoredTypes { get; } = new()
     {
+        //WPF Types
         "System.Windows.TriggerCollection",
         "System.Windows.Media.CacheMode",
         "System.Windows.Input.CommandBindingCollection",
@@ -316,6 +327,7 @@ public class SyntaxReceiver : ISyntaxContextReceiver
                 {
                     case "System.Windows.Media.Brush": return false;
                     case "System.Windows.DependencyObject": return true;
+                    case "Microsoft.UI.Xaml.DependencyObject": return true;
                 }
             }
             return false;

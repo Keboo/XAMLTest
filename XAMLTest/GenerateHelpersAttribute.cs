@@ -1,5 +1,4 @@
-﻿using System;
-using XamlTest;
+﻿using XamlTest;
 
 #if WPF
 [assembly: GenerateHelpers(typeof(System.Windows.Window))]
@@ -118,6 +117,12 @@ using XamlTest;
 [assembly: GenerateHelpers(typeof(System.Windows.Controls.Primitives.ToolBarPanel))]
 [assembly: GenerateHelpers(typeof(System.Windows.Controls.Primitives.Track))]
 [assembly: GenerateHelpers(typeof(System.Windows.Controls.Primitives.UniformGrid))]
+#elif WIN_UI
+[assembly: GenerateHelpers(typeof(Microsoft.UI.Xaml.Window))]
+[assembly: GenerateHelpers(typeof(Microsoft.UI.Xaml.Controls.TextBlock))]
+[assembly: GenerateHelpers(typeof(Microsoft.UI.Xaml.Controls.TextBox))]
+[assembly: GenerateHelpers(typeof(Microsoft.UI.Xaml.Controls.ListBoxItem))]
+[assembly: GenerateHelpers(typeof(Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase))]
 #endif
 
 namespace XamlTest;

@@ -1,14 +1,10 @@
-using MaterialDesignThemes.Wpf;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using XamlTest;
 using XamlTest.Tests.TestControls;
 
+#if WPF
+using MaterialDesignThemes.Wpf;
 [assembly: GenerateHelpers(typeof(ColorZone))]
+#endif
 namespace XamlTest.Tests;
 
 [TestClass]
@@ -22,6 +18,7 @@ public class AppTests
         Assert.AreEqual("Test App Window", await window!.GetTitle());
     }
 
+#if WPF
     [TestMethod]
     public async Task CanGenerateTypedElement_ForCustomControlInRemoteApp()
     {
@@ -49,6 +46,7 @@ public class AppTests
 
         Assert.AreEqual(ColorZoneMode.PrimaryLight, await colorZone.GetMode());
     }
+#endif
 
     [TestMethod]
     public async Task OnCreateWindow_CanReadTitle()

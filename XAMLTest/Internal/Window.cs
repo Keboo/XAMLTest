@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using XamlTest.Host;
+﻿using XamlTest.Host;
 
 namespace XamlTest.Internal;
 

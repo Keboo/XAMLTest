@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using XamlTest.Input;
+﻿using XamlTest.Input;
 
 namespace XamlTest;
 

@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace XamlTest;
+﻿namespace XamlTest;
 
 public interface IVisualElement<TElement> : IVisualElement
 {

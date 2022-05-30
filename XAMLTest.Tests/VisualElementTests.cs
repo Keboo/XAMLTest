@@ -1,16 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Input;
-using System.Windows.Media;
-using XamlTest.Tests.TestControls;
-
-namespace XamlTest.Tests;
+﻿namespace XamlTest.Tests;
 
 [TestClass]
 public class VisualElementTests
@@ -284,8 +272,11 @@ public class VisualElementTests
         IVisualElement<StackPanel> stackPanel = await Window.GetElement<StackPanel>("Panel");
 
         //Act
+#if WPF
         IVisualElement<ContextMenu>? contextMenu = await stackPanel.GetContextMenu();
-
+#elif WIN_UI
+        IVisualElement<FlyoutBase>? contextMenu = await stackPanel.GetContextFlyout();
+#endif
         //Assert
         Assert.IsNotNull(contextMenu);
         Assert.AreEqual("TestContextMenu", await contextMenu.GetName());
