@@ -29,11 +29,6 @@
     <ProjectReference Include="..\XAMLTest.TestApp.WinUI3\XAMLTest.TestApp.WinUI3.csproj" Condition="$(BuildWinUI) == 'true'"/>
     <ProjectReference Include="..\XAMLTest\XAMLTest.csproj" />
   </ItemGroup>
-
-  <ItemGroup Condition="$(BuildWinUI) == 'true'">
-    <Using Include="System.Windows.Vector" Alias="Vector" />
-    <Using Include="System.Windows.Point" Alias="Point" />
-  </ItemGroup>
   
   <ItemGroup>
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />

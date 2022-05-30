@@ -1,12 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using System.Threading.Tasks;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Media;
-
-namespace XamlTest.Tests;
+﻿namespace XamlTest.Tests;
 
 [TestClass]
 public class HighlightTests
@@ -27,6 +19,7 @@ public class HighlightTests
         Window = await App.CreateWindowWithContent(@"");
     }
 
+#if WPF
     [TestMethod]
     public async Task OnHighlight_WithDefaults_AddsHighlightAdorner()
     {
@@ -103,4 +96,6 @@ public class HighlightTests
 
         Assert.IsTrue(ex.Message.Contains("Failed to find child element of type 'SelectionAdorner'"));
     }
+#endif
+
 }

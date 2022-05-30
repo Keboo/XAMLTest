@@ -1,4 +1,6 @@
-﻿namespace XamlTest.Tests;
+﻿using System.Numerics;
+
+namespace XamlTest.Tests;
 
 [TestClass]
 public class SendMouseInputTests
@@ -84,7 +86,7 @@ public class SendMouseInputTests
         Rect coordinates = await TopMenuItem.GetCoordinates();
         Point mousePosition = await TopMenuItem.LeftClick(Position.BottomLeft, 15, -5);
 
-        System.Windows.Point expected = new System.Windows.Point(coordinates.Left, coordinates.Bottom) + new Vector(15, -5);
+        Point expected = new Point(coordinates.Left, coordinates.Bottom) + new Vector<double>(15, -5);
         Assert.IsTrue(Math.Abs(expected.X - mousePosition.X) <= 1);
         Assert.IsTrue(Math.Abs(expected.Y - mousePosition.Y) <= 1);
     }
