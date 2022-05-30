@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <BuildWinUI Condition="$(BuildWinUI) != 'true'">false</BuildWinUI>
+    <BuildWinUI Condition="$(BuildWinUI) != 'true'">true</BuildWinUI>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(BuildWinUI) == 'false'">
