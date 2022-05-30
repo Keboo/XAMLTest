@@ -1,6 +1,4 @@
-﻿using System.Numerics;
-
-namespace XamlTest.Tests;
+﻿namespace XamlTest.Tests;
 
 [TestClass]
 public class SendMouseInputTests
@@ -86,7 +84,7 @@ public class SendMouseInputTests
         Rect coordinates = await TopMenuItem.GetCoordinates();
         Point mousePosition = await TopMenuItem.LeftClick(Position.BottomLeft, 15, -5);
 
-        Point expected = new Point(coordinates.Left, coordinates.Bottom) + new Vector<double>(15, -5);
+        Point expected = Distance.Add(NewPoint(coordinates.Left, coordinates.Bottom), 15, -5);
         Assert.IsTrue(Math.Abs(expected.X - mousePosition.X) <= 1);
         Assert.IsTrue(Math.Abs(expected.Y - mousePosition.Y) <= 1);
     }
@@ -95,7 +93,12 @@ public class SendMouseInputTests
     public async Task CanRightClickToShowContextMenu()
     {
         await Grid.RightClick();
+
+#if WPF
         IVisualElement<ContextMenu>? contextMenu = await Grid.GetContextMenu();
+#elif WIN_UI
+        IVisualElement<FlyoutBase>? contextMenu = await Grid.GetContextFlyout();
+#endif
         Assert.IsNotNull(contextMenu);
         var menuItem = await contextMenu.GetElement<NativeMenuItem>("Context1");
         await Task.Delay(100);
@@ -120,29 +123,33 @@ public class SendMouseInputTests
         const double tollerance = 1.0;
 
         Rect coordinates = await Grid.GetCoordinates();
-        Point center = new(
+        Point center = NewPoint(
             coordinates.Left + coordinates.Width / 2.0,
             coordinates.Top + coordinates.Height / 2.0);
 
         Point cursorPosition = await Grid.MoveCursorTo(Position.Center);
-        Vector distance = center - cursorPosition;
-        Assert.IsTrue(distance.Length < tollerance);
+        var distance = Distance.Between(center, cursorPosition);
+        Assert.IsTrue(distance < tollerance);
 
         cursorPosition = await Grid.MoveCursorTo(Position.TopLeft);
-        distance = coordinates.TopLeft - cursorPosition;
-        Assert.IsTrue(distance.Length < tollerance);
+        Point topLeft = NewPoint(coordinates.Left, coordinates.Top);
+        distance = Distance.Between(topLeft, cursorPosition);
+        Assert.IsTrue(distance < tollerance);
 
         cursorPosition = await Grid.MoveCursorTo(Position.TopRight);
-        distance = coordinates.TopRight - cursorPosition;
-        Assert.IsTrue(distance.Length < tollerance);
+        Point topRight = NewPoint(coordinates.Right, coordinates.Top);
+        distance = Distance.Between(topRight, cursorPosition);
+        Assert.IsTrue(distance < tollerance);
 
         cursorPosition = await Grid.MoveCursorTo(Position.BottomRight);
-        distance = coordinates.BottomRight - cursorPosition;
-        Assert.IsTrue(distance.Length < tollerance);
+        Point bottomRight = NewPoint(coordinates.Right, coordinates.Bottom);
+        distance = Distance.Between(bottomRight, cursorPosition);
+        Assert.IsTrue(distance < tollerance);
 
         cursorPosition = await Grid.MoveCursorTo(Position.BottomLeft);
-        distance = coordinates.BottomLeft - cursorPosition;
-        Assert.IsTrue(distance.Length < tollerance);
+        Point bottomLeft = NewPoint(coordinates.Left, coordinates.Bottom);
+        distance = Distance.Between(bottomLeft, cursorPosition);
+        Assert.IsTrue(distance < tollerance);
     }
 
     [TestMethod]
@@ -151,13 +158,13 @@ public class SendMouseInputTests
         const double tollerance = 1.0;
 
         Rect coordinates = await Grid.GetCoordinates();
-        Point center = new(
+        Point center = NewPoint(
             coordinates.Left + coordinates.Width / 2.0,
             coordinates.Top + coordinates.Height / 2.0);
 
         Point cursorPosition = await Grid.MoveCursorTo(Position.Center, 10, 20);
-        Vector distance = (center + new Vector(10, 20)) - cursorPosition;
-        Assert.IsTrue(distance.Length < tollerance);
+        var distance = Distance.Between(Distance.Add(center, 10, 20), cursorPosition);
+        Assert.IsTrue(distance < tollerance);
     }
 
     [TestMethod]
@@ -166,12 +173,42 @@ public class SendMouseInputTests
         const double tollerance = 1.0;
 
         Rect coordinates = await Grid.GetCoordinates();
-        Point center = new(
+        Point center = NewPoint(
             coordinates.Left + coordinates.Width / 2.0,
             coordinates.Top + coordinates.Height / 2.0);
 
         Point cursorPosition = await Grid.SendInput(MouseInput.MoveAbsolute((int)center.X, (int)center.Y));
-        Vector distance = center - cursorPosition;
-        Assert.IsTrue(distance.Length < tollerance);
+        double distance = Distance.Between(center, cursorPosition);
+        Assert.IsTrue(distance < tollerance);
+    }
+
+    private static Point NewPoint(double x, double y)
+    {
+#if WPF
+        return new Point(x, y);
+#elif WIN_UI
+        return new Point((float)x, (float)y);
+#endif
+    }
+}
+
+public static class Distance
+{
+    public static double Between(Point a, Point b)
+    {
+#if WPF
+        return (a - b).Length;
+#elif WIN_UI
+        return (a - b).Length();
+#endif
+    }
+
+    public static Point Add(Point point, double xDelta = 0.0, double yDelta = 0.0)
+    {
+#if WPF
+        return point + new Vector(xDelta, yDelta)
+#elif WIN_UI
+        return point + new Point((float)xDelta, (float)yDelta);
+#endif
     }
 }

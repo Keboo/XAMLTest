@@ -1,12 +1,8 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-#if WPF
+﻿#if WPF
 using System.Windows;
 using System.Windows.Controls;
 #endif
 #if WIN_UI
-using Windows.Foundation;
 #endif
 
 namespace XamlTest;
@@ -33,6 +29,7 @@ xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
 </ResourceDictionary>", assemblies);
     }
 
+    [SupportedOSPlatform("net6.0-windows")]
     public static async Task<IWindow> CreateWindowWithContent(
         this IApp app,
         string xamlContent,

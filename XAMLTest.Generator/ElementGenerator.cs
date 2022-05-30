@@ -1,8 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Text;
-
-using TypeInfo = Microsoft.CodeAnalysis.TypeInfo;
 
 namespace XAMLTest.Generator;
 
@@ -64,25 +61,24 @@ public class ElementGenerator : ISourceGenerator
 
                     if (IsBrushType(property))
                     {
-                        builder
-                        .Append("        ");
+                        string colorType = GetColorType(property);
+                        builder.Append("        ");
                         if (type.Type.IsFinal)
                         {
-                            builder.AppendLine($"public static async System.Threading.Tasks.Task<System.Windows.Media.Color?> Get{property.Name}Color(this IVisualElement<{type.Type.FullName}> element)");
+                            builder.AppendLine($"public static async System.Threading.Tasks.Task<{colorType}?> Get{property.Name}Color(this IVisualElement<{type.Type.FullName}> element)");
                         }
                         else
                         {
-                            builder.AppendLine($"public static async System.Threading.Tasks.Task<System.Windows.Media.Color?> Get{property.Name}Color<T>(this IVisualElement<T> element) where T : {type.Type.FullName}");
+                            builder.AppendLine($"public static async System.Threading.Tasks.Task<{colorType}?> Get{property.Name}Color<T>(this IVisualElement<T> element) where T : {type.Type.FullName}");
                         }
                         builder
                         .Append("            ")
-                        .AppendLine($"=> await element.GetProperty<System.Windows.Media.Color?>(nameof({type.Type.FullName}.{property.Name}));");
+                        .AppendLine($"=> await element.GetProperty<{colorType}?>(nameof({type.Type.FullName}.{property.Name}));");
                     }
                 }
                 if (property.CanWrite)
                 {
-                    builder
-                        .Append("        ");
+                    builder.Append("        ");
 
                     if (type.Type.IsFinal)
                     {
@@ -98,20 +94,21 @@ public class ElementGenerator : ISourceGenerator
 
                     if (IsBrushType(property))
                     {
-                        builder
-                        .Append("        ");
+                        string colorType = GetColorType(property);
+                        string solidColorBrushType = GetSolidColorBrushType(property);
+                        builder.Append("        ");
                         if (type.Type.IsFinal)
                         {
-                            builder.AppendLine($"public static async System.Threading.Tasks.Task<System.Windows.Media.Color?> Set{property.Name}Color(this IVisualElement<{type.Type.FullName}> element, System.Windows.Media.Color value)");
+                            builder.AppendLine($"public static async System.Threading.Tasks.Task<{colorType}?> Set{property.Name}Color(this IVisualElement<{type.Type.FullName}> element, {colorType} value)");
                         }
                         else
                         {
-                            builder.AppendLine($"public static async System.Threading.Tasks.Task<System.Windows.Media.Color?> Set{property.Name}Color<T>(this IVisualElement<T> element, System.Windows.Media.Color value) where T : {type.Type.FullName}");
+                            builder.AppendLine($"public static async System.Threading.Tasks.Task<{colorType}?> Set{property.Name}Color<T>(this IVisualElement<T> element, {colorType} value) where T : {type.Type.FullName}");
                         }
                         builder
                         .AppendLine("        {")
                         .Append("            ")
-                        .AppendLine($"System.Windows.Media.SolidColorBrush? brush = await element.SetProperty(nameof({type.Type.FullName}.{property.Name}), new System.Windows.Media.SolidColorBrush(value));")
+                        .AppendLine($"{solidColorBrushType}? brush = await element.SetProperty(nameof({type.Type.FullName}.{property.Name}), new {solidColorBrushType}(value));")
                         .Append("            ")
                         .AppendLine("return brush?.Color ?? default;")
                         .AppendLine("        }");
@@ -133,222 +130,40 @@ public class ElementGenerator : ISourceGenerator
 #if DEBUG
         if (!System.Diagnostics.Debugger.IsAttached)
         {
-            //Debugger.Launch();
+            //System.Diagnostics.Debugger.Launch();
         }
 #endif 
         context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
     }
 
+    private static bool IsBrushType(Property property) => IsBrush(property.TypeFullName);
+
     private static bool IsBrush(string fullTypeName)
     {
         return fullTypeName.StartsWith("System.Windows.Media.SolidColorBrush") ||
-               fullTypeName.StartsWith("System.Windows.Media.Brush");
+               fullTypeName.StartsWith("System.Windows.Media.Brush") ||
+               fullTypeName.StartsWith("Microsoft.UI.Xaml.Media.Brush");
     }
 
-    private static bool IsBrushType(Property property)
+    private static string GetColorType(string brushFullTypeName)
     {
-        return IsBrush(property.TypeFullName);
-    }
-
-}
-
-public record VisualElement(
-    string Namespace,
-    VisualElementType Type,
-    IReadOnlyList<Property> DependencyProperties)
-{ }
-
-public record VisualElementType(string Name, string FullName, bool IsFinal)
-{ }
-
-public record Property(string Name, string TypeFullName, bool CanRead, bool CanWrite)
-{ }
-
-public class SyntaxReceiver : ISyntaxContextReceiver
-{
-    private static Dictionary<string, string> TypeRemap { get; } = new()
-    {
-        { "System.Windows.Controls.ColumnDefinitionCollection", "System.Collections.Generic.IList<System.Windows.Controls.ColumnDefinition>" },
-        { "System.Windows.Controls.RowDefinitionCollection", "System.Collections.Generic.IList<System.Windows.Controls.RowDefinition>" }
-    };
-
-    private static HashSet<string> IgnoredTypes { get; } = new()
-    {
-        //WPF Types
-        "System.Windows.TriggerCollection",
-        "System.Windows.Media.CacheMode",
-        "System.Windows.Input.CommandBindingCollection",
-        "System.Windows.Media.Effects.Effect",
-        "System.Windows.Input.InputBindingCollection",
-        "System.Collections.Generic.IEnumerable<System.Windows.Input.TouchDevice>",
-        "System.Windows.DependencyObjectType",
-        "System.Windows.Threading.Dispatcher",
-        "System.Windows.TextDecorationCollection",
-        "System.Windows.Media.TextEffectCollection",
-        "System.Windows.Data.BindingGroup",
-        "System.Windows.Style",
-        "System.Windows.ResourceDictionary",
-        "System.Windows.DataTemplate",
-        "System.Windows.Controls.DataTemplateSelector",
-        "System.Windows.Controls.ControlTemplate",
-        "System.Windows.Controls.CalendarBlackoutDatesCollection",
-        "System.Windows.Controls.SelectedDatesCollection",
-        "System.Windows.Controls.UIElementCollection",
-        "System.Collections.ObjectModel.ObservableCollection<System.Windows.Controls.GroupStyle>",
-        "System.Windows.Controls.GroupStyleSelector",
-        "System.Windows.Controls.ItemContainerGenerator",
-        "System.Windows.Controls.StyleSelector",
-        "System.Windows.Controls.ItemCollection",
-        "System.Windows.Controls.ItemsPanelTemplate",
-        "System.Collections.ObjectModel.ObservableCollection<System.Windows.Controls.DataGridColumn>",
-        "System.Collections.ObjectModel.ObservableCollection<System.Windows.Controls.ValidationRule>",
-        "System.Collections.Generic.IList<System.Windows.Controls.DataGridCellInfo>",
-        "System.Collections.IList",
-        "System.Windows.Controls.Primitives.IItemContainerGenerator",
-        "System.Windows.Documents.IDocumentPaginatorSource",
-        "System.Windows.Documents.Typography",
-        "System.Windows.Documents.InlineCollection",
-        "System.Windows.Documents.TextPointer",
-        "System.Windows.Controls.ItemContainerTemplateSelector",
-        "System.Windows.Controls.DataGridCellInfo",
-        "System.Windows.Documents.DocumentPage",
-        "System.Windows.Documents.DocumentPaginator",
-        "System.Windows.Documents.TextSelection",
-        "System.Windows.Navigation.NavigationService",
-        "System.Windows.Ink.DrawingAttributes",
-        "System.Windows.Input.StylusPointDescription",
-        "System.Windows.Ink.StylusShape",
-        "System.Collections.Generic.IEnumerable<System.Windows.Controls.InkCanvasClipboardFormat>",
-        "System.Windows.Media.MediaClock",
-        "System.Windows.IInputElement",
-        "System.Collections.ObjectModel.Collection<System.Windows.Controls.ToolBar>",
-        "System.Windows.WindowCollection"
-    };
-    private List<VisualElement> Elements { get; } = new();
-    public IReadOnlyList<VisualElement> GeneratedTypes => Elements;
-
-    public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
-    {
-        if (context.Node is AttributeSyntax attrib
-            && attrib.ArgumentList?.Arguments.Count >= 1
-            && context.SemanticModel.GetTypeInfo(attrib).Type?.Name == "GenerateHelpersAttribute")
+        if (brushFullTypeName.StartsWith("System.Windows.Media"))
         {
-            TypeOfExpressionSyntax typeArgument = (TypeOfExpressionSyntax)attrib.ArgumentList.Arguments[0].Expression;
-            TypeInfo info = context.SemanticModel.GetTypeInfo(typeArgument.Type);
-            if (info.Type is null) return;
-            
-            string? targetNamespace = null;
-            foreach (AttributeArgumentSyntax argumentExpression in attrib.ArgumentList.Arguments.Skip(1))
-            {
-                string? target = argumentExpression.NameEquals?.Name.Identifier.Value?.ToString();
-
-                switch (target)
-                {
-                    case "Namespace":
-                        switch (argumentExpression.Expression)
-                        {
-                            case LiteralExpressionSyntax les:
-                                targetNamespace = les.Token.Value?.ToString();
-                                break;
-                            case MemberAccessExpressionSyntax maes:
-                                targetNamespace = context.SemanticModel.GetConstantValue(maes.Name).Value?.ToString();
-                                break;
-                        }
-                        break;
-                }
-            }
-
-            for (ITypeSymbol? type = info.Type;
-                type is not null;
-                type = type.BaseType)
-            {
-                List<Property> properties = new();
-
-                if (Elements.Any(x => x.Type.FullName == $"{type}")) continue;
-
-                foreach (ISymbol member in type.GetMembers())
-                {
-                    if (member is IPropertySymbol property &&
-                        property.CanBeReferencedByName &&
-                        !property.IsStatic &&
-                        !property.IsOverride &&
-                        property.DeclaredAccessibility == Accessibility.Public &&
-                        !property.GetAttributes().Any(x => x.AttributeClass.Name == "ObsoleteAttribute") &&
-                        !IgnoredTypes.Contains($"{property.Type}") &&
-                        !IsDelegate(property.Type))
-                    {
-                        if (ShouldUseVisualElement(property.Type))
-                        {
-                            properties.Add(
-                                new Property(
-                                    property.Name,
-                                    $"XamlTest.IVisualElement<{property.Type}>?",
-                                    property.GetMethod is not null,
-                                    property.SetMethod is not null));
-                        }
-                        else
-                        {
-                            string propertyType = $"{property.Type}";
-                            if (TypeRemap.TryGetValue(propertyType, out string? remappedType))
-                            {
-                                propertyType = remappedType;
-                            }
-
-                            if (property.Type.IsReferenceType &&
-                                !propertyType.EndsWith("?"))
-                            {
-                                propertyType += "?";
-                            }
-
-                            properties.Add(
-                                new Property(
-                                    property.Name,
-                                    propertyType,
-                                    property.GetMethod is not null,
-                                    property.SetMethod is not null));
-                        }
-                    }
-                }
-                if (properties.Any())
-                {
-                    var visualElementType = new VisualElementType(type.Name, $"{type}", type.IsSealed || type.IsValueType);
-                    Elements.Add(new VisualElement(targetNamespace ?? "XamlTest", visualElementType, properties));
-                }
-            }
+            return "System.Windows.Media.Color";
         }
-
-        static bool ShouldUseVisualElement(ITypeSymbol typeSymbol)
-        {
-            for (ITypeSymbol? type = typeSymbol;
-                 type != null;
-                 type = type.BaseType)
-            {
-                switch($"{type}")
-                {
-                    case "System.Windows.Media.Brush": return false;
-                    case "System.Windows.DependencyObject": return true;
-                    case "Microsoft.UI.Xaml.DependencyObject": return true;
-                }
-            }
-            return false;
-        }
+        return "Windows.UI.Color";
     }
 
-    private static bool IsDelegate(ITypeSymbol typeSymbol)
-        => Is(typeSymbol, "System.Delegate");
+    private static string GetColorType(Property property) => GetColorType(property.TypeFullName);
 
-    private static bool Is(ITypeSymbol typeSymbol, string targetType)
+    private static string GetSolidColorBrushType(string brushFullTypeName)
     {
-        for (ITypeSymbol? type = typeSymbol;
-            type != null;
-            type = type.BaseType)
+        if (brushFullTypeName.StartsWith("System.Windows.Media"))
         {
-            if ($"{type}" == targetType)
-            {
-                return true;
-            }
+            return "System.Windows.Media.SolidColorBrush";
         }
-        return false;
+        return "Microsoft.UI.Xaml.Media.SolidColorBrush";
     }
 
+    private static string GetSolidColorBrushType(Property property) => GetSolidColorBrushType(property.TypeFullName);
 }

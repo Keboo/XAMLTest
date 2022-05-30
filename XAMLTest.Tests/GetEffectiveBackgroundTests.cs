@@ -80,14 +80,16 @@ public class GetEffectiveBackgroundTests
     public async Task OnGetEffectiveBackground_StopsProcessingAtDefinedParent()
     {
         await Window.SetXamlContent(@"
-<Grid Background=""#DDFF0000"">
-    <TextBlock />
-</Grid>
+<StackPanel>
+    <Grid Background=""#DDFF0000"">
+        <TextBlock />
+    </Grid>
+</StackPanel>
 ");
-        await Window.SetBackgroundColor(Colors.Blue);
-
-        IVisualElement child = await Window.GetElement("/TextBlock");
-        IVisualElement parent = await Window.GetElement("/Grid");
+        IVisualElement<StackPanel> stackPanel = await Window.GetElement<StackPanel>();
+        IVisualElement child = await Window.GetElement<TextBlock>();
+        IVisualElement parent = await Window.GetElement<Grid>();
+        await stackPanel.SetBackgroundColor(Colors.Blue);
 
         Color background = await child.GetEffectiveBackground(parent);
 

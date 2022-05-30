@@ -12,6 +12,8 @@
   <ItemGroup Condition="$(BuildWinUI) == 'false'">
     <Using Include="System.Windows.Window" Alias="NativeWindow" />
     <Using Include="System.Windows.Controls.MenuItem" Alias="NativeMenuItem" />
+    <Using Include="System.Windows.Point" Alias="NativePoint" />
+
 
     <Using Include="System.Windows" />
     <Using Include="System.Windows.Controls" />
@@ -46,6 +48,11 @@
   <ItemGroup Condition="$(BuildWinUI) == 'true'">
     <Using Include="Microsoft.UI.Xaml.Window" Alias="NativeWindow" />
     <Using Include="Microsoft.UI.Xaml.Controls.MenuBarItem" Alias="NativeMenuItem" />
+    <Using Include="Windows.Foundation.Point" Alias="NativePoint" />
+    
+    
+    <Using Include="System.Numerics.Vector2" Alias="Point" />
+    <Using Include="System.Numerics.Vector2" Alias="Vector" />
 
     
     <Using Include="Microsoft.UI" />
