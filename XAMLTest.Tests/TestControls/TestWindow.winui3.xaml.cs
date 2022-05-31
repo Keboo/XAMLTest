@@ -11,5 +11,6 @@ public sealed partial class TestWindow : Window
     public TestWindow()
     {
         InitializeComponent();
+        Title = "Custom Test Window";
     }
 }

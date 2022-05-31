@@ -1,4 +1,6 @@
-﻿namespace XamlTest.Tests;
+﻿using XamlTest.Tests.TestControls;
+
+namespace XamlTest.Tests;
 
 [TestClass]
 public class VisualElementTests

@@ -32,10 +32,14 @@ public class GetEffectiveBackgroundTests
     [TestMethod]
     public async Task OnGetEffectiveBackground_ReturnsFirstOpaqueColor()
     {
-        IVisualElement element = await Window.SetXamlContent(@"<Border x:Name=""MyBorder"" />");
-        await Window.SetBackgroundColor(Colors.Red);
+        IVisualElement<Grid> grid = await Window.SetXamlContent<Grid>(@"
+<Grid>
+    <Border x:Name=""MyBorder"" />
+</Grid>");
+        IVisualElement<Border> border = await grid.GetElement<Border>();
+        await grid.SetBackgroundColor(Colors.Red);
 
-        Color background = await element.GetEffectiveBackground();
+        Color background = await border.GetEffectiveBackground();
 
         Assert.AreEqual(Colors.Red, background);
     }
@@ -49,8 +53,9 @@ public class GetEffectiveBackgroundTests
 <Border Background=""{backgroundParent}"">
   <Border x:Name=""MyBorder"" Background=""{backgroundChild}"" />
 </Border>");
+#if WPF
         await Window.SetBackgroundColor(Colors.Red);
-
+#endif
         IVisualElement element = await Window.GetElement("MyBorder");
 
         Color background = await element.GetEffectiveBackground();
@@ -67,9 +72,10 @@ public class GetEffectiveBackgroundTests
     <TextBlock />
 </Grid>
 ");
+#if WPF
         await Window.SetBackgroundColor(Colors.Blue);
-        
-        IVisualElement element = await Window.GetElement("/TextBlock");
+#endif
+        IVisualElement element = await Window.GetElement<TextBlock>();
 
         Color background = await element.GetEffectiveBackground();
 
@@ -100,16 +106,17 @@ public class GetEffectiveBackgroundTests
     public async Task OnGetEffectiveBackground_AppliesOpacityFromParents()
     {
         await Window.SetXamlContent(@"
-<Grid Background=""Red"" Opacity=""0.5"" x:Name=""RedGrid"">
-    <Grid Background=""Blue"" x:Name=""BlueGrid"">
-        <TextBlock />
+<Grid Background=""Lime"">
+    <Grid Background=""Red"" Opacity=""0.5"" x:Name=""RedGrid"">
+        <Grid Background=""Blue"" x:Name=""BlueGrid"">
+            <TextBlock />
+        </Grid>
     </Grid>
 </Grid>
 ");
-        await Window.SetBackgroundColor(Colors.Lime);
 
-        IVisualElement child = await Window.GetElement("/TextBlock");
-        IVisualElement parent = await Window.GetElement("BlueGrid");
+        IVisualElement child = await Window.GetElement<TextBlock>();
+        IVisualElement parent = await Window.GetElement<Grid>("BlueGrid");
 
         Color background = await child.GetEffectiveBackground(parent);
 

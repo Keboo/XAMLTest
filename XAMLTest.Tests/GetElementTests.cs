@@ -154,6 +154,7 @@ public class GetElementTests
         recorder.Success();
     }
 
+#if WPF
     [TestMethod]
     public async Task OnGetElement_ItRetrieveElementFromAdornerLayer()
     {
@@ -170,6 +171,7 @@ public class GetElementTests
         Assert.IsTrue(await validationMessage.GetIsVisible());
         recorder.Success();
     }
+#endif
 
     [TestMethod]
     public async Task OnGetElement_ItRetrievesElementByAutomationIdValue()

@@ -92,5 +92,21 @@ WindowStartupLocation=""{startupLocation}""
         return await app.CreateWindowWithContent($"<local:{typeof(TUserControl).Name} />",
             windowSize, title, background, startupLocation, additionalXmlNamespaces: @$"local=""clr-namespace:{typeof(TUserControl).Namespace};assembly={typeof(TUserControl).Assembly.GetName().Name}""");
     }
+#elif WIN_UI
+    public static async Task<IWindow> CreateWindowWithUserControl<TUserControl>(
+        this IApp app,
+        Size? windowSize = null,
+        string title = "Test Window",
+        string background = "White")
+        where TUserControl : UserControl
+    {
+        if (app is null)
+        {
+            throw new ArgumentNullException(nameof(app));
+        }
+
+        return await app.CreateWindowWithContent($"<local:{typeof(TUserControl).Name} />",
+            windowSize, title, background, additionalXmlNamespaces: @$"local=""clr-namespace:{typeof(TUserControl).Namespace};assembly={typeof(TUserControl).Assembly.GetName().Name}""");
+    }
 #endif
 }

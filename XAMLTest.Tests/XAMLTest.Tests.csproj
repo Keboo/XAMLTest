@@ -5,11 +5,19 @@
     <IsPackable>false</IsPackable>
     <RootNamespace>XamlTest.Tests</RootNamespace>
     <IncludePackageReferencesDuringMarkupCompilation>true</IncludePackageReferencesDuringMarkupCompilation>
+    <GenerateProgramFile>false</GenerateProgramFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(BuildWinUI) == 'false'">
     <TargetFrameworks>net6.0-windows7</TargetFrameworks>
   </PropertyGroup>
+
+  <!--<ItemGroup Condition="$(BuildWinUI) == 'true'">
+    <ApplicationDefinition Include="App.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <Generator>MSBuild:Compile</Generator>
+    </ApplicationDefinition>
+  </ItemGroup>-->
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
@@ -25,8 +33,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\XAMLTest.TestApp\XAMLTest.TestApp.csproj" Condition="$(BuildWinUI) == 'false'"/>
-    <ProjectReference Include="..\XAMLTest.TestApp.WinUI3\XAMLTest.TestApp.WinUI3.csproj" Condition="$(BuildWinUI) == 'true'"/>
+    <ProjectReference Include="..\XAMLTest.TestApp\XAMLTest.TestApp.csproj" Condition="$(BuildWinUI) == 'false'" />
+    <ProjectReference Include="..\XAMLTest.TestApp.WinUI3\XAMLTest.TestApp.WinUI3.csproj" Condition="$(BuildWinUI) == 'true'" />
     <ProjectReference Include="..\XAMLTest\XAMLTest.csproj" />
   </ItemGroup>
   

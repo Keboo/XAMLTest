@@ -139,8 +139,8 @@ public class AppTests
         IWindow? window = await app.GetMainWindow();
 
         Assert.IsNotNull(window);
-        object? tag = await window.GetTag();
+        string? commandLine = await window.GetProperty<string>("CommandLine");
 
-        Assert.IsTrue(tag?.ToString()?.Contains("--debug"));
+        Assert.IsTrue(commandLine?.Contains("--debug"));
     }
 }

@@ -12,7 +12,7 @@ public sealed partial class MouseClickPositions : UserControl
 
     private void UserControl_Tapped(object? sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
     {
-        Point p = e.GetPosition(this);
+        var p = e.GetPosition(this);
         ClickLocation.Text = $"{(int)p.X}x{(int)p.Y}";
     }
 }
