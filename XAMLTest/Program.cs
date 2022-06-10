@@ -9,6 +9,12 @@ namespace XamlTest;
 
 internal class Program
 {
+#if WIN_UI
+    [System.Runtime.InteropServices.DllImport("Microsoft.ui.xaml.dll")]
+    private static extern void XamlCheckProcessRequirements();
+#endif
+
+
     private static Timer? HeartbeatTimer { get; set; }
 
     [STAThread]
@@ -33,7 +39,14 @@ internal class Program
         int pidValue = parseResult.GetValueForArgument(clientPid);
         string? appPathValue = parseResult.GetValueForOption(appPath);
         bool waitForDebugger = parseResult.GetValueForOption(debug);
-
+        if (waitForDebugger)
+        {
+            Debugger.Break();
+            for (; !Debugger.IsAttached;)
+            {
+                Thread.Sleep(100);
+            }
+        }
         Application application;
         if (!string.IsNullOrWhiteSpace(appPathValue) &&
             Path.GetFullPath(appPathValue) is { } fullPath &&
@@ -43,15 +56,23 @@ internal class Program
         }
         else
         {
-            application = new Application
-            {
-#if WPF
-                ShutdownMode = ShutdownMode.OnLastWindowClose
-#endif
-            };
+//            application = new Application
+//            {
+//#if WPF
+//                ShutdownMode = ShutdownMode.OnLastWindowClose
+//#endif
+//            };
         }
 
 #if WIN_UI
+        XamlCheckProcessRequirements();
+
+        WinRT.ComWrappersSupport.InitializeComWrappers();
+        Application.Start((p) => {
+            var context = new Microsoft.UI.Dispatching.DispatcherQueueSynchronizationContext(Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread());
+            SynchronizationContext.SetSynchronizationContext(context);
+            new Application();
+        });
         return 0;
 #endif
 #if WPF

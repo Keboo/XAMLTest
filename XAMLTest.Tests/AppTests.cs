@@ -65,6 +65,7 @@ public class AppTests
     [TestMethod]
     public async Task OnCreateWindow_CanUseCustomWindow()
     {
+        Debugger.Launch();
         await using var app = await App.StartRemote();
         await using var recorder = new TestRecorder(app);
 
