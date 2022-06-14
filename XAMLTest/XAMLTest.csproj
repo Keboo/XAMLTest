@@ -9,6 +9,10 @@
     <ApplicationIcon>..\Images\Icon.ico</ApplicationIcon>
   </PropertyGroup>
 
+  <PropertyGroup Condition="$(BuildWinUI) == 'true'">
+    <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+  </PropertyGroup>
+  
   <ItemGroup>
     <PackageReference Include="Grpc.Tools" Version="2.46.1">
       <PrivateAssets>all</PrivateAssets>
@@ -47,6 +51,26 @@
   
   <ItemGroup>
     <None Include="..\XAMLTest.Generator\bin\$(Configuration)\netstandard2.0\*.dll" Pack="True" PackagePath="analyzers\dotnet\cs\" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Remove="InternalApp.xaml" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <!--<Page Include="InternalApp.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>-->
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Remove="InternalApp.xaml" />
+    <Page Remove="InternalApp.xaml" />
+    <ApplicationDefinition Include="InternalApp.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <Generator>MSBuild:Compile</Generator>
+    </ApplicationDefinition>
   </ItemGroup>
 
   <Target Name="IncludeExeInPackage">

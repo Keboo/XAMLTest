@@ -1,7 +1,5 @@
 ﻿using System.CommandLine;
 using System.Diagnostics;
-using System.IO;
-using System.Reflection;
 using System.Threading;
 using XamlTest.Utility;
 
@@ -20,6 +18,7 @@ internal class Program
     [STAThread]
     static int Main(string[] args)
     {
+        Debugger.Launch();
         Argument<int> clientPid = new("clientPid");
         Option<string> appPath = new("--application-path");
         Option<bool> debug = new("--debug");
@@ -71,7 +70,7 @@ internal class Program
         Application.Start((p) => {
             var context = new Microsoft.UI.Dispatching.DispatcherQueueSynchronizationContext(Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread());
             SynchronizationContext.SetSynchronizationContext(context);
-            new Application();
+            //new InternalApp();
         });
         return 0;
 #endif

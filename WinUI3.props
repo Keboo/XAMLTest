@@ -38,6 +38,7 @@
     <UseWinUI>true</UseWinUI>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
     <DefineConstants>$(DefineConstants);WIN_UI</DefineConstants>
+    <WindowsPackageType>None</WindowsPackageType>
   </PropertyGroup>
 
   <ItemGroup Condition="$(BuildWinUI) == 'true'">
@@ -50,11 +51,9 @@
     <Using Include="Microsoft.UI.Xaml.Controls.MenuBarItem" Alias="NativeMenuItem" />
     <Using Include="Windows.Foundation.Point" Alias="NativePoint" />
     
-    
     <Using Include="System.Numerics.Vector2" Alias="Point" />
     <Using Include="System.Numerics.Vector2" Alias="Vector" />
 
-    
     <Using Include="Microsoft.UI" />
     <Using Include="Windows.Foundation" />
     <Using Include="Windows.UI" />
@@ -63,7 +62,6 @@
     <Using Include="Microsoft.UI.Xaml.Controls" />
     <Using Include="Microsoft.UI.Xaml.Controls.Primitives" />
     <Using Include="Microsoft.UI.Xaml.Media" />
-
 
     <None Include="**/*.wpf.xaml.cs" />
     <Page Remove="**/*.wpf.xaml" />
