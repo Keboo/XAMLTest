@@ -2,6 +2,7 @@
   <Import Project="../WinUI3.props" />
 
   <PropertyGroup>
+    <OutputType>Library</OutputType>
     <IsPackable>false</IsPackable>
     <RootNamespace>XamlTest.Tests</RootNamespace>
     <IncludePackageReferencesDuringMarkupCompilation>true</IncludePackageReferencesDuringMarkupCompilation>

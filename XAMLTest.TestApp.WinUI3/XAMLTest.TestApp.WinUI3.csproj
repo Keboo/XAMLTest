@@ -12,6 +12,8 @@
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
     <RootNamespace>XAMLTest.TestApp</RootNamespace>
     <WindowsPackageType>None</WindowsPackageType>
+    <WinUISDKReferences>false</WinUISDKReferences>
+
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,10 +27,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.1.0">
-      <!--<IncludeAssets>build</IncludeAssets>-->
-    </PackageReference>
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22000.197" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.1.1" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.1" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 

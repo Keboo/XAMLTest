@@ -7,6 +7,7 @@ namespace XamlTest;
 
 internal class Program
 {
+
 #if WIN_UI
     [System.Runtime.InteropServices.DllImport("Microsoft.ui.xaml.dll")]
     private static extern void XamlCheckProcessRequirements();
@@ -70,7 +71,7 @@ internal class Program
         Application.Start((p) => {
             var context = new Microsoft.UI.Dispatching.DispatcherQueueSynchronizationContext(Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread());
             SynchronizationContext.SetSynchronizationContext(context);
-            //new InternalApp();
+            new InternalApp();
         });
         return 0;
 #endif
