@@ -6,11 +6,12 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!--See:https://github.com/dotnet/wpf/issues/810 -->
     <CoreCompileDependsOn>$(CoreCompileDependsOn);Protobuf_Compile</CoreCompileDependsOn>
-    <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+  </PropertyGroup>
 
+  <PropertyGroup Condition="$(BuildWinUI) == 'true'">
+    <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
-  
   
   <ItemGroup Condition="$(BuildWinUI) == 'true'">
     <Manifest Include="$(ApplicationManifest)" />
@@ -25,10 +26,6 @@
   <!--<PropertyGroup>
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);IncludeExeInPackage</TargetsForTfmSpecificContentInPackage>
   </PropertyGroup>-->
-
-  <Target Name="Fpp" BeforeTargets="GetInstalledSDKLocations">
-    <Message Importance="high" Text="WinUI3: @(SDKReference)" />
-  </Target>
 
   <ItemGroup>
     <PackageReference Include="Grpc.Tools" Version="2.47.0">

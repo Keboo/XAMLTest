@@ -40,7 +40,6 @@
     <WindowsPackageType>None</WindowsPackageType>
     <WinUISDKReferences>false</WinUISDKReferences>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
-
   </PropertyGroup>
 
   <ItemGroup Condition="$(BuildWinUI) == 'true'">

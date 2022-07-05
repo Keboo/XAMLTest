@@ -11,6 +11,12 @@ namespace XamlTest.Tests;
 public class AppTests
 {
     [TestMethod]
+    public void TestMethod1()
+    {
+        Assert.AreEqual(0, 0);
+    }
+
+    [TestMethod]
     public async Task OnStartRemote_LaunchesRemoteApp()
     {
         await using var app = await App.StartRemote<XAMLTest.TestApp.App>();

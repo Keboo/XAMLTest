@@ -1,13 +1,13 @@
-﻿
+﻿using Microsoft.UI.Xaml;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.AppContainer;
-
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
-namespace XAMLTest.Tests;
+namespace Test;
 
 /// <summary>
-/// Based on https://devblogs.microsoft.com/ifdef-windows/winui-desktop-unit-tests/
+/// Provides application-specific behavior to supplement the default Application class.
 /// </summary>
 public partial class App : Application
 {
@@ -17,23 +17,39 @@ public partial class App : Application
     /// </summary>
     public App()
     {
-        InitializeComponent();
+        this.InitializeComponent();
     }
 
+    /// <summary>
+    /// Invoked when the application is launched normally by the end user.  Other entry points
+    /// will be used such as when the application is launched to open a specific file.
+    /// </summary>
+    /// <param name="args">Details about the launch request and process.</param>
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
         Microsoft.VisualStudio.TestPlatform.TestExecutor.UnitTestClient.CreateDefaultUI();
 
-        _window = new Window();
+        m_window = new MainWindow();
 
         // Ensure the current window is active
-        _window.Activate();
+        m_window.Activate();
 
-        UITestMethodAttribute.DispatcherQueue = _window.DispatcherQueue;
+        UITestMethodAttribute.DispatcherQueue = m_window.DispatcherQueue;
 
         // Replace back with e.Arguments when https://github.com/microsoft/microsoft-ui-xaml/issues/3368 is fixed
         Microsoft.VisualStudio.TestPlatform.TestExecutor.UnitTestClient.Run(Environment.CommandLine);
+
     }
 
-    private Window? _window;
+    private Window? m_window;
+}
+
+[TestClass]
+public class UnitTest1
+{
+    [TestMethod]
+    public void TestMethod1()
+    {
+        Assert.AreEqual(0, 0);
+    }
 }
