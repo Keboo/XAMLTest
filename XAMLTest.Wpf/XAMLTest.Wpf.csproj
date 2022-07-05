@@ -1,0 +1,76 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFrameworks>netcoreapp3.1;net6.0-windows7</TargetFrameworks>
+    <UseWPF>true</UseWPF>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RootNamespace>XamlTest</RootNamespace>
+    <IncludePackageReferencesDuringMarkupCompilation>true</IncludePackageReferencesDuringMarkupCompilation>
+    <ApplicationIcon>..\Images\Icon.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Grpc.Tools" Version="2.46.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="GrpcDotNetNamedPipes" Version="1.4.4" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.VisualStudio.Debugger.InteropA" Version="17.2.32505.113" />
+    <PackageReference Include="PInvoke.User32" Version="0.7.104" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta2.21617.1" />
+    <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+    <ProjectReference Include="..\XAMLTest.Core\XAMLTest.Core.csproj" />
+    <ProjectReference Include="..\XAMLTest.Generator\XAMLTest.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="../XAMLTest.Shared/**/*.cs" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Using Include="System.Windows" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\Images\icon.png" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);IncludeExeInPackage</TargetsForTfmSpecificContentInPackage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedFiles Include="$(GeneratedAssemblyInfoFile)" />
+    <EmbeddedFiles Include="$([System.IO.Path]::Combine('$(IntermediateOutputPath)','*AssemblyAttributes$(DefaultLanguageSourceExtension)'))" />
+    <EmbeddedFiles Include="$([System.IO.Path]::Combine('$(IntermediateOutputPath)','Host\XamlTestSpec*$(DefaultLanguageSourceExtension)'))" />
+  </ItemGroup>
+
+  <Target Name="CopyOutputs" AfterTargets="AfterBuild">
+    <ItemGroup>
+      <CopyItems Include="$(TargetDir)*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(CopyItems)" DestinationFolder="$(SolutionDir)XAMLTest.Tests\bin\$(Configuration)\$(TargetFramework)\" />
+  </Target>
+
+  <ItemGroup>
+    <None Include="..\XAMLTest.Generator\bin\$(Configuration)\netstandard2.0\*.dll" Pack="True" PackagePath="analyzers\dotnet\cs\" />
+  </ItemGroup>
+
+  <Target Name="IncludeExeInPackage">
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="$(TargetDir)$(TargetName).exe">
+        <PackagePath>build\$(TargetFramework)</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(TargetDir)$(TargetName).runtimeconfig.json">
+        <PackagePath>build\$(TargetFramework)</PackagePath>
+      </TfmSpecificPackageFile>
+
+      <TfmSpecificPackageFile Include="$(ProjectDir)Build\*.targets">
+        <PackagePath>build\$(TargetFramework)</PackagePath>
+      </TfmSpecificPackageFile>
+    </ItemGroup>
+  </Target>
+
+</Project>

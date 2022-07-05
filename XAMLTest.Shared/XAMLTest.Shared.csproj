@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.Build.NoTargets/3.5.6">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="**/*.cs" />
+    <None Remove="obj/**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Input\" />
+  </ItemGroup>
+</Project>

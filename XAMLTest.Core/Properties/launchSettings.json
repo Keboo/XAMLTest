@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "XAMLTest": {
+      "commandName": "Project",
+      "commandLineArgs": "42 --application-path \"..\\..\\..\\..\\XAMLTest.TestApp\\bin\\Debug\\netcoreapp3.1\\XAMLTest.TestApp.dll\" --debug"
+    }
+  }
+}

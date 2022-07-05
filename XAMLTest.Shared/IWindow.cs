@@ -1,6 +1,4 @@
-﻿using System.Windows;
-
-namespace XamlTest;
+﻿namespace XamlTest;
 
 public interface IWindow : IVisualElement<Window>, IEquatable<IWindow>
 {

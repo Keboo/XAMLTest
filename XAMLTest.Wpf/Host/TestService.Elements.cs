@@ -1,7 +1,5 @@
-using Grpc.Core;
 using System.ComponentModel;
 using System.Text.RegularExpressions;
-using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
 using XamlTest.Internal;
@@ -9,11 +7,11 @@ using Window = System.Windows.Window;
 
 namespace XamlTest.Host;
 
-internal partial class VisualTreeService : Protocol.ProtocolBase
+partial class TestService
 {
     private Dictionary<string, WeakReference<DependencyObject>> KnownElements { get; } = new();
 
-    public override async Task<ElementResult> GetElement(ElementQuery request, ServerCallContext context)
+    protected override async Task<ElementResult> GetElement(ElementQuery request)
     {
         ElementResult reply = new();
         await Application.Dispatcher.InvokeAsync(() =>

@@ -4,6 +4,7 @@
     <WarningsAsErrors>true</WarningsAsErrors>
     <AnalysisLevel>5</AnalysisLevel>
     <LangVersion>10.0</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -28,4 +29,11 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="System.IO"/>
+    <Using Include="System.Reflection"/>
+    <Using Include="System.Text"/>
+    <Using Include="System.Text.Json"/>
+  </ItemGroup>
 </Project>
