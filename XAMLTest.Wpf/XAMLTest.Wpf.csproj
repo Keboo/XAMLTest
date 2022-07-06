@@ -27,6 +27,8 @@
 
   <ItemGroup>
     <Compile Include="../XAMLTest.Shared/**/*.cs" />
+    <Compile Remove="../XAMLTest.Shared/obj/**/*.cs" />
+    <Compile Remove="../XAMLTest.Shared/bin/**/*.cs" />
   </ItemGroup>
   
   <ItemGroup>
@@ -41,10 +43,9 @@
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);IncludeExeInPackage</TargetsForTfmSpecificContentInPackage>
   </PropertyGroup>
 
-  <ItemGroup>
+  <!--<ItemGroup>
     <EmbeddedFiles Include="$(GeneratedAssemblyInfoFile)" />
-    <EmbeddedFiles Include="$([System.IO.Path]::Combine('$(IntermediateOutputPath)','*AssemblyAttributes$(DefaultLanguageSourceExtension)'))" />
-  </ItemGroup>
+  </ItemGroup>-->
 
   <Target Name="CopyOutputs" AfterTargets="AfterBuild">
     <ItemGroup>

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace XamlTest;
+﻿namespace XamlTest;
 
 public static class XmlNamespaceMixins
 {

@@ -11,6 +11,7 @@ using XamlTest.Internal;
 using XamlTest.Transport;
 using Brush = System.Windows.Media.Brush;
 using Point = System.Windows.Point;
+using Window = System.Windows.Window;
 using WpfColor = System.Windows.Media.Color;
 
 
