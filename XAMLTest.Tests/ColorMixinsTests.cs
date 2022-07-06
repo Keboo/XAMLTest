@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Windows.Media;
+using XamlTest;
 
 namespace XamlTest.Tests;
 
@@ -18,7 +19,7 @@ public class ColorMixinsTests
     [TestMethod]
     public void FlattenOnto_ReturnsForegroundWhenItIsOpaque()
     {
-        Color foreground = Colors.Red;
+        Color foreground = Colors.Red.FromWpfColor();
         Color background = Colors.Blue;
 
         Color flattened = foreground.FlattenOnto(background);

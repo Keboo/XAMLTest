@@ -24,7 +24,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\XAMLTest.TestApp\XAMLTest.TestApp.csproj" />
-		<ProjectReference Include="..\XAMLTest\XAMLTest.csproj" />
+		<ProjectReference Include="..\XAMLTest.Wpf\XAMLTest.Wpf.csproj" />
 	</ItemGroup>
 
 </Project>

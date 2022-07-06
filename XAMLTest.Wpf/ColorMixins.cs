@@ -70,4 +70,7 @@ public static class ColorMixins
 
     public static WpfColor ToWpfColor(this Color color)
         => WpfColor.FromArgb(color.A, color.R, color.G, color.B);
+
+    public static Color FromWpfColor(this WpfColor color)
+        => Color.FromArgb(color.A, color.R, color.G, color.B);
 }
