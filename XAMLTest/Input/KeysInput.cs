@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-using System.Windows.Input;
 
 namespace XamlTest.Input;
 
 internal class KeysInput : IInput
 {
+#if WPF
     public IReadOnlyList<Key> Keys { get; }
 
     public KeysInput(IEnumerable<Key> keys)
@@ -20,4 +19,5 @@ internal class KeysInput : IInput
 
     public override string ToString()
         => $"Keys:{string.Join(",", Keys)}";
+#endif
 }

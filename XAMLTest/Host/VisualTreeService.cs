@@ -1,6 +1,8 @@
+using System.Reflection;
+using XamlTest.Internal;
+#if WPF
 using Google.Protobuf;
 using Grpc.Core;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -8,18 +10,13 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Markup;
-using System.Windows.Media;
-using XamlTest.Internal;
 using Brush = System.Windows.Media.Brush;
 using Color = System.Windows.Media.Color;
 using Point = System.Windows.Point;
 using Window = System.Windows.Window;
+#endif
 
 namespace XamlTest.Host;
 
@@ -36,6 +33,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
     public VisualTreeService(Application application)
         => Application = application ?? throw new ArgumentNullException(nameof(application));
 
+#if WPF
     public override async Task<GetWindowsResult> GetWindows(GetWindowsQuery request, ServerCallContext context)
     {
         var ids = await Application.Dispatcher.InvokeAsync(() =>
@@ -784,4 +782,5 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
 
         return new Rect(rvleft, rvtop, rvright - rvleft, rvbottom - rvtop);
     }
+#endif
 }

@@ -1,5 +1,4 @@
 ﻿using Grpc.Core;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -110,7 +109,7 @@ internal class App : IApp
         throw new XAMLTestException("Failed to get a reply");
     }
 
-    public async Task<IWindow> CreateWindow<TWindow>() where TWindow : System.Windows.Window
+    public async Task<IWindow> CreateWindow<TWindow>() where TWindow : NativeWindow
     {
         WindowConfiguration request = new()
         {

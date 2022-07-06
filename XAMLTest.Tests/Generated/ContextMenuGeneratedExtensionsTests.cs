@@ -2,6 +2,7 @@
 
 partial class ContextMenuGeneratedExtensionsTests
 {
+#if WPF
     static partial void OnClassInitialize()
     {
         GetWindowContent = x =>
@@ -12,4 +13,5 @@ partial class ContextMenuGeneratedExtensionsTests
     </Window.ContextMenu>";
         };
     }
+#endif
 }

@@ -1,0 +1,71 @@
+<Project>
+  <PropertyGroup>
+    <BuildWinUI Condition="$(BuildWinUI) != 'true'">true</BuildWinUI>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(BuildWinUI) == 'false'">
+    <TargetFrameworks>netcoreapp3.1;net6.0-windows7</TargetFrameworks>
+    <UseWPF>true</UseWPF>
+    <DefineConstants>$(DefineConstants);WPF</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup Condition="$(BuildWinUI) == 'false'">
+    <Using Include="System.Windows.Window" Alias="NativeWindow" />
+    <Using Include="System.Windows.Controls.MenuItem" Alias="NativeMenuItem" />
+    <Using Include="System.Windows.Point" Alias="NativePoint" />
+
+
+    <Using Include="System.Windows" />
+    <Using Include="System.Windows.Controls" />
+    <Using Include="System.Windows.Controls.Primitives" />
+    <Using Include="System.Windows.Documents" />
+    <Using Include="System.Windows.Input" />
+    <Using Include="System.Windows.Interop" />
+    <Using Include="System.Windows.Markup" />
+    <Using Include="System.Windows.Media" />
+
+    <None Include="**/*.winui3.xaml.cs" />
+    <Page Remove="**/*.winui3.xaml" />
+    <Compile Remove="**/*.winui3.xaml.cs" />
+  </ItemGroup>
+
+
+  <PropertyGroup Condition="$(BuildWinUI) == 'true'">
+    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <Platforms>x86;x64;arm64</Platforms>
+    <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+    <UseWinUI>true</UseWinUI>
+    <DefineConstants>$(DefineConstants);WIN_UI</DefineConstants>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WinUISDKReferences>false</WinUISDKReferences>
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+  </PropertyGroup>
+
+  <ItemGroup Condition="$(BuildWinUI) == 'true'">
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.1.1" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.1" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(BuildWinUI) == 'true'">
+    <Using Include="Microsoft.UI.Xaml.Window" Alias="NativeWindow" />
+    <Using Include="Microsoft.UI.Xaml.Controls.MenuBarItem" Alias="NativeMenuItem" />
+    <Using Include="Windows.Foundation.Point" Alias="NativePoint" />
+    
+    <Using Include="System.Numerics.Vector2" Alias="Point" />
+    <Using Include="System.Numerics.Vector2" Alias="Vector" />
+
+    <Using Include="Microsoft.UI" />
+    <Using Include="Windows.Foundation" />
+    <Using Include="Windows.UI" />
+    <Using Include="Windows.UI.Core" />
+    <Using Include="Microsoft.UI.Xaml" />
+    <Using Include="Microsoft.UI.Xaml.Controls" />
+    <Using Include="Microsoft.UI.Xaml.Controls.Primitives" />
+    <Using Include="Microsoft.UI.Xaml.Media" />
+
+    <None Include="**/*.wpf.xaml.cs" />
+    <Page Remove="**/*.wpf.xaml" />
+    <Compile Remove="**/*.wpf.xaml.cs" />
+  </ItemGroup>
+</Project>

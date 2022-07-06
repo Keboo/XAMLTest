@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Windows;
-using System.Windows.Media;
+﻿using System.Runtime.CompilerServices;
 
 namespace XamlTest.Transport;
 
@@ -113,7 +109,7 @@ public class BrushSerializer : ISerializer
                 SolidColorData = new(color)
             };
 
-        public static implicit operator BrushData(LinearGradientBrush brush) 
+        public static implicit operator BrushData(LinearGradientBrush brush)
             => new()
             {
                 LinearGradientData = new(brush)
@@ -164,10 +160,9 @@ public class BrushSerializer : ISerializer
 
         }
 
-        protected GradientBrushData(GradientBrush brush)
+        protected GradientBrushData(IEnumerable<GradientStop> gradientStops)
         {
-            GradientStops = brush.GradientStops
-                .OfType<GradientStop>()
+            GradientStops = gradientStops
                 .Select(x => new GradientStopData
                 {
                     Color = x.Color,
@@ -184,15 +179,15 @@ public class BrushSerializer : ISerializer
 
     private class LinearGradientBrushData : GradientBrushData
     {
-        public Point StartPoint { get; set; }
-        public Point EndPoint { get; set; }
+        public NativePoint StartPoint { get; set; }
+        public NativePoint EndPoint { get; set; }
 
         public LinearGradientBrushData()
         {
         }
 
         public LinearGradientBrushData(LinearGradientBrush brush)
-            : base(brush)
+            : base(brush.GradientStops)
         {
             StartPoint = brush.StartPoint;
             EndPoint = brush.EndPoint;
@@ -207,28 +202,42 @@ public class BrushSerializer : ISerializer
 
         public LinearGradientBrush GetBrush()
         {
-            return new LinearGradientBrush
+            var brush = new LinearGradientBrush
             {
                 StartPoint = StartPoint,
                 EndPoint = EndPoint,
-                GradientStops = new GradientStopCollection(GradientStops?.Select(x => new GradientStop(x.Color, x.Offset)) ?? Enumerable.Empty<GradientStop>())
             };
+#if WPF
+            var gradientStops = GradientStops?.Select(x => new GradientStop(x.Color, x.Offset)) ?? Enumerable.Empty<GradientStop>();
+            brush.GradientStops = new GradientStopCollection(gradientStops);
+#elif WIN_UI
+            foreach (var stop in GradientStops ?? Enumerable.Empty<GradientStopData>())
+            {
+                brush.GradientStops.Add(new GradientStop
+                {
+                    Color = stop.Color,
+                    Offset = stop.Offset
+                });
+            }
+#endif
+            return brush;
         }
     }
 
     private class RadialGradientBrushData : GradientBrushData
     {
-        public Point Center { get; set; }
+        public NativePoint Center { get; set; }
         public double RadiusX { get; set; }
         public double RadiusY { get; set; }
-        public Point GradientOrigin { get; set; }
+        public NativePoint GradientOrigin { get; set; }
+        public GradientSpreadMethod SpreadMethod { get; set; }
 
         public RadialGradientBrushData()
         {
         }
 
         public RadialGradientBrushData(RadialGradientBrush brush)
-            : base(brush)
+            : base(brush.GradientStops)
         {
             Center = brush.Center;
             RadiusX = brush.RadiusX;
@@ -238,14 +247,28 @@ public class BrushSerializer : ISerializer
 
         public RadialGradientBrush GetBrush()
         {
-            return new RadialGradientBrush
+            var brush = new RadialGradientBrush
             {
                 Center = Center,
                 RadiusX = RadiusX,
                 RadiusY = RadiusY,
                 GradientOrigin = GradientOrigin,
-                GradientStops = new GradientStopCollection(GradientStops?.Select(x => new GradientStop(x.Color, x.Offset)) ?? Enumerable.Empty<GradientStop>())
+                SpreadMethod = SpreadMethod
             };
+#if WPF
+            var gradientStops = GradientStops?.Select(x => new GradientStop(x.Color, x.Offset)) ?? Enumerable.Empty<GradientStop>();
+            brush.GradientStops = new GradientStopCollection(gradientStops);
+#elif WIN_UI
+            foreach (var stop in GradientStops ?? Enumerable.Empty<GradientStopData>())
+            {
+                brush.GradientStops.Add(new GradientStop
+                {
+                    Color = stop.Color,
+                    Offset = stop.Offset
+                });
+            }
+#endif
+            return brush;
         }
     }
 }

@@ -1,6 +1,4 @@
-﻿using System.Windows.Media;
-
-namespace XamlTest;
+﻿namespace XamlTest;
 
 public sealed class HighlightConfig
 {
@@ -17,9 +15,11 @@ public sealed class HighlightConfig
     static HighlightConfig()
     {
         Brush borderBrush = new SolidColorBrush(DefaultBorderColor);
-        borderBrush.Freeze();
         Brush overlayBrush = new SolidColorBrush(DefaultOverlayColor);
+#if WPF
+        borderBrush.Freeze();
         overlayBrush.Freeze();
+#endif
 
         Default = new()
         {

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
 
 namespace XAMLTest.TestApp;
 
@@ -8,9 +7,10 @@ namespace XAMLTest.TestApp;
 /// </summary>
 public partial class MainWindow : Window
 {
+    public string CommandLine => Environment.NewLine;
+
     public MainWindow()
     {
         InitializeComponent();
-        Tag = Environment.CommandLine;
     }
 }

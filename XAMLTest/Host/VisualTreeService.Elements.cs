@@ -1,14 +1,17 @@
 using Grpc.Core;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.RegularExpressions;
-using System.Windows;
-using System.Windows.Documents;
-using System.Windows.Media;
+using System.Threading.Tasks;
 using XamlTest.Internal;
+
+#if WPF
 using Window = System.Windows.Window;
+#endif
 
 namespace XamlTest.Host;
 
+#if WPF
 internal partial class VisualTreeService : Protocol.ProtocolBase
 {
     private Dictionary<string, WeakReference<DependencyObject>> KnownElements { get; } = new();
@@ -338,3 +341,4 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
         return null;
     }
 }
+#endif

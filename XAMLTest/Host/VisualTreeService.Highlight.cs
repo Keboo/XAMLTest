@@ -1,13 +1,11 @@
 ﻿using Grpc.Core;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Documents;
-using System.Windows.Media;
 using XamlTest.Internal;
 
 namespace XamlTest.Host;
 
+#if WPF
 partial class VisualTreeService
 {
     public override Task<HighlightResult> HighlightElement(HighlightRequest request, ServerCallContext context)
@@ -61,3 +59,4 @@ partial class VisualTreeService
     }
 
 }
+#endif

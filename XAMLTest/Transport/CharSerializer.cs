@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace XamlTest.Transport;
+﻿namespace XamlTest.Transport;
 
 public class CharSerializer : ISerializer
 {

@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Text.Json;
-using System.Windows;
-using System.Windows.Controls;
 
 namespace XamlTest.Transport;
 

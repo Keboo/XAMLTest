@@ -1,56 +1,83 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
+  <Import Project="../WinUI3.props" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFrameworks>netcoreapp3.1;net6.0-windows7</TargetFrameworks>
-    <UseWPF>true</UseWPF>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>XamlTest</RootNamespace>
-    <IncludePackageReferencesDuringMarkupCompilation>true</IncludePackageReferencesDuringMarkupCompilation>
-    <ApplicationIcon>..\Images\Icon.ico</ApplicationIcon>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!--See:https://github.com/dotnet/wpf/issues/810 -->
+    <CoreCompileDependsOn>$(CoreCompileDependsOn);Protobuf_Compile</CoreCompileDependsOn>
   </PropertyGroup>
 
+  <PropertyGroup Condition="$(BuildWinUI) == 'true'">
+    <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  
+  <ItemGroup Condition="$(BuildWinUI) == 'true'">
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <!-- Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
+       Tools extension to be activated for this project even if the Windows App SDK Nuget
+       package has not yet been restored -->
+  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnablePreviewMsixTooling)'=='true'">
+    <ProjectCapability Include="Msix" />
+  </ItemGroup>
+  <!--<PropertyGroup>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);IncludeExeInPackage</TargetsForTfmSpecificContentInPackage>
+  </PropertyGroup>-->
+
   <ItemGroup>
-    <PackageReference Include="Grpc.Tools" Version="2.46.1">
+    <PackageReference Include="Grpc.Tools" Version="2.47.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="GrpcDotNetNamedPipes" Version="1.4.4" />
+
+    <None Remove="Host\XamlTestSpec.proto" />
+    <Protobuf Include="Host\XamlTestSpec.proto" GrpcServices="Both" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
     <PackageReference Include="Microsoft.VisualStudio.Debugger.InteropA" Version="17.2.32505.113" />
     <PackageReference Include="PInvoke.User32" Version="0.7.104" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta2.21617.1" />
     <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
     <ProjectReference Include="..\XAMLTest.Generator\XAMLTest.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-    <Protobuf Include="Host\XamlTestSpec.proto" GrpcServices="Both" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="..\Images\icon.png" Pack="true" PackagePath="" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);IncludeExeInPackage</TargetsForTfmSpecificContentInPackage>
-  </PropertyGroup>
-	
-  <ItemGroup>
+  <!--<ItemGroup>
     <EmbeddedFiles Include="$(GeneratedAssemblyInfoFile)" />
     <EmbeddedFiles Include="$([System.IO.Path]::Combine('$(IntermediateOutputPath)','*AssemblyAttributes$(DefaultLanguageSourceExtension)'))" />
     <EmbeddedFiles Include="$([System.IO.Path]::Combine('$(IntermediateOutputPath)','Host\XamlTestSpec*$(DefaultLanguageSourceExtension)'))" />
-  </ItemGroup>
-    
-  <Target Name="CopyOutputs" AfterTargets="AfterBuild">
+  </ItemGroup>-->
+  
+  <!--<ItemGroup>
+    <None Remove="InternalApp.xaml" />
+    <Page Remove="InternalApp.xaml" />
+    <ApplicationDefinition Include="InternalApp.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <Generator>MSBuild:Compile</Generator>
+    </ApplicationDefinition>
+  </ItemGroup>-->
+  
+  <!--<Target Name="CopyOutputs" AfterTargets="AfterBuild">
     <ItemGroup>
       <CopyItems Include="$(TargetDir)*" />
     </ItemGroup>
     <Copy SourceFiles="@(CopyItems)" DestinationFolder="$(SolutionDir)XAMLTest.Tests\bin\$(Configuration)\$(TargetFramework)\" />
-  </Target>
+  </Target>-->
   
-  <ItemGroup>
+  <!--<ItemGroup>
     <None Include="..\XAMLTest.Generator\bin\$(Configuration)\netstandard2.0\*.dll" Pack="True" PackagePath="analyzers\dotnet\cs\" />
-  </ItemGroup>
-
-  <Target Name="IncludeExeInPackage">
+  </ItemGroup>-->
+  
+  <!--<Target Name="IncludeExeInPackage">
     <ItemGroup>
       <TfmSpecificPackageFile Include="$(TargetDir)$(TargetName).exe">
         <PackagePath>build\$(TargetFramework)</PackagePath>
@@ -63,5 +90,5 @@
         <PackagePath>build\$(TargetFramework)</PackagePath>
       </TfmSpecificPackageFile>
     </ItemGroup>
-  </Target>
+  </Target>-->
 </Project>

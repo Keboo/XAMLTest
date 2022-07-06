@@ -1,8 +1,6 @@
-﻿using System.Windows;
+﻿namespace XamlTest;
 
-namespace XamlTest;
-
-public interface IWindow : IVisualElement<Window>, IEquatable<IWindow>
+public interface IWindow : IVisualElement<NativeWindow>, IEquatable<IWindow>
 {
     
 }

@@ -1,19 +1,21 @@
-using MaterialDesignThemes.Wpf;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using XamlTest;
 using XamlTest.Tests.TestControls;
 
+#if WPF
+using MaterialDesignThemes.Wpf;
 [assembly: GenerateHelpers(typeof(ColorZone))]
+#endif
 namespace XamlTest.Tests;
 
 [TestClass]
 public class AppTests
 {
+    [TestMethod]
+    public void TestMethod1()
+    {
+        Assert.AreEqual(0, 0);
+    }
+
     [TestMethod]
     public async Task OnStartRemote_LaunchesRemoteApp()
     {
@@ -22,6 +24,7 @@ public class AppTests
         Assert.AreEqual("Test App Window", await window!.GetTitle());
     }
 
+#if WPF
     [TestMethod]
     public async Task CanGenerateTypedElement_ForCustomControlInRemoteApp()
     {
@@ -49,6 +52,7 @@ public class AppTests
 
         Assert.AreEqual(ColorZoneMode.PrimaryLight, await colorZone.GetMode());
     }
+#endif
 
     [TestMethod]
     public async Task OnCreateWindow_CanReadTitle()
@@ -67,6 +71,7 @@ public class AppTests
     [TestMethod]
     public async Task OnCreateWindow_CanUseCustomWindow()
     {
+        //Debugger.Launch();
         await using var app = await App.StartRemote();
         await using var recorder = new TestRecorder(app);
 
@@ -141,8 +146,8 @@ public class AppTests
         IWindow? window = await app.GetMainWindow();
 
         Assert.IsNotNull(window);
-        object? tag = await window.GetTag();
+        string? commandLine = await window.GetProperty<string>("CommandLine");
 
-        Assert.IsTrue(tag?.ToString()?.Contains("--debug"));
+        Assert.IsTrue(commandLine?.Contains("--debug"));
     }
 }

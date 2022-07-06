@@ -1,8 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Windows.Media;
-using XamlTest;
-
-namespace XamlTest.Tests;
+﻿namespace XamlTest.Tests;
 
 [TestClass]
 public class ColorMixinsTests
@@ -35,7 +31,7 @@ public class ColorMixinsTests
 
         Color flattened = foreground.FlattenOnto(background);
 
-        Color expected = Color.FromRgb(0x76, 0x76, 0x76);
+        Color expected = Color.FromArgb(0xFF, 0x76, 0x76, 0x76);
         Assert.AreEqual(expected, flattened);
     }
 }

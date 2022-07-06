@@ -1,22 +1,25 @@
-﻿using System;
-using System.CommandLine;
+﻿using System.CommandLine;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Threading;
-using System.Windows;
 using XamlTest.Utility;
 
 namespace XamlTest;
 
 internal class Program
 {
+
+#if WIN_UI
+    [System.Runtime.InteropServices.DllImport("Microsoft.ui.xaml.dll")]
+    private static extern void XamlCheckProcessRequirements();
+#endif
+
+
     private static Timer? HeartbeatTimer { get; set; }
 
     [STAThread]
     static int Main(string[] args)
     {
+        Debugger.Launch();
         Argument<int> clientPid = new("clientPid");
         Option<string> appPath = new("--application-path");
         Option<bool> debug = new("--debug");
@@ -36,7 +39,14 @@ internal class Program
         int pidValue = parseResult.GetValueForArgument(clientPid);
         string? appPathValue = parseResult.GetValueForOption(appPath);
         bool waitForDebugger = parseResult.GetValueForOption(debug);
-
+        if (waitForDebugger)
+        {
+            Debugger.Break();
+            for (; !Debugger.IsAttached;)
+            {
+                Thread.Sleep(100);
+            }
+        }
         Application application;
         if (!string.IsNullOrWhiteSpace(appPathValue) &&
             Path.GetFullPath(appPathValue) is { } fullPath &&
@@ -46,14 +56,27 @@ internal class Program
         }
         else
         {
-            application = new Application
-            {
-                ShutdownMode = ShutdownMode.OnLastWindowClose
-            };
+//            application = new Application
+//            {
+//#if WPF
+//                ShutdownMode = ShutdownMode.OnLastWindowClose
+//#endif
+//            };
         }
 
-        IDisposable? service = null;
+#if WIN_UI
+        XamlCheckProcessRequirements();
 
+        WinRT.ComWrappersSupport.InitializeComWrappers();
+        Application.Start((p) => {
+            var context = new Microsoft.UI.Dispatching.DispatcherQueueSynchronizationContext(Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread());
+            SynchronizationContext.SetSynchronizationContext(context);
+            new InternalApp();
+        });
+        return 0;
+#endif
+#if WPF
+        IDisposable? service = null;
         application.Startup += ApplicationStartup;
         application.Exit += ApplicationExit;
 
@@ -95,6 +118,7 @@ internal class Program
                 application.Dispatcher.Invoke(() => application.Shutdown());
             }
         }
+#endif
     }
 
     private static Application CreateFromAssembly(string assemblyPath)

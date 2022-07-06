@@ -1,8 +1,5 @@
 ﻿using GrpcDotNetNamedPipes;
-using System;
 using System.Diagnostics;
-using System.IO;
-using System.Threading.Tasks;
 using XamlTest.Host;
 using XamlTest.Internal;
 
@@ -41,7 +38,7 @@ public static class App
             WorkingDirectory = Path.GetDirectoryName(options.XamlTestPath) + Path.DirectorySeparatorChar,
             UseShellExecute = true
         };
-        startInfo.ArgumentList.Add($"{Process.GetCurrentProcess().Id}");
+        startInfo.ArgumentList.Add($"{Environment.ProcessId}");
         if (!string.IsNullOrWhiteSpace(options.RemoteAppPath))
         {
             startInfo.ArgumentList.Add("--application-path");
@@ -62,16 +59,16 @@ public static class App
 
         if (Process.Start(startInfo) is Process process)
         {
+            if (useDebugger)
+            {
+                await VisualStudioAttacher.AttachVisualStudioToProcess(process);
+            }
             NamedPipeChannel channel = new(".", Server.PipePrefix + process.Id, new NamedPipeChannelOptions
             {
                 ConnectionTimeout = (int)options.ConnectionTimeout.TotalMilliseconds,
                 CurrentUserOnly = true
             });
             Protocol.ProtocolClient client = new(channel);
-            if (useDebugger)
-            {
-                await VisualStudioAttacher.AttachVisualStudioToProcess(process);
-            }
 
             var app = new ManagedApp(process, client, options.LogMessage);
 

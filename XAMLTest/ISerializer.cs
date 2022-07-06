@@ -1,7 +1,4 @@
-﻿using System;
-using System.Windows.Media;
-
-namespace XamlTest;
+﻿namespace XamlTest;
 
 public interface ISerializer
 {

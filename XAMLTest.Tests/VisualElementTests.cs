@@ -1,14 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Input;
-using System.Windows.Media;
-using XamlTest.Tests.TestControls;
+﻿using XamlTest.Tests.TestControls;
 
 namespace XamlTest.Tests;
 
@@ -224,11 +214,19 @@ public class VisualElementTests
   <TextBox x:Name=""MyTextBox"" />
 </Grid>");
         IVisualElement<TextBox> element = await Window.GetElement<TextBox>("/Grid~MyTextBox");
-        Assert.IsFalse(await element.GetIsKeyboardFocused());
 
+#if WPF
+        Assert.IsFalse(await element.GetIsKeyboardFocused());
+#elif WIN_UI
+        Assert.AreEqual(FocusState.Unfocused, await element.GetFocusState());
+#endif
         await element.MoveKeyboardFocus();
 
+#if WPF
         Assert.IsTrue(await element.GetIsKeyboardFocused());
+#elif WIN_UI
+        Assert.AreNotEqual(FocusState.Unfocused, await element.GetFocusState());
+#endif
     }
 
     [TestMethod]
@@ -250,6 +248,7 @@ public class VisualElementTests
         recorder.Success();
     }
 
+#if WPF
     [TestMethod]
     public async Task OnSendTextInput_ExplicitKeyIsSent()
     {
@@ -268,6 +267,7 @@ public class VisualElementTests
 
         recorder.Success();
     }
+#endif
 
     [TestMethod]
     public async Task OnGetProperty_WhenPropertyIsDependencyObject_GetVisualElement()
@@ -284,11 +284,13 @@ public class VisualElementTests
         IVisualElement<StackPanel> stackPanel = await Window.GetElement<StackPanel>("Panel");
 
         //Act
+#if WPF
         IVisualElement<ContextMenu>? contextMenu = await stackPanel.GetContextMenu();
-
+#elif WIN_UI
+        IVisualElement<FlyoutBase>? contextMenu = await stackPanel.GetContextFlyout();
+#endif
         //Assert
         Assert.IsNotNull(contextMenu);
-        Assert.AreEqual("TestContextMenu", await contextMenu.GetName());
         recorder.Success();
     }
 

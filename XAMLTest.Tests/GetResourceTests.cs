@@ -1,10 +1,3 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using System.Threading.Tasks;
-using System.Windows.Controls;
-using System.Windows.Media;
-
 namespace XamlTest.Tests;
 
 [TestClass]

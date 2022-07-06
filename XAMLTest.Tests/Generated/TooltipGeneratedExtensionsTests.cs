@@ -1,5 +1,6 @@
 ﻿namespace XamlTest.Tests.Generated;
 
+#if WPF
 partial class ToolTipGeneratedExtensionsTests
 {
     static partial void OnClassInitialize()
@@ -13,3 +14,4 @@ partial class ToolTipGeneratedExtensionsTests
         };
     }
 }
+#endif

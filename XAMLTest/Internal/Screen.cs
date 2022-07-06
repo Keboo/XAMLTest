@@ -124,8 +124,10 @@ internal class Screen
         if (!_multiMonitorSupport || monitor == (IntPtr)PRIMARY_MONITOR)
         {
             // Single monitor system
+#if WPF
             Bounds = new Rect(SystemParameters.VirtualScreenLeft, SystemParameters.VirtualScreenTop,
                 SystemParameters.VirtualScreenWidth, SystemParameters.VirtualScreenHeight);
+#endif
             Primary = true;
             DeviceName = "DISPLAY";
         }
@@ -246,8 +248,10 @@ internal class Screen
 
                 if (!_multiMonitorSupport || _hmonitor == (IntPtr)PRIMARY_MONITOR)
                 {
+#if WPF
                     // Single monitor system
                     _workingArea = SystemParameters.WorkArea;
+#endif
                 }
                 else
                 {

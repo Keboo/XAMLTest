@@ -1,13 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using XamlTest.Tests.TestControls;
-
-namespace XamlTest.Tests;
+﻿namespace XamlTest.Tests;
 
 [TestClass]
 public class GetElementTests
@@ -71,8 +62,11 @@ public class GetElementTests
         await Window.SetXamlContent(@"<TextBox x:Name=""TestName""/>");
 
         //Act
-        IVisualElement<TextBoxBase> element = await Window.GetElement<TextBoxBase>("/TextBoxBase");
-
+#if WPF
+        IVisualElement<TextBoxBase> element = await Window.GetElement<TextBoxBase>();
+#elif WIN_UI
+        IVisualElement<Control> element = await Window.GetElement<Control>();
+#endif
         //Assert
         Assert.AreEqual("TestName", await element.GetName());
         recorder.Success();
@@ -160,6 +154,7 @@ public class GetElementTests
         recorder.Success();
     }
 
+#if WPF
     [TestMethod]
     public async Task OnGetElement_ItRetrieveElementFromAdornerLayer()
     {
@@ -176,6 +171,7 @@ public class GetElementTests
         Assert.IsTrue(await validationMessage.GetIsVisible());
         recorder.Success();
     }
+#endif
 
     [TestMethod]
     public async Task OnGetElement_ItRetrievesElementByAutomationIdValue()
@@ -250,8 +246,10 @@ public class GetElementTests
         Assert.IsNotNull(button);
 
         Assert.IsTrue(await button.GetActualWidth() > 0);
+#if WPF
         Assert.IsTrue(await button.GetIsDefault());
         Assert.IsFalse(await button.GetIsPressed());
+#endif
         recorder.Success();
     }
 

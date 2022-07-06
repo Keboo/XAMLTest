@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using XamlTest.Host;
+﻿using XamlTest.Host;
 using XamlTest.Input;
 
 namespace XamlTest;

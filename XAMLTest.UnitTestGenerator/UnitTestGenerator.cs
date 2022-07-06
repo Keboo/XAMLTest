@@ -1,9 +1,9 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Text;
+using TypeInfo = Microsoft.CodeAnalysis.TypeInfo;
+
 using TypeInfo = Microsoft.CodeAnalysis.TypeInfo;
 
 namespace XAMLTest.UnitTestGenerator;
@@ -147,20 +147,12 @@ namespace XamlTest.Tests.Generated
 
     private static string GetAssertion(string propertyName, string returnType)
     {
-        switch(propertyName)
+        return propertyName switch
         {
-            case "ActualHeight":
-            case "ActualWidth":
-                return "Assert.IsTrue(actual > 0);";
-            case "Width":
-            case "Height":
-                return "Assert.IsTrue(double.IsNaN(actual) || actual >= 0);";
-            case "VerticalAlignment":
-            case "HorizontalAlignment":
-                
-            default:
-                return $"Assert.AreEqual(default({returnType}), actual);";
-        }
+            "ActualHeight" or "ActualWidth" => "Assert.IsTrue(actual > 0);",
+            "Width" or "Height" => "Assert.IsTrue(double.IsNaN(actual) || actual >= 0);",
+            _ => $"Assert.AreEqual(default({returnType}), actual);",
+        };
     }
 
     public class SyntaxReceiver : ISyntaxContextReceiver
