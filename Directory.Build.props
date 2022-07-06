@@ -5,6 +5,7 @@
     <AnalysisLevel>5</AnalysisLevel>
     <LangVersion>10.0</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
+    <WarningLevel>9999</WarningLevel>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -35,5 +36,7 @@
     <Using Include="System.Reflection"/>
     <Using Include="System.Text"/>
     <Using Include="System.Text.Json"/>
+
+    <Using Remove="System.Text.Json" Condition="'$(TargetFramework)'=='netstandard2.0'"/>
   </ItemGroup>
 </Project>

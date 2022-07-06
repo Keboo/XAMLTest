@@ -20,4 +20,8 @@
 
     <Protobuf Include="Host\XamlTestSpec.proto" GrpcServices="Both" />
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="XAMLTest.Wpf" />
+  </ItemGroup>
 </Project>

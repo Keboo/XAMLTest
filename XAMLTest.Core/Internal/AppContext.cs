@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace XamlTest.Internal;
+﻿namespace XamlTest.Internal;
 
 internal class AppContext
 {

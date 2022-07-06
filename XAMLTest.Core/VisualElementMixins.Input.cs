@@ -1,6 +1,4 @@
-﻿using XamlTest.Input;
-
-namespace XamlTest;
+﻿namespace XamlTest;
 
 public static partial class VisualElementMixins
 {
