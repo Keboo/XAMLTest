@@ -2,7 +2,7 @@
 
 namespace XamlTest;
 
-internal static class RectMixins
+public static class RectMixins
 {
     public static Point Center(this Rect rect) 
         => NewPoint(rect.Left + rect.Width / 2.0, rect.Top + rect.Height / 2.0);

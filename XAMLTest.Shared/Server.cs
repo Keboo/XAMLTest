@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.Windows;
+﻿using System.Diagnostics;
 using XamlTest.Internal;
 
 namespace XamlTest;

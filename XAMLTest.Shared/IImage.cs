@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace XamlTest;
+﻿namespace XamlTest;
 
 public interface IImage
 {

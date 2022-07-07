@@ -1,9 +1,6 @@
-﻿using System.IO;
-using System.Threading.Tasks;
+﻿namespace XamlTest;
 
-namespace XamlTest;
-
-public static class VTMixins
+public static class ImageExtensions
 {
     public static async Task Save(this IImage image, string filePath)
     {

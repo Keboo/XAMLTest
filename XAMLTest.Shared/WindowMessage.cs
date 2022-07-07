@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace XamlTest;
+﻿namespace XamlTest;
 
 [Flags]
 internal enum WindowMessage : uint

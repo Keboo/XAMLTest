@@ -1,8 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿namespace XamlTest;
 
-namespace XamlTest;
-
-public static class WindowMixins
+public static class WindowExtensions
 {
 #if WPF
     public static Task WaitForLoaded(this IWindow window) 

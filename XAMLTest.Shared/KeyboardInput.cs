@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using XamlTest.Input;
+﻿using XamlTest.Input;
 
 namespace XamlTest;
 
