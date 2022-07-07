@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp3.1;net6.0-windows</TargetFrameworks>
+    <IsPackable>false</IsPackable>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>XamlTest.Tests</RootNamespace>
+    <DefineConstants>$(DefineConstants);WPF</DefineConstants>
+    <IncludePackageReferencesDuringMarkupCompilation>true</IncludePackageReferencesDuringMarkupCompilation>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
+    <PackageReference Include="Microsoft.Toolkit.Mvvm" Version="7.1.2" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.2.10" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.2.10" />
+    <PackageReference Include="coverlet.collector" Version="3.1.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\XAMLTest.UnitTestGenerator\XAMLTest.UnitTestGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\XAMLTest.Generator\XAMLTest.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+
+    <ProjectReference Include="..\XAMLTest.TestApp\XAMLTest.TestApp.csproj" />
+
+    <ProjectReference Include="..\XAMLTest.Wpf\XAMLTest.Wpf.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\XAMLTest.Tests.Shared\**\*.cs" />
+    <Compile Remove="..\XAMLTest.Tests.Shared\obj\**\*.cs" />
+    <Compile Remove="..\XAMLTest.Tests.Shared\bin\**\*.cs" />
+
+    <Page Include="..\XAMLTest.Tests.Shared\**\*.wpf.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    
+    <Compile Remove="..\XAMLTest.Tests.Shared\**\*.winui3.xaml.cs" />
+    <Page Remove="..\XAMLTest.Tests.Shared\**\*.winui3.xaml.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+  </ItemGroup>
+
+</Project>
