@@ -1,4 +1,8 @@
-﻿namespace XamlTest.Tests;
+﻿#if WPF
+using XamlTest.Tests.TestControls;
+#endif
+
+namespace XamlTest.Tests;
 
 [TestClass]
 public class GetElementTests

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Media;
+﻿using System.Threading.Tasks;
 
 namespace XamlTest;
 
@@ -44,7 +41,11 @@ public static partial class VisualElementMixins
             throw new ArgumentNullException(nameof(dependencyProperty));
         }
 
+#if WPF
         IValue value = await element.GetProperty(dependencyProperty.Name, dependencyProperty.OwnerType.AssemblyQualifiedName);
+#elif WIN_UI
+        IValue value = await element.GetProperty("", "");
+#endif
         return value.GetAs<T?>();
     }
 
@@ -66,7 +67,11 @@ public static partial class VisualElementMixins
             throw new ArgumentNullException(nameof(dependencyProperty));
         }
 
+#if WPF
         return await SetProperty(element, dependencyProperty.Name, value, dependencyProperty.OwnerType.AssemblyQualifiedName);
+#elif WIN_UI
+        return await SetProperty(element, "", value, "");
+#endif
     }
 
     public static async Task<T?> SetProperty<T>(this IVisualElement element, string propertyName, T value)

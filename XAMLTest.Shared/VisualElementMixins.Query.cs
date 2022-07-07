@@ -1,4 +1,6 @@
-﻿namespace XamlTest;
+﻿using System.Threading.Tasks;
+
+namespace XamlTest;
 
 static partial class VisualElementMixins
 {

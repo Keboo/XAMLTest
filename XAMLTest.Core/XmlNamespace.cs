@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace XamlTest;
+﻿namespace XamlTest;
 
 public sealed class XmlNamespace : IEquatable<XmlNamespace>
 {

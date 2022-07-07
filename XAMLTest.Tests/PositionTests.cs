@@ -1,7 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using XamlTest.Tests.TestControls;
+﻿using XamlTest.Tests.TestControls;
 
 namespace XamlTest.Tests;
 

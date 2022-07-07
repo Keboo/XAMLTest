@@ -1,9 +1,4 @@
-﻿using System;
-using System.Windows;
-using System.Windows.Documents;
-using System.Windows.Media;
-
-namespace XamlTest.Internal;
+﻿namespace XamlTest.Internal;
 
 internal class SelectionAdorner : Adorner, IDisposable
 {

@@ -317,9 +317,9 @@ message VersionResult {
 
 message HighlightRequest {
   string elementId = 1;
-  string borderColor = 2;
+  string borderBrush = 2;
   double borderThickness = 3;
-  string overlayColor = 4;
+  string overlayBrush = 4;
   bool isVisible = 5;
 }
 

@@ -1,4 +1,6 @@
-﻿namespace XamlTest.Transport;
+﻿using System.Text.Json;
+
+namespace XamlTest.Transport;
 
 public class XamlSegmentSerializer : ISerializer
 {

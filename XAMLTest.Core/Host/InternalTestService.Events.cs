@@ -47,7 +47,7 @@ partial class InternalTestService
 
         string GetItemString(object item)
         {
-            return Serializer.Serialize(item.GetType(), item)
+            return Serialize(item.GetType(), item)
                 ?? item?.ToString()
                 ?? item?.GetType().FullName
                 ?? "<null>";

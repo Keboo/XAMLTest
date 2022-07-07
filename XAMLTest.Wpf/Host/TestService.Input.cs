@@ -1,7 +1,4 @@
-﻿using System.Windows.Input;
-using System.Windows.Interop;
-
-namespace XamlTest.Host;
+﻿namespace XamlTest.Host;
 
 partial class TestService
 {
@@ -78,22 +75,22 @@ partial class TestService
                             case MouseData.Types.MouseEvent.MoveToElement:
                                 if (element is FrameworkElement frameworkElement)
                                 {
-                                    Area coordinates = GetCoordinates(frameworkElement);
+                                    Rect coordinates = GetCoordinates(frameworkElement);
                                     Position position = Position.Center;
                                     if (!string.IsNullOrEmpty(mouseData.Value))
                                     {
                                         _ = Enum.TryParse(mouseData.Value, out position);
                                     }
-                                    Location location = position switch
+                                    Point location = position switch
                                     {
                                         Position.TopLeft => coordinates.TopLeft,
-                                        Position.TopCenter => new Location(coordinates.Center().X, coordinates.Top),
+                                        Position.TopCenter => new Point(coordinates.Center().X, coordinates.Top),
                                         Position.TopRight => coordinates.TopRight,
-                                        Position.RightCenter => new Location(coordinates.Right, coordinates.Center().Y),
+                                        Position.RightCenter => new Point(coordinates.Right, coordinates.Center().Y),
                                         Position.BottomRight => coordinates.BottomRight,
-                                        Position.BottomCenter => new Location(coordinates.Center().X, coordinates.Bottom),
+                                        Position.BottomCenter => new Point(coordinates.Center().X, coordinates.Bottom),
                                         Position.BottomLeft => coordinates.BottomLeft,
-                                        Position.LeftCenter => new Location(coordinates.Left, coordinates.Center().Y),
+                                        Position.LeftCenter => new Point(coordinates.Left, coordinates.Center().Y),
                                         _ => coordinates.Center()
                                     };
                                     Input.MouseInput.MoveCursor(location);
@@ -102,8 +99,8 @@ partial class TestService
                             case MouseData.Types.MouseEvent.MoveRelative:
                                 if (TryParsePoint(mouseData.Value, out int relX, out int relY))
                                 {
-                                    Location current = Input.MouseInput.GetCursorPosition();
-                                    Input.MouseInput.MoveCursor(new Location(current.X + relX, current.Y + relY));
+                                    Point current = Input.MouseInput.GetCursorPosition();
+                                    Input.MouseInput.MoveCursor(new Point(current.X + relX, current.Y + relY));
                                 }
                                 else
                                 {
@@ -178,7 +175,7 @@ partial class TestService
             }
         });
 
-        Location point = Input.MouseInput.GetCursorPosition();
+        Point point = Input.MouseInput.GetCursorPosition();
         reply.CursorX = (int)point.X;
         reply.CursorY = (int)point.Y;
 

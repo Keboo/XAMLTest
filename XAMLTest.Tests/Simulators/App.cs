@@ -7,7 +7,7 @@ public class App : IApp
         throw new NotImplementedException();
     }
 
-    public Task<IWindow> CreateWindow<TWindow>()
+    public Task<IWindow> CreateWindow<TWindow>() where TWindow : Window
     {
         throw new NotImplementedException();
     }

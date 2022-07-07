@@ -4,8 +4,6 @@ using System.Diagnostics;
 using System.Text;
 using TypeInfo = Microsoft.CodeAnalysis.TypeInfo;
 
-using TypeInfo = Microsoft.CodeAnalysis.TypeInfo;
-
 namespace XAMLTest.UnitTestGenerator;
 
 [Generator]

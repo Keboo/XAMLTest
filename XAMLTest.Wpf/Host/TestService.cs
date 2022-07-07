@@ -4,17 +4,12 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Windows.Controls;
-using System.Windows.Markup;
-using System.Windows.Media;
 using XamlTest.Internal;
 using XamlTest.Transport;
 using Brush = System.Windows.Media.Brush;
 using Point = System.Windows.Point;
 using Window = System.Windows.Window;
 using WpfColor = System.Windows.Media.Color;
-
-
 
 namespace XamlTest.Host;
 
@@ -25,11 +20,12 @@ internal partial class TestService : InternalTestService
     private List<Assembly> LoadedAssemblies { get; } = new List<Assembly>();
 
     private Application Application { get; }
+    
+
 
     public TestService(Application application)
     {
         Application = application ?? throw new ArgumentNullException(nameof(application));
-        AddSerializer(new GridSerializer());
     }
 
     protected override async Task<GetWindowsResult> GetWindows(GetWindowsQuery request)
@@ -403,10 +399,10 @@ internal partial class TestService : InternalTestService
                 reply.ErrorMessages.Add("Could not find element");
                 return;
             }
-
+            
             if (dependencyObject is FrameworkElement element)
             {
-                Area rect = GetCoordinates(element);
+                Rect rect = GetCoordinates(element);
 
                 reply.Left = rect.Left;
                 reply.Top = rect.Top;
@@ -698,7 +694,7 @@ internal partial class TestService : InternalTestService
         window.LogMessage("Using mouse to activate Window");
 
         //Fall back, attempt to click on the window to activate it
-        foreach (Location clickPoint in GetClickPoints(window))
+        foreach (Point clickPoint in GetClickPoints(window))
         {
             Input.MouseInput.MoveCursor(clickPoint);
             Input.MouseInput.LeftClick();
@@ -711,25 +707,25 @@ internal partial class TestService : InternalTestService
 
         return window.IsActive;
 
-        static IEnumerable<Location> GetClickPoints(System.Windows.Window window)
+        static IEnumerable<Point> GetClickPoints(System.Windows.Window window)
         {
             //Skip top right and that could cause the window to close
 
             // Top left
-            yield return new Location(window.Left + 1, window.Top + 1);
+            yield return new Point(window.Left + 1, window.Top + 1);
 
             // Bottom right
-            yield return new Location(window.Left + window.Width - 1, window.Top + window.Height - 1);
+            yield return new Point(window.Left + window.Width - 1, window.Top + window.Height - 1);
 
             // Bottom left
-            yield return new Location(window.Left + 1, window.Top + window.Height - 1);
+            yield return new Point(window.Left + 1, window.Top + window.Height - 1);
 
             // Center
-            yield return new Location(window.Left + window.Width / 2, window.Top + window.Height / 2);
+            yield return new Point(window.Left + window.Width / 2, window.Top + window.Height / 2);
         }
     }
 
-    private static Area GetCoordinates(FrameworkElement element)
+    private static Rect GetCoordinates(FrameworkElement element)
     {
         if (element is null)
         {
@@ -751,6 +747,6 @@ internal partial class TestService : InternalTestService
         var rvright = Math.Max(left, right);
         var rvbottom = Math.Max(top, bottom);
 
-        return new Area(rvleft, rvtop, rvright, rvbottom);
+        return new Rect(rvleft, rvtop, rvright - rvleft, rvbottom - rvtop);
     }
 }

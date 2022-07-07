@@ -106,7 +106,7 @@ internal class App : IApp
         throw new XAMLTestException("Failed to get a reply");
     }
 
-    public async Task<IWindow> CreateWindow<TWindow>()
+    public async Task<IWindow> CreateWindow<TWindow>() where TWindow : NativeWindow
     {
         WindowConfiguration request = new()
         {

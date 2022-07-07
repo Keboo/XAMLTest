@@ -6,6 +6,7 @@
     <UseWPF>true</UseWPF>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>XamlTest</RootNamespace>
+    <DefineConstants>$(DefineConstants);WPF</DefineConstants>
     <IncludePackageReferencesDuringMarkupCompilation>true</IncludePackageReferencesDuringMarkupCompilation>
     <ApplicationIcon>..\Images\Icon.ico</ApplicationIcon>
   </PropertyGroup>
@@ -26,9 +27,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="../XAMLTest.Shared/**/*.cs" />
-    <Compile Remove="../XAMLTest.Shared/obj/**/*.cs" />
-    <Compile Remove="../XAMLTest.Shared/bin/**/*.cs" />
+    <Compile Include="..\XAMLTest.Shared\**\*.cs" />
+    <Compile Remove="..\XAMLTest.Shared\obj\**\*.cs" />
+    <Compile Remove="..\XAMLTest.Shared\bin\**\*.cs" />
   </ItemGroup>
   
   <ItemGroup>

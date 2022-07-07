@@ -1,11 +1,10 @@
-﻿using System.Windows.Input;
-using XamlTest.Input;
+﻿using XamlTest.Input;
 
 namespace XamlTest;
 
 public static partial class VisualElementMixins
 {
-    public static async Task<Location> MoveCursorTo(this IVisualElement element,
+    public static async Task<Point> MoveCursorTo(this IVisualElement element,
         Position position = Position.Center,
         int xOffset = 0,
         int yOffset = 0)
@@ -19,7 +18,7 @@ public static partial class VisualElementMixins
         return await element.SendInput(new MouseInput(inputs.ToArray()));
     }
 
-    public static async Task<Location> LeftClick(this IVisualElement element,
+    public static async Task<Point> LeftClick(this IVisualElement element,
         Position position = Position.Center,
         int xOffset = 0, int yOffset = 0,
         TimeSpan? clickTime = null)
@@ -33,7 +32,7 @@ public static partial class VisualElementMixins
             clickTime);
     }
 
-    public static async Task<Location> RightClick(this IVisualElement element,
+    public static async Task<Point> RightClick(this IVisualElement element,
         Position position = Position.Center,
         int xOffset = 0, int yOffset = 0,
         TimeSpan? clickTime = null)
@@ -47,7 +46,7 @@ public static partial class VisualElementMixins
             clickTime);
     }
 
-    public static async Task<Location> SendClick(IVisualElement element,
+    public static async Task<Point> SendClick(IVisualElement element,
         MouseInput down,
         MouseInput up,
         Position position,
@@ -90,12 +89,14 @@ public static partial class VisualElementMixins
                 object? argument = input.GetArgument(argumentIndex++);
                 switch (argument)
                 {
+#if WPF
                     case Key key:
-                        inputs.Add(new KeysInput((int)key));
+                        inputs.Add(new KeysInput(key));
                         break;
                     case IEnumerable<Key> keys:
-                        inputs.Add(new KeysInput(keys.Cast<int>()));
+                        inputs.Add(new KeysInput(keys));
                         break;
+#endif
                     default:
                         string? stringArgument = argument?.ToString();
                         if (!string.IsNullOrEmpty(stringArgument))

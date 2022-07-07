@@ -40,15 +40,15 @@ partial class TestService
 
             if (request.IsVisible)
             {
-                Color? borderColor = Serializer.Deserialize<Color>(request.OverlayColor);
-                Color? overlayColor = Serializer.Deserialize<Color>(request.OverlayColor);
+                Brush? borderBrush = Serializer.Deserialize<Brush>(request.BorderBrush);
+                Brush? overlayBrush = Serializer.Deserialize<Brush>(request.OverlayBrush);
 
                 var selectionAdorner = new SelectionAdorner(uiElement)
                 {
                     AdornerLayer = adornerLayer,
-                    BorderBrush = borderColor is null ? null : new SolidColorBrush(borderColor.Value.ToWpfColor()),
+                    BorderBrush = borderBrush,
                     BorderThickness = request.BorderThickness,
-                    OverlayBrush = overlayColor is null ? null : new SolidColorBrush(overlayColor.Value.ToWpfColor())
+                    OverlayBrush = overlayBrush
                 };
 
                 adornerLayer.Add(selectionAdorner);

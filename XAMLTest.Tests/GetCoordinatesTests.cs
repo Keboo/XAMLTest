@@ -12,7 +12,12 @@ public class GetCoordinatesTests
     [ClassInitialize]
     public static async Task ClassInitialize(TestContext context)
     {
-        App = await XamlTest.App.StartRemote(logMessage: msg => context.WriteLine(msg));
+        AppOptions options = new()
+        {
+            LogMessage = msg => context.WriteLine(msg),
+            AllowVisualStudioDebuggerAttach = true
+        };
+        App = await XamlTest.App.StartRemote(options);
 
         await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
 

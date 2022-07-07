@@ -4,7 +4,7 @@ public interface IApp : IAsyncDisposable, IDisposable
 {
     Task Initialize(string applicationResourceXaml, params string[] assemblies);
     Task<IWindow> CreateWindow(string xaml);
-    Task<IWindow> CreateWindow<TWindow>();
+    Task<IWindow> CreateWindow<TWindow>() where TWindow : Window;
     Task<IWindow?> GetMainWindow();
     Task<IReadOnlyList<IWindow>> GetWindows();
 

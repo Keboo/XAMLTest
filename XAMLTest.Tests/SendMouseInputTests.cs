@@ -206,7 +206,7 @@ public static class Distance
     public static Point Add(Point point, double xDelta = 0.0, double yDelta = 0.0)
     {
 #if WPF
-        return point + new Vector(xDelta, yDelta)
+        return point + new Vector(xDelta, yDelta);
 #elif WIN_UI
         return point + new Point((float)xDelta, (float)yDelta);
 #endif

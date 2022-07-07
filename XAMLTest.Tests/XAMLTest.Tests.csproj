@@ -1,111 +1,47 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <!--<Import Project="../WinUI3.props" />-->
 
   <PropertyGroup>
-    <BuildWinUI Condition="$(BuildWinUI) != 'true'">true</BuildWinUI>
-
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-    <RootNamespace>XamlTest.Tests</RootNamespace>
-
-	<ItemGroup>
-		<ProjectReference Include="..\XAMLTest.TestApp\XAMLTest.TestApp.csproj" />
-		<ProjectReference Include="..\XAMLTest.Wpf\XAMLTest.Wpf.csproj" />
-	</ItemGroup>
-
-  </PropertyGroup>
-  <ItemGroup>
-    <Using Include="Microsoft.UI.Xaml.Window" Alias="NativeWindow" />
-    <Using Include="Microsoft.UI.Xaml.Controls.MenuBarItem" Alias="NativeMenuItem" />
-    <Using Include="Windows.Foundation.Point" Alias="NativePoint" />
-
-    <Using Include="System.Numerics.Vector2" Alias="Point" />
-    <Using Include="System.Numerics.Vector2" Alias="Vector" />
-    
-    <Using Include="Microsoft.UI" />
-    <Using Include="Windows.Foundation" />
-    <Using Include="Windows.UI" />
-    <Using Include="Windows.UI.Core" />
-    <Using Include="Microsoft.UI.Xaml" />
-    <Using Include="Microsoft.UI.Xaml.Controls" />
-    <Using Include="Microsoft.UI.Xaml.Controls.Primitives" />
-    <Using Include="Microsoft.UI.Xaml.Media" />
-
-    <None Remove="**/*.wpf.xaml" />
-    <None Remove="**/*.wpf.xaml.cs" />
-    <Page Remove="**/*.wpf.xaml" />
-    <Compile Remove="**/*.wpf.xaml.cs" />
-  </ItemGroup>
-  
-  
-  <!--<PropertyGroup>
+    <!--<TargetFrameworks>netcoreapp3.1;net5.0-windows7.0</TargetFrameworks>-->
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <IsPackable>false</IsPackable>
+    <UseWPF>true</UseWPF>
     <RootNamespace>XamlTest.Tests</RootNamespace>
+    <DefineConstants>$(DefineConstants);WPF</DefineConstants>
     <IncludePackageReferencesDuringMarkupCompilation>true</IncludePackageReferencesDuringMarkupCompilation>
-    <GenerateProgramFile>false</GenerateProgramFile>
-  </PropertyGroup>-->
-
-  <PropertyGroup Condition="$(BuildWinUI) == 'false'">
-    <TargetFrameworks>net6.0-windows7</TargetFrameworks>
   </PropertyGroup>
 
-  <PropertyGroup Condition="$(BuildWinUI) == 'true'">
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-  </PropertyGroup>
-  
-  
-  
-  <!-- 
-    Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
-    Tools extension to be activated for this project even if the Windows App SDK Nuget
-    package has not yet been restored.
-  -->
-  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
-    <ProjectCapability Include="Msix" />
+  <ItemGroup>
+    <Compile Remove="TestControls\MouseClickPositions.winui3.xaml.cs" />
+    <Compile Remove="TestControls\TestWindow.winui3.xaml.cs" />
+    <Compile Remove="TestControls\TextBlock_AttachedProperty.winui3.xaml.cs" />
   </ItemGroup>
 
-  <!-- 
-    Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution 
-    Explorer "Package and Publish" context menu entry to be enabled for this project even if 
-    the Windows App SDK Nuget package has not yet been restored.
-  -->
-  <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
-    <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
-  </PropertyGroup>
-  
-  <!--<ItemGroup Condition="$(BuildWinUI) == 'true'">
-    <ProjectCapability Include="TestContainer" />
-    <Manifest Include="$(ApplicationManifest)" />
-    <PackageReference Include="Microsoft.TestPlatform.TestHost" Version="17.2.0">
-      <ExcludeAssets>build</ExcludeAssets>
-    </PackageReference>
-  </ItemGroup>-->
+  <ItemGroup>
+    <Page Remove="TestControls\MouseClickPositions.winui3.xaml" />
+    <Page Remove="TestControls\TestWindow.winui3.xaml" />
+    <Page Remove="TestControls\TextBlock_AttachedProperty.winui3.xaml" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
     <PackageReference Include="Microsoft.Toolkit.Mvvm" Version="7.1.2" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.2.10" />
     <PackageReference Include="MSTest.TestFramework" Version="2.2.10" />
-    <PackageReference Include="Microsoft.TestPlatform.TestHost" Version="17.2.0">
-      <ExcludeAssets>build</ExcludeAssets>
-    </PackageReference>
     <PackageReference Include="coverlet.collector" Version="3.1.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <ProjectReference Include="..\XAMLTest.Core\XAMLTest.Core.csproj" />
     <ProjectReference Include="..\XAMLTest.UnitTestGenerator\XAMLTest.UnitTestGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\XAMLTest.Generator\XAMLTest.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\XAMLTest.TestApp\XAMLTest.TestApp.csproj" Condition="$(BuildWinUI) == 'false'" />
-    <ProjectReference Include="..\XAMLTest.TestApp.WinUI3\XAMLTest.TestApp.WinUI3.csproj" Condition="$(BuildWinUI) == 'true'" />
-    <ProjectReference Include="..\XAMLTest\XAMLTest.csproj" />
+    <ProjectReference Include="..\XAMLTest.TestApp\XAMLTest.TestApp.csproj" />
+    <ProjectReference Include="..\XAMLTest.Wpf\XAMLTest.Wpf.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
-  </ItemGroup>
-
+  <ItemGroup> 
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" /> 
+  </ItemGroup> 
 </Project>

@@ -15,7 +15,7 @@ public class ColorMixinsTests
     [TestMethod]
     public void FlattenOnto_ReturnsForegroundWhenItIsOpaque()
     {
-        Color foreground = Colors.Red.FromWpfColor();
+        Color foreground = Colors.Red;
         Color background = Colors.Blue;
 
         Color flattened = foreground.FlattenOnto(background);

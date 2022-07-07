@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFrameworks>netcoreapp3.1;net6.0-windows</TargetFrameworks>
     <UseWPF>true</UseWPF>
     <IsPackable>false</IsPackable>
     <DeterministicSourcePaths Condition="'$(EnableSourceLink)' == ''">false</DeterministicSourcePaths>

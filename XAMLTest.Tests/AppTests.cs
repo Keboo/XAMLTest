@@ -3,7 +3,7 @@ using XamlTest.Tests.TestControls;
 
 #if WPF
 using MaterialDesignThemes.Wpf;
-[assembly: GenerateHelpers(typeof(ColorZone))]
+[assembly: XamlTest.GenerateHelpers(typeof(ColorZone))]
 #endif
 namespace XamlTest.Tests;
 

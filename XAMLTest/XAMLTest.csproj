@@ -5,7 +5,7 @@
     <RootNamespace>XamlTest</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!--See:https://github.com/dotnet/wpf/issues/810 -->
-    <CoreCompileDependsOn>$(CoreCompileDependsOn);Protobuf_Compile</CoreCompileDependsOn>
+    <!--<CoreCompileDependsOn>$(CoreCompileDependsOn);Protobuf_Compile</CoreCompileDependsOn>-->
   </PropertyGroup>
 
   <PropertyGroup Condition="$(BuildWinUI) == 'true'">

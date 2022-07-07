@@ -10,8 +10,4 @@
     <None Include="**/*.cs" />
     <None Remove="obj/**" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Input\" />
-  </ItemGroup>
 </Project>

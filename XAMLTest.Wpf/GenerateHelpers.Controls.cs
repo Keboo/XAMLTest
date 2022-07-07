@@ -1,5 +1,4 @@
-﻿using System;
-using XamlTest;
+﻿using XamlTest;
 
 [assembly: GenerateHelpers(typeof(System.Windows.Window))]
 [assembly: GenerateHelpers(typeof(System.Windows.Controls.AccessText))]

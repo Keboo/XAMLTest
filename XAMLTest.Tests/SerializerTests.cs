@@ -50,12 +50,15 @@ public class SerializerTests
     {
         var serializers = (await App.GetSerializers()).ToList();
 
+        int xamlSegmentSerializerIndex = serializers.FindIndex(x => x is XamlSegmentSerializer);
         int brushSerializerIndex = serializers.FindIndex(x => x is BrushSerializer);
         int charSerializerIndex = serializers.FindIndex(x => x is CharSerializer);
         int gridSerializerIndex = serializers.FindIndex(x => x is GridSerializer);
         int secureStringSerializerIndex = serializers.FindIndex(x => x is SecureStringSerializer);
         int defaultSerializerIndex = serializers.FindIndex(x => x is DefaultSerializer);
 
+        Assert.IsTrue(xamlSegmentSerializerIndex >= 0);
+        Assert.IsTrue(xamlSegmentSerializerIndex < brushSerializerIndex);
         Assert.IsTrue(brushSerializerIndex < charSerializerIndex);
         Assert.IsTrue(charSerializerIndex < gridSerializerIndex);
         Assert.IsTrue(gridSerializerIndex < secureStringSerializerIndex);

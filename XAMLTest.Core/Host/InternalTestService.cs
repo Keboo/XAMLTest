@@ -1,17 +1,9 @@
 using Grpc.Core;
-using XamlTest.Internal;
 
 namespace XamlTest.Host;
 
 public abstract partial class InternalTestService : Protocol.ProtocolBase
 {
-    protected internal Serializer Serializer { get; } = new Serializer();
-
-    protected void AddSerializer(ISerializer serializer)
-    {
-        Serializer.AddSerializer(serializer);
-    }
-
     public sealed override Task<GetWindowsResult> GetWindows(GetWindowsQuery request, ServerCallContext context) 
         => GetWindows(request);
     protected abstract Task<GetWindowsResult> GetWindows(GetWindowsQuery request);
@@ -75,7 +67,7 @@ public abstract partial class InternalTestService : Protocol.ProtocolBase
             if (Type.GetType(request.SerializerType) is { } serializerType &&
                 Activator.CreateInstance(serializerType) is ISerializer serializer)
             {
-                Serializer.AddSerializer(serializer, request.InsertIndex);
+                AddSerializer(serializer, request.InsertIndex);
             }
             else
             {
