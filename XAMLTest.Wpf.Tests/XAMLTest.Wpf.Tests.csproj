@@ -24,8 +24,6 @@
     <ProjectReference Include="..\XAMLTest.UnitTestGenerator\XAMLTest.UnitTestGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\XAMLTest.Generator\XAMLTest.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 
-    <ProjectReference Include="..\XAMLTest.TestApp\XAMLTest.TestApp.csproj" />
-
     <ProjectReference Include="..\XAMLTest.Wpf\XAMLTest.Wpf.csproj" />
   </ItemGroup>
 

@@ -5,6 +5,7 @@
     <TargetFrameworks>netcoreapp3.1;net6.0-windows</TargetFrameworks>
     <UseWPF>true</UseWPF>
     <IsPackable>false</IsPackable>
+    <RootNamespace>XAMLTest.TestApp</RootNamespace>
     <DeterministicSourcePaths Condition="'$(EnableSourceLink)' == ''">false</DeterministicSourcePaths>
   </PropertyGroup>
 

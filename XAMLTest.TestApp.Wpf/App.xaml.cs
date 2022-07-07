@@ -1,6 +1,4 @@
-﻿using System.Windows;
-
-namespace XAMLTest.TestApp;
+﻿namespace XAMLTest.TestApp;
 
 /// <summary>
 /// Interaction logic for App.xaml
