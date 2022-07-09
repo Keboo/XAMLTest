@@ -49,7 +49,7 @@
     <Using Remove="System.Text.Json" Condition="'$(TargetFramework)'=='netstandard2.0'"/>
   </ItemGroup>
 
-  <ItemGroup Condition="$(UseWPF) == 'true'">
+  <ItemGroup Condition="'$(UseWPF)' == 'true'">
     <Using Include="System.Windows.Window" Alias="NativeWindow" />
     <Using Include="System.Windows.Controls.MenuItem" Alias="NativeMenuItem" />
     <Using Include="System.Windows.Point" Alias="NativePoint" />
@@ -67,5 +67,27 @@
     <None Include="**/*.winui3.xaml.cs" />
     <Page Remove="**/*.winui3.xaml" />
     <Compile Remove="**/*.winui3.xaml.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseWinUI)' == 'true'">
+    <Using Include="Microsoft.UI.Xaml.Window" Alias="NativeWindow" />
+    <Using Include="Microsoft.UI.Xaml.Controls.MenuBarItem" Alias="NativeMenuItem" />
+    <Using Include="Windows.Foundation.Point" Alias="NativePoint" />
+
+    <Using Include="System.Numerics.Vector2" Alias="Point" />
+    <Using Include="System.Numerics.Vector2" Alias="Vector" />
+
+    <Using Include="Microsoft.UI" />
+    <Using Include="Windows.Foundation" />
+    <Using Include="Windows.UI" />
+    <Using Include="Windows.UI.Core" />
+    <Using Include="Microsoft.UI.Xaml" />
+    <Using Include="Microsoft.UI.Xaml.Controls" />
+    <Using Include="Microsoft.UI.Xaml.Controls.Primitives" />
+    <Using Include="Microsoft.UI.Xaml.Media" />
+
+    <None Include="**/*.wpf.xaml.cs" />
+    <Page Remove="**/*.wpf.xaml" />
+    <Compile Remove="**/*.wpf.xaml.cs" />
   </ItemGroup>
 </Project>

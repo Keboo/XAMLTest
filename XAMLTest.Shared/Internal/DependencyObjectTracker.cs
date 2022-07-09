@@ -1,10 +1,12 @@
-﻿namespace XamlTest.Internal;
+﻿using WinRT;
+
+namespace XamlTest.Internal;
 
 internal static class DependencyObjectTracker
 {
-    public static string GetId(DependencyObject obj) => (string)obj.GetValue(IdProperty);
+    private static string GetId(DependencyObject obj) => (string)obj.GetValue(IdProperty);
 
-    public static void SetId(DependencyObject obj, string value) => obj.SetValue(IdProperty, value);
+    private static void SetId(DependencyObject obj, string value) => obj.SetValue(IdProperty, value);
 
     // Using a DependencyProperty as the backing store for Id.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty IdProperty =
@@ -23,4 +25,27 @@ internal static class DependencyObjectTracker
         }
         return id;
     }
+
+#if WIN_UI
+    private static readonly string XamlTestId = $"XamlTest-{Guid.NewGuid()}";
+
+    internal static string GetOrSetId(NativeWindow obj, IDictionary<string, WeakReference<IWinRTObject>> cache)
+    {
+        string id = "";
+        if (!obj.CoreWindow.CustomProperties.TryGetValue(XamlTestId, out object? objId) && 
+            objId is string stringId)
+        {
+            id = stringId;
+        }
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            obj.CoreWindow.CustomProperties[XamlTestId] = id = Guid.NewGuid().ToString();
+        }
+        lock (cache)
+        {
+            cache[id] = new WeakReference<IWinRTObject>(obj);
+        }
+        return id;
+    }
+#endif
 }
