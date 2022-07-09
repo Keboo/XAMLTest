@@ -23,5 +23,6 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="XAMLTest.Wpf"/>
+    <InternalsVisibleTo Include="XAMLTest.WinUI3"/>
   </ItemGroup>
 </Project>

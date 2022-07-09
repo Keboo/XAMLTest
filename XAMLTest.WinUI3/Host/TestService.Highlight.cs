@@ -1,16 +1,13 @@
-﻿using Grpc.Core;
-using System.Windows.Documents;
-using System.Windows.Media;
-using XamlTest.Internal;
+﻿using XamlTest.Internal;
 
 namespace XamlTest.Host;
 
 partial class TestService
 {
-    protected override Task<HighlightResult> HighlightElement(HighlightRequest request)
+    protected override async Task<HighlightResult> HighlightElement(HighlightRequest request)
     {
         HighlightResult reply = new();
-        Application.Dispatcher.Invoke(() =>
+        bool success = await Dispatcher.TryInvokeAsync(() =>
         {
             DependencyObject? dependencyObject = GetCachedElement<DependencyObject>(request.ElementId);
             if (dependencyObject is null)
@@ -25,36 +22,40 @@ partial class TestService
                 return;
             }
 
-            var adornerLayer = AdornerLayer.GetAdornerLayer(uiElement);
+            //var adornerLayer = AdornerLayer.GetAdornerLayer(uiElement);
+            //
+            //if (adornerLayer is null)
+            //{
+            //    reply.ErrorMessages.Add("Could not find adnorner layer");
+            //    return;
+            //}
 
-            if (adornerLayer is null)
-            {
-                reply.ErrorMessages.Add("Could not find adnorner layer");
-                return;
-            }
-
-            foreach(var adorner in adornerLayer.GetAdorners(uiElement)?.OfType<SelectionAdorner>().ToList() ?? Enumerable.Empty<SelectionAdorner>())
-            {
-                adornerLayer.Remove(adorner);
-            }
+            //foreach(var adorner in adornerLayer.GetAdorners(uiElement)?.OfType<SelectionAdorner>().ToList() ?? Enumerable.Empty<SelectionAdorner>())
+            //{
+            //    adornerLayer.Remove(adorner);
+            //}
 
             if (request.IsVisible)
             {
                 Brush? borderBrush = Serializer.Deserialize<Brush>(request.BorderBrush);
                 Brush? overlayBrush = Serializer.Deserialize<Brush>(request.OverlayBrush);
 
-                var selectionAdorner = new SelectionAdorner(uiElement)
-                {
-                    AdornerLayer = adornerLayer,
-                    BorderBrush = borderBrush,
-                    BorderThickness = request.BorderThickness,
-                    OverlayBrush = overlayBrush
-                };
-
-                adornerLayer.Add(selectionAdorner);
+                //var selectionAdorner = new SelectionAdorner(uiElement)
+                //{
+                //    AdornerLayer = adornerLayer,
+                //    BorderBrush = borderBrush,
+                //    BorderThickness = request.BorderThickness,
+                //    OverlayBrush = overlayBrush
+                //};
+                //
+                //adornerLayer.Add(selectionAdorner);
             }
         });
-        return Task.FromResult(reply);
+        if (!success)
+        {
+            reply.ErrorMessages.Add($"Failed to process {nameof(HighlightElement)}");
+        }
+        return reply;
     }
 
 }

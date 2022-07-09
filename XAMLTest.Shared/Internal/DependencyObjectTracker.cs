@@ -1,4 +1,6 @@
-﻿using WinRT;
+﻿#if WIN_UI
+using WinRT;
+#endif
 
 namespace XamlTest.Internal;
 
@@ -28,6 +30,20 @@ internal static class DependencyObjectTracker
 
 #if WIN_UI
     private static readonly string XamlTestId = $"XamlTest-{Guid.NewGuid()}";
+
+    internal static string GetOrSetId(DependencyObject obj, IDictionary<string, WeakReference<IWinRTObject>> cache)
+    {
+        string id = GetId(obj);
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            SetId(obj, id = Guid.NewGuid().ToString());
+        }
+        lock (cache)
+        {
+            cache[id] = new WeakReference<IWinRTObject>(obj);
+        }
+        return id;
+    }
 
     internal static string GetOrSetId(NativeWindow obj, IDictionary<string, WeakReference<IWinRTObject>> cache)
     {

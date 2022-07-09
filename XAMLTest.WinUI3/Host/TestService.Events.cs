@@ -1,9 +1,4 @@
-﻿using Grpc.Core;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
-using XamlTest.Event;
+﻿using XamlTest.Event;
 
 namespace XamlTest.Host;
 
@@ -15,7 +10,7 @@ partial class TestService
         {
             EventId = Guid.NewGuid().ToString()
         };
-        await Application.Dispatcher.InvokeAsync(() =>
+        await Dispatcher.TryInvokeAsync(() =>
         {
             DependencyObject? element = GetCachedElement<DependencyObject>(request.ElementId);
             if (element is null)

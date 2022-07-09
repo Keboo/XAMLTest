@@ -1,18 +1,11 @@
-﻿using Grpc.Core;
-using System;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using System.Windows;
-
-namespace XamlTest.Host;
+﻿namespace XamlTest.Host;
 
 partial class TestService
 {
     protected override async Task<RemoteInvocationResult> RemoteInvocation(RemoteInvocationRequest request)
     {
         RemoteInvocationResult reply = new();
-        await Application.Dispatcher.InvokeAsync(() =>
+        bool success = await Dispatcher.TryInvokeAsync(() =>
         {
             try
             {
@@ -50,6 +43,10 @@ partial class TestService
                 reply.ErrorMessages.Add(e.ToString());
             }
         });
+        if (!success)
+        {
+            reply.ErrorMessages.Add($"Failed to process {nameof(RemoteInvocation)}");
+        }
         return reply;
     }
 }

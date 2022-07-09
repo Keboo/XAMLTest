@@ -12,7 +12,7 @@ partial class TestService
     protected override async Task<ElementResult> GetElement(ElementQuery request)
     {
         ElementResult reply = new();
-        await Application.Dispatcher.InvokeAsync(() =>
+        bool success = await Dispatcher.TryInvokeAsync(() =>
         {
             try
             {
@@ -20,8 +20,8 @@ partial class TestService
 
                 if (searchRoot is null) return;
 
-                var window = searchRoot as Window ?? Window.GetWindow(searchRoot);
-                window.LogMessage("Getting element");
+                //var window = searchRoot as NativeWindow ?? NativeWindow.GetWindow(searchRoot);
+                //window.LogMessage("Getting element");
 
                 if (!string.IsNullOrWhiteSpace(request.Query))
                 {
@@ -33,7 +33,7 @@ partial class TestService
 
                     reply.Elements.Add(GetElement(element));
 
-                    window.LogMessage("Got element");
+                    //window.LogMessage("Got element");
                     return;
                 }
 
@@ -44,18 +44,24 @@ partial class TestService
                 reply.ErrorMessages.Add(e.ToString());
             }
         });
+        if (!success)
+        {
+            reply.ErrorMessages.Add($"Failed to process {nameof(GetElement)}");
+        }
+
         return reply;
 
         FrameworkElement? GetParentElement()
         {
             if (!string.IsNullOrWhiteSpace(request.WindowId))
             {
-                Window? window = GetCachedElement<Window>(request.WindowId);
+                NativeWindow? window = GetCachedElement<NativeWindow>(request.WindowId);
                 if (window is null)
                 {
                     reply!.ErrorMessages.Add("Failed to find parent window");
                 }
-                return window;
+                //TODO
+                //return window as FrameworkElement;
             }
             if (!string.IsNullOrWhiteSpace(request.ParentId))
             {
@@ -249,13 +255,13 @@ partial class TestService
         var queue = new Queue<DependencyObject>();
         Enqueue(GetChildren(parent));
 
-        if (parent is UIElement parentVisual &&
-            AdornerLayer.GetAdornerLayer(parentVisual) is { } layer &&
-            layer.GetAdorners(parentVisual) is { } adorners &&
-            adorners.Length > 0)
-        {
-            Enqueue(adorners);
-        }
+        //if (parent is UIElement parentVisual &&
+        //    AdornerLayer.GetAdornerLayer(parentVisual) is { } layer &&
+        //    layer.GetAdorners(parentVisual) is { } adorners &&
+        //    adorners.Length > 0)
+        //{
+        //    Enqueue(adorners);
+        //}
 
         while (queue.Count > 0)
         {
@@ -277,24 +283,24 @@ partial class TestService
             }
             if (item is FrameworkElement fe)
             {
-                if (fe.ContextMenu is { } contextMenu)
-                {
-                    yield return contextMenu;
-                }
-                if (fe.ToolTip as DependencyObject is { } toolTip)
-                {
-                    yield return toolTip;
-                }
+                //if (fe.ContextMenu is { } contextMenu)
+                //{
+                //    yield return contextMenu;
+                //}
+                //if (fe.ToolTip as DependencyObject is { } toolTip)
+                //{
+                //    yield return toolTip;
+                //}
             }
             if (childrenCount == 0)
             {
-                foreach (object? logicalChild in LogicalTreeHelper.GetChildren(item))
-                {
-                    if (logicalChild is DependencyObject child)
-                    {
-                        yield return child;
-                    }
-                }
+                //foreach (object? logicalChild in LogicalTreeHelper.GetChildren(item))
+                //{
+                //    if (logicalChild is DependencyObject child)
+                //    {
+                //        yield return child;
+                //    }
+                //}
             }
         }
 
@@ -310,8 +316,7 @@ partial class TestService
     private Element GetElement(DependencyObject? element)
     {
         Element rv = new();
-        if (element is not null &&
-            (element is not Freezable freeze || !freeze.IsFrozen))
+        if (element is not null)
         {
             rv.Id = DependencyObjectTracker.GetOrSetId(element, KnownElements);
             rv.Type = element.GetType().AssemblyQualifiedName;
@@ -320,13 +325,13 @@ partial class TestService
     }
 
     private TElement? GetCachedElement<TElement>(string? id)
-        where TElement : DependencyObject
+        where TElement : class, IWinRTObject
     {
         if (string.IsNullOrWhiteSpace(id)) return default;
         lock (KnownElements)
         {
-            if (KnownElements.TryGetValue(id, out WeakReference<DependencyObject>? weakRef) &&
-                weakRef.TryGetTarget(out DependencyObject? element))
+            if (KnownElements.TryGetValue(id, out WeakReference<IWinRTObject>? weakRef) &&
+                weakRef.TryGetTarget(out IWinRTObject? element))
             {
                 return element as TElement;
             }

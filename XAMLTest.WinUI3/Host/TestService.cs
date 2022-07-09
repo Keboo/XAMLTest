@@ -1,5 +1,6 @@
 using Google.Protobuf;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Windowing;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
@@ -9,30 +10,6 @@ using Brush = Microsoft.UI.Xaml.Media.Brush;
 using Color = Windows.UI.Color;
 
 namespace XamlTest.Host;
-
-internal static class DispatcherExtensions
-{
-    public static Task<bool> TryInvokeAsync(this DispatcherQueue dispatcher, Action action)
-        => TryInvokeAsync(dispatcher, () =>
-        {
-            action();
-            return true;
-        }); 
-
-    public static Task<T?> TryInvokeAsync<T>(this DispatcherQueue dispatcher, Func<T?> action)
-    {
-        TaskCompletionSource<T?> tcs = new();
-        bool success = dispatcher.TryEnqueue(() =>
-        {
-            tcs.SetResult(action());
-        });
-        if (success)
-        {
-            return tcs.Task;
-        }
-        return Task.FromResult(default(T));
-    }
-}
 
 internal partial class TestService : InternalTestService
 {
@@ -86,7 +63,7 @@ internal partial class TestService : InternalTestService
                 return null;
             }
         });
-        
+
         GetWindowsResult reply = new();
         if (!string.IsNullOrWhiteSpace(id))
         {
@@ -114,7 +91,7 @@ internal partial class TestService : InternalTestService
                     if (DependencyPropertyHelper.TryGetDependencyProperty(request.Name, request.OwnerType,
                         out DependencyProperty? dependencyProperty))
                     {
-                        
+
                         object? value = element.GetValue(dependencyProperty);
                         //SetValue(reply, dependencyProperty.PropertyType, value);
                     }
@@ -350,7 +327,7 @@ internal partial class TestService : InternalTestService
                         reply.ErrorMessages.Add($"Could not find property with name '{request.Name}'");
                         return;
                     }
-                    
+
                     foundProperty.SetValue(element, value);
 
                     //Re-retrive the value in case the dependency property coalesced it
@@ -453,7 +430,7 @@ internal partial class TestService : InternalTestService
                 reply.ErrorMessages.Add("Could not find element");
                 return;
             }
-            
+
             if (dependencyObject is FrameworkElement element)
             {
                 Rect rect = GetCoordinates(element);
@@ -515,7 +492,7 @@ internal partial class TestService : InternalTestService
                     try
                     {
                         ResourceDictionary appResourceDictionary = LoadXaml<ResourceDictionary>(xaml);
-                        
+
                         foreach (var mergedDictionary in appResourceDictionary.MergedDictionaries)
                         {
                             Application.Resources.MergedDictionaries.Add(mergedDictionary);
@@ -558,7 +535,7 @@ internal partial class TestService : InternalTestService
                         reply.ErrorMessages.Add($"Error loading window type '{request.WindowType}'");
                     }
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     reply.ErrorMessages.Add($"Error creating window '{request.WindowType}'{Environment.NewLine}{e}");
                 }
@@ -576,7 +553,7 @@ internal partial class TestService : InternalTestService
             }
             if (window is { })
             {
-                
+
                 reply.WindowsId = DependencyObjectTracker.GetOrSetId(window, KnownElements);
                 window.Activate();
 
@@ -606,7 +583,7 @@ internal partial class TestService : InternalTestService
                 //    return;
                 //}
 
-                reply.LogMessages.AddRange(window.GetLogMessages());
+                //reply.LogMessages.AddRange(window.GetLogMessages());
             }
             else
             {
@@ -620,19 +597,21 @@ internal partial class TestService : InternalTestService
     protected override async Task<ImageResult> GetScreenshot(ImageQuery request)
     {
         ImageResult reply = new();
-        bool success = await Dispatcher.TryInvokeAsync(async () =>
+        using MemoryStream ms = new();
+
+        bool success = await Dispatcher.TryInvokeAsync(() =>
         {
-            NativeWindow mainWindow = Application.MainWindow;
+            //NativeWindow mainWindow = Application.MainWindow;
             Screen? screen;
-            if (mainWindow is null)
-            {
-                screen = Screen.PrimaryScreen;
-            }
-            else
-            {
-                Point topLeft = mainWindow.PointToScreen(new Point(0, 0));
-                screen = Screen.FromRect(new Rect(topLeft.X, topLeft.Y, mainWindow.ActualWidth, mainWindow.ActualHeight));
-            }
+            //if (mainWindow is null)
+            //{
+            screen = Screen.PrimaryScreen;
+            //}
+            //else
+            //{
+            //    Point topLeft = mainWindow.PointToScreen(new Point(0, 0));
+            //    screen = Screen.FromRect(new Rect(topLeft.X, topLeft.Y, mainWindow.ActualWidth, mainWindow.ActualHeight));
+            //}
 
             if (screen is null)
             {
@@ -645,14 +624,17 @@ internal partial class TestService : InternalTestService
             bmpGraphics.CopyFromScreen(
                 (int)Math.Floor(screen.Bounds.Left),
                 (int)Math.Floor(screen.Bounds.Top),
-                0, 
-                0, 
+                0,
+                0,
                 screenBmp.Size);
-            using MemoryStream ms = new();
             screenBmp.Save(ms, ImageFormat.Bmp);
             ms.Position = 0;
-            reply.Data = await ByteString.FromStreamAsync(ms);
         });
+        if (!success)
+        {
+            reply.ErrorMessages.Add($"Failed to process {nameof(GetScreenshot)}");
+        }
+        reply.Data = await ByteString.FromStreamAsync(ms);
         return reply;
     }
 
@@ -663,7 +645,7 @@ internal partial class TestService : InternalTestService
         {
             bool success = await Dispatcher.TryInvokeAsync(() =>
             {
-                Application.Shutdown(request.ExitCode);
+                //Application.Shutdown(request.ExitCode);
             });
             if (!success)
             {
@@ -747,7 +729,7 @@ internal partial class TestService : InternalTestService
 
     private static bool ActivateWindow(NativeWindow window)
     {
-        window.LogMessage("Activating window");
+        //window.LogMessage("Activating window");
         window.Activate();
 
         return true;
@@ -772,18 +754,22 @@ internal partial class TestService : InternalTestService
         static IEnumerable<Point> GetClickPoints(NativeWindow window)
         {
             //Skip top right and that could cause the window to close
+            AppWindow appWindow = window.GetAppWindow();
+
+            Windows.Graphics.SizeInt32 size = appWindow.ClientSize;
+            Windows.Graphics.PointInt32 position = appWindow.Position;
 
             // Top left
-            yield return new Point(window.Left + 1, window.Top + 1);
+            yield return new Point(position.X + 1, position.Y + 1);
 
             // Bottom right
-            yield return new Point(window.Left + window.Width - 1, window.Top + window.Height - 1);
+            yield return new Point(position.X + size.Width - 1, position.Y + size.Height - 1);
 
             // Bottom left
-            yield return new Point(window.Left + 1, window.Top + window.Height - 1);
+            yield return new Point(position.X + 1, position.Y + size.Height - 1);
 
             // Center
-            yield return new Point(window.Left + window.Width / 2, window.Top + window.Height / 2);
+            yield return new Point(position.X + size.Width / 2, position.Y + size.Height / 2);
         }
     }
 
@@ -794,15 +780,22 @@ internal partial class TestService : InternalTestService
             throw new ArgumentNullException(nameof(element));
         }
 
-        var window = element as NativeWindow ?? NativeWindow.GetWindow(element);
-        Point windowOrigin = window.PointToScreen(new Point(0, 0));
+        //TODO:https://docs.microsoft.com/en-us/windows/apps/winui/winui3/desktop-winui3-app-with-basic-interop
+        //var window = element as NativeWindow ?? NativeWindow.GetWindow(element);
+        //Point windowOrigin = window.PointToScreen(new Point(0, 0));
+        //
+        //
+        //Point topLeft = element.TranslatePoint(new Point(0, 0), window);
+        //Point bottomRight = element.TranslatePoint(new Point(element.ActualWidth, element.ActualHeight), window);
+        //double left = windowOrigin.X + topLeft.X;
+        //double top = windowOrigin.Y + topLeft.Y;
+        //double right = windowOrigin.X + bottomRight.X;
+        //double bottom = windowOrigin.Y + bottomRight.Y;
+        double left = 0;
+        double top = 0;
+        double right = 0;
+        double bottom = 0;
 
-        Point topLeft = element.TranslatePoint(new Point(0, 0), window);
-        Point bottomRight = element.TranslatePoint(new Point(element.ActualWidth, element.ActualHeight), window);
-        double left = windowOrigin.X + topLeft.X;
-        double top = windowOrigin.Y + topLeft.Y;
-        double right = windowOrigin.X + bottomRight.X;
-        double bottom = windowOrigin.Y + bottomRight.Y;
 
         var rvleft = Math.Min(left, right);
         var rvtop = Math.Min(top, bottom);

@@ -1,6 +1,9 @@
 ﻿using GrpcDotNetNamedPipes;
 using XamlTest.Host;
 
+#if WIN_UI
+using Microsoft.UI.Dispatching;
+#endif
 namespace XamlTest.Internal;
 
 internal class Service : IDisposable
@@ -16,8 +19,12 @@ internal class Service : IDisposable
         }
 
         Server = new NamedPipeServer(XamlTest.Server.PipePrefix + id);
-        
+
+#if WIN_UI
+        Protocol.BindService(Server.ServiceBinder, new TestService(application, DispatcherQueue.GetForCurrentThread()));
+#else
         Protocol.BindService(Server.ServiceBinder, new TestService(application));
+#endif
         Server.Start();
     }
 

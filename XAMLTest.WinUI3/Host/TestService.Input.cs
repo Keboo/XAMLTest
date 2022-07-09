@@ -5,44 +5,49 @@ partial class TestService
     protected override async Task<KeyboardFocusResult> MoveKeyboardFocus(KeyboardFocusRequest request)
     {
         KeyboardFocusResult reply = new();
-        await Application.Dispatcher.InvokeAsync(() =>
+        bool success = await Dispatcher.TryInvokeAsync(() =>
         {
-            if (GetCachedElement<DependencyObject>(request.ElementId) is not IInputElement element)
-            {
-                reply.ErrorMessages.Add("Could not find element");
-                return;
-            }
-            if (element is DependencyObject @do &&
-                Window.GetWindow(@do) is Window window)
-            {
-                if (!ActivateWindow(window))
-                {
-                    reply.ErrorMessages.Add($"Failed to activate window.");
-                    return;
-                }
-            }
-            else
-            {
-                reply.ErrorMessages.Add($"Failed to find parent window.");
-            }
+            //if (GetCachedElement<DependencyObject>(request.ElementId) is not IInputElement element)
+            //{
+            //    reply.ErrorMessages.Add("Could not find element");
+            //    return;
+            //}
+            //if (element is DependencyObject @do &&
+            //    Window.GetWindow(@do) is Window window)
+            //{
+            //    if (!ActivateWindow(window))
+            //    {
+            //        reply.ErrorMessages.Add($"Failed to activate window.");
+            //        return;
+            //    }
+            //}
+            //else
+            //{
+            //    reply.ErrorMessages.Add($"Failed to find parent window.");
+            //}
 
-            if (Keyboard.Focus(element) != element)
-            {
-                reply.ErrorMessages.Add($"Failed to move focus to element {element}");
-            }
-            if (element is UIElement uIElement)
-            {
-                uIElement.Focus();
-            }
+            //if (Keyboard.Focus(element) != element)
+            //{
+            //    reply.ErrorMessages.Add($"Failed to move focus to element {element}");
+            //}
+            //if (element is UIElement uIElement)
+            //{
+            //    uIElement.Focus();
+            //}
         });
+        if (!success)
+        {
+            reply.ErrorMessages.Add($"Failed to process {nameof(MoveKeyboardFocus)}");
+        }
         return reply;
     }
 
     protected override async Task<InputResult> SendInput(InputRequest request)
     {
         InputResult reply = new();
-        await Application.Dispatcher.Invoke(async () =>
+        bool success = await Dispatcher.TryInvokeAsync(() =>
         {
+            /*
             try
             {
                 IntPtr windowHandle = IntPtr.Zero;
@@ -167,13 +172,17 @@ partial class TestService
                             await Task.Delay(10);
                         }
                     });
-                }
             }
             catch (Exception e)
             {
                 reply.ErrorMessages.Add(e.ToString());
             }
+            }*/
         });
+        if (!success)
+        {
+            reply.ErrorMessages.Add($"Failed to process {nameof(SendInput)}");
+        }
 
         Point point = Input.MouseInput.GetCursorPosition();
         reply.CursorX = (int)point.X;
