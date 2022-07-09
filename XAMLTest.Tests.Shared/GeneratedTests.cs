@@ -1,6 +1,4 @@
-﻿using System;
-using XamlTest.Tests;
-
+﻿using XamlTest.Tests;
 #if WPF
 [assembly: GenerateTests(typeof(System.Windows.Window))]
 [assembly: GenerateTests(typeof(System.Windows.Controls.AccessText))]

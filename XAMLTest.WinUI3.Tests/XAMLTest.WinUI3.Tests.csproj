@@ -2,11 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <DefineConstants>$(DefineConstants);WIN_UI</DefineConstants>
     <RootNamespace>XamlTest.Tests</RootNamespace>
     <Platforms>x86;x64;arm64</Platforms>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
-    
+    <UseWinUI>true</UseWinUI>
+    <EnableMsixTooling>true</EnableMsixTooling>
+
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -15,6 +18,7 @@
     <PackageReference Include="MSTest.TestAdapter" Version="2.2.10" />
     <PackageReference Include="MSTest.TestFramework" Version="2.2.10" />
     <PackageReference Include="coverlet.collector" Version="3.1.2" />
+    <ProjectReference Include="..\XAMLTest.TestApp.WinUI3\XAMLTest.TestApp.WinUI3.csproj" />
 
     <ProjectReference Include="..\XAMLTest.UnitTestGenerator\XAMLTest.UnitTestGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\XAMLTest.Generator\XAMLTest.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
@@ -35,6 +39,24 @@
     <Page Remove="..\XAMLTest.Tests.Shared\**\*.wpf.xaml.cs" />
   </ItemGroup>
 
+  <!-- 
+    Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
+    Tools extension to be activated for this project even if the Windows App SDK Nuget
+    package has not yet been restored.
+  -->
+  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+    <ProjectCapability Include="Msix" />
+  </ItemGroup>
+
+  <!-- 
+    Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution 
+    Explorer "Package and Publish" context menu entry to be enabled for this project even if 
+    the Windows App SDK Nuget package has not yet been restored.
+  -->
+  <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+    <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
+  </PropertyGroup>
+  
   <ItemGroup>
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
   </ItemGroup>

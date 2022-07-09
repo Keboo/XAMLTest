@@ -43,6 +43,9 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.1" />
     <PackageReference Include="PInvoke.User32" Version="0.7.124" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta2.21617.1" />
+    <ProjectReference Include="..\XAMLTest.Generator\XAMLTest.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\XAMLTest.Core\XAMLTest.Core.csproj" />
+
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
@@ -59,12 +62,6 @@
   -->
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
-  </ItemGroup>
-  <ItemGroup>
-    <Page Remove="InternalApp.xaml" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\XAMLTest.Core\XAMLTest.Core.csproj" />
   </ItemGroup>
 
   <!-- 
