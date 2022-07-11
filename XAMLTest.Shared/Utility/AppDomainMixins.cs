@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-
-namespace XamlTest.Utility;
+﻿namespace XamlTest.Utility;
 
 internal static class AppDomainMixins
 {
