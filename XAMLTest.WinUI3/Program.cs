@@ -1,6 +1,9 @@
-﻿using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 using System.CommandLine;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
+using WinRT;
 //using XamlTest.Utility;
 
 namespace XamlTest;
@@ -45,32 +48,55 @@ internal class Program
                 Thread.Sleep(100);
             }
         }
-        Application application;
-        if (!string.IsNullOrWhiteSpace(appPathValue) &&
-            Path.GetFullPath(appPathValue) is { } fullPath &&
-            File.Exists(fullPath))
-        {
-            application = CreateFromAssembly(fullPath);
-        }
-        else
-        {
-            //            application = new Application 
-            //            { 
-            //#if WPF 
-            //                ShutdownMode = ShutdownMode.OnLastWindowClose 
-            //#endif 
-            //            }; 
-        }
 
         XamlCheckProcessRequirements();
 
-        WinRT.ComWrappersSupport.InitializeComWrappers();
-        Application.Start((p) => {
-            var context = new Microsoft.UI.Dispatching.DispatcherQueueSynchronizationContext(Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread());
-            SynchronizationContext.SetSynchronizationContext(context);
-            new InternalApp();
+        DispatcherQueueSynchronizationContext dispatcher;
+        Application application;
+        IDisposable? service = null;
+        ComWrappersSupport.InitializeComWrappers();
+        Application.Start(p => {
+            dispatcher = new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread());
+            SynchronizationContext.SetSynchronizationContext(dispatcher);
+            
+            if (!string.IsNullOrWhiteSpace(appPathValue) &&
+                Path.GetFullPath(appPathValue) is { } fullPath &&
+                File.Exists(fullPath))
+            {
+                application = CreateFromAssembly(fullPath);
+            }
+            else
+            {
+                application = new InternalApp();
+            }
+            
+            service = Server.Start(application);
+            HeartbeatTimer = new(HeartbeatCheck, pidValue, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+
         });
+        service?.Dispose();
         return 0;
+
+        void HeartbeatCheck(object? state)
+        {
+            var pid = (int)state!;
+            bool shutdown = false;
+            try
+            {
+                using Process p = Process.GetProcessById(pid);
+                shutdown = p is null || p.HasExited;
+            }
+            catch
+            {
+                shutdown = true;
+            }
+
+            if (shutdown)
+            {
+                HeartbeatTimer?.Change(0, Timeout.Infinite);
+                dispatcher.Post(_ => application.Exit(), null);
+            }
+        }
 #if WPF
         IDisposable? service = null; 
         application.Startup += ApplicationStartup; 
@@ -94,26 +120,6 @@ internal class Program
         void ApplicationExit(object sender, ExitEventArgs e) 
             => service?.Dispose(); 
  
-        void HeartbeatCheck(object? state) 
-        { 
-            var pid = (int)state!; 
-            bool shutdown = false; 
-            try 
-            { 
-                using Process p = Process.GetProcessById(pid); 
-                shutdown = p is null || p.HasExited; 
-            } 
-            catch 
-            { 
-                shutdown = true; 
-            } 
- 
-            if (shutdown) 
-            { 
-                HeartbeatTimer?.Change(0, Timeout.Infinite); 
-                application.Dispatcher.Invoke(() => application.Shutdown()); 
-            } 
-        } 
 #endif
     }
 
