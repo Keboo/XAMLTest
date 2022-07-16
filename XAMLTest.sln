@@ -6,6 +6,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
 		.github\workflows\dotnet-core.yml = .github\workflows\dotnet-core.yml
 		global.json = global.json
 		README.md = README.md
@@ -32,7 +33,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XAMLTest.TestApp.Wpf", "XAM
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XAMLTest.WinUI3", "XAMLTest.WinUI3\XAMLTest.WinUI3.csproj", "{38D625D0-D2E3-4C55-A555-FA8DC1B5ACEC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XAMLTest.WinUI3.Tests", "XAMLTest.WinUI3.Tests\XAMLTest.WinUI3.Tests.csproj", "{273B0958-2386-4246-B90D-E08559DEF351}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XAMLTest.WinUI3.Tests", "XAMLTest.WinUI3.Tests\XAMLTest.WinUI3.Tests.csproj", "{273B0958-2386-4246-B90D-E08559DEF351}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
