@@ -770,12 +770,13 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
         var window = element as Window ?? Window.GetWindow(element);
         Point windowOrigin = window.PointToScreen(new Point(0, 0));
 
+        var scale = GetScalingFromVisual(element);
         Point topLeft = element.TranslatePoint(new Point(0, 0), window);
         Point bottomRight = element.TranslatePoint(new Point(element.ActualWidth, element.ActualHeight), window);
-        double left = windowOrigin.X + topLeft.X;
-        double top = windowOrigin.Y + topLeft.Y;
-        double right = windowOrigin.X + bottomRight.X;
-        double bottom = windowOrigin.Y + bottomRight.Y;
+        double left = windowOrigin.X + topLeft.X * scale.ScaleX;
+        double top = windowOrigin.Y + topLeft.Y * scale.ScaleY;
+        double right = windowOrigin.X + bottomRight.X * scale.ScaleX;
+        double bottom = windowOrigin.Y + bottomRight.Y * scale.ScaleY;
 
         var rvleft = Math.Min(left, right);
         var rvtop = Math.Min(top, bottom);
@@ -783,5 +784,18 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
         var rvbottom = Math.Max(top, bottom);
 
         return new Rect(rvleft, rvtop, rvright - rvleft, rvbottom - rvtop);
+    }
+
+    private static (double ScaleX, double ScaleY) GetScalingFromVisual(Visual visual)
+    {
+        PresentationSource source = PresentationSource.FromVisual(visual);
+        
+        if (source != null)
+        {
+            double scaleX = source.CompositionTarget.TransformToDevice.M11;
+            double scaleY = source.CompositionTarget.TransformToDevice.M22;
+            return (scaleX, scaleY);
+        }
+        return (1.0, 1.0);
     }
 }
