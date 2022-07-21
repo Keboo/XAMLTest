@@ -9,14 +9,22 @@ internal static class DispatcherExtensions
         {
             action();
             return true;
-        }); 
+        });
 
     public static Task<T?> TryInvokeAsync<T>(this DispatcherQueue dispatcher, Func<T?> action)
     {
         TaskCompletionSource<T?> tcs = new();
         bool success = dispatcher.TryEnqueue(() =>
         {
-            tcs.SetResult(action());
+            try
+            {
+                T? result = action();
+                tcs.SetResult(result);
+            }
+            catch (Exception e)
+            {
+                tcs.SetException(e);
+            }
         });
         if (success)
         {

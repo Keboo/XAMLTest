@@ -454,17 +454,19 @@ internal partial class TestService : InternalTestService
 
     protected override async Task<ApplicationResult> InitializeApplication(ApplicationConfiguration request)
     {
+        Debugger.Launch();
         ApplicationResult reply = new();
         bool success = await Dispatcher.TryInvokeAsync(() =>
         {
-            if (Application.Resources[Initialized] is Guid value &&
+            if (Application.Resources.TryGetValue(Initialized.ToString(), out object? initId) &&
+                initId is Guid value &&
                 value == Initialized)
             {
                 reply.ErrorMessages.Add("Application has already been initialized");
             }
             else
             {
-                Application.Resources[Initialized] = Initialized;
+                Application.Resources.TryAdd(Initialized.ToString(), Initialized);
                 AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
 
                 foreach (string? assembly in (IEnumerable<string?>)request.AssembliesToLoad ?? Array.Empty<string?>())
@@ -638,25 +640,18 @@ internal partial class TestService : InternalTestService
         return reply;
     }
 
-    protected override async Task<ShutdownResult> Shutdown(ShutdownRequest request)
+    protected override Task<ShutdownResult> Shutdown(ShutdownRequest request)
     {
         ShutdownResult reply = new();
         try
         {
-            bool success = await Dispatcher.TryInvokeAsync(() =>
-            {
-                //Application.Shutdown(request.ExitCode);
-            });
-            if (!success)
-            {
-                reply.ErrorMessages.Add($"Failed to process {nameof(Shutdown)}");
-            }
+            Program.QueueTerminate();
         }
         catch (Exception e)
         {
             reply.ErrorMessages.Add(e.ToString());
         }
-        return reply;
+        return Task.FromResult(reply);
     }
 
     protected override Task<VersionResult> GetVersion(VersionRequest request)
@@ -704,8 +699,9 @@ internal partial class TestService : InternalTestService
 
     private static T LoadXaml<T>(string xaml, IEnumerable<XamlNamespace> namespaces) where T : class
     {
-        using MemoryStream memoryStream = new(Encoding.UTF8.GetBytes(xaml));
-        return default;
+        //using MemoryStream memoryStream = new(Encoding.UTF8.GetBytes(xaml));
+        return (T)Microsoft.UI.Xaml.Markup.XamlReader.Load(xaml);
+        //return default;
         //TODO
         //ParserContext context = new();
         //foreach(var @namespace in namespaces)

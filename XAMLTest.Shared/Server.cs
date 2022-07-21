@@ -3,11 +3,12 @@ using XamlTest.Internal;
 
 namespace XamlTest;
 
-public static class Server
+internal static class Server
 {
     internal const string PipePrefix = nameof(DependencyObjectTracker) + "ComminicationPipe";
 
-    internal static IDisposable Start(Application? app = null)
+    //TODO: This could probably be moved into the Service class
+    internal static Service Start(Application? app = null)
     {
         var process = Process.GetCurrentProcess();
         Service service = new(process.Id.ToString(), app ?? Application.Current);

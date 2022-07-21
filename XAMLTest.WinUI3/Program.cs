@@ -1,26 +1,37 @@
 ﻿using Microsoft.UI.Dispatching;
-using Microsoft.UI.Xaml;
 using System.CommandLine;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using WinRT;
-//using XamlTest.Utility;
+using XamlTest.Internal;
+using XamlTest.Utility;
 
 namespace XamlTest;
 
 internal class Program
 {
-
     [System.Runtime.InteropServices.DllImport("Microsoft.ui.xaml.dll")]
     private static extern void XamlCheckProcessRequirements();
 
+    internal static void QueueTerminate()
+    {
+        Dispatcher?.Post(_ =>
+        {
+            Application?.Exit();
+            Service?.Dispose();
 
+            Process.GetCurrentProcess().Kill();
+        }, null);
+    }
+
+    private static Application? Application { get; set; }
+    private static DispatcherQueueSynchronizationContext? Dispatcher { get; set; }
+    private static Service? Service { get; set; }
     private static Timer? HeartbeatTimer { get; set; }
 
     [STAThread]
     static int Main(string[] args)
     {
-        Debugger.Launch();
+        //Debugger.Launch();
         Argument<int> clientPid = new("clientPid");
         Option<string> appPath = new("--application-path");
         Option<bool> debug = new("--debug");
@@ -51,34 +62,34 @@ internal class Program
 
         XamlCheckProcessRequirements();
 
-        DispatcherQueueSynchronizationContext dispatcher;
-        Application application;
-        IDisposable? service = null;
         ComWrappersSupport.InitializeComWrappers();
-        Application.Start(p => {
-            dispatcher = new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread());
+        Application.Start(p =>
+        {
+            var dispatcher = Dispatcher = new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread());
             SynchronizationContext.SetSynchronizationContext(dispatcher);
-            
+
+            Application application;
             if (!string.IsNullOrWhiteSpace(appPathValue) &&
                 Path.GetFullPath(appPathValue) is { } fullPath &&
                 File.Exists(fullPath))
             {
-                application = CreateFromAssembly(fullPath);
+                application = Application = CreateFromAssembly(fullPath);
             }
             else
             {
-                application = new InternalApp();
+                application = Application = new InternalApp();
             }
-            
-            service = Server.Start(application);
-            HeartbeatTimer = new(HeartbeatCheck, pidValue, TimeSpan.Zero, TimeSpan.FromSeconds(1));
 
+            Service = Server.Start(application);
+            //HeartbeatTimer = new(HeartbeatCheck, pidValue, TimeSpan.Zero, TimeSpan.FromSeconds(1));
         });
-        service?.Dispose();
+        Service?.Dispose();
         return 0;
 
         void HeartbeatCheck(object? state)
         {
+            HeartbeatTimer?.Change(Timeout.Infinite, Timeout.Infinite);
+
             var pid = (int)state!;
             bool shutdown = false;
             try
@@ -93,8 +104,11 @@ internal class Program
 
             if (shutdown)
             {
-                HeartbeatTimer?.Change(0, Timeout.Infinite);
-                dispatcher.Post(_ => application.Exit(), null);
+                QueueTerminate();
+            }
+            else
+            {
+                HeartbeatTimer?.Change(Timeout.InfiniteTimeSpan, TimeSpan.FromSeconds(1));
             }
         }
 #if WPF
@@ -125,7 +139,7 @@ internal class Program
 
     private static Application CreateFromAssembly(string assemblyPath)
     {
-        //AppDomain.CurrentDomain.IncludeAssembliesIn(Path.GetDirectoryName(assemblyPath)!);
+        AppDomain.CurrentDomain.IncludeAssembliesIn(Path.GetDirectoryName(assemblyPath)!);
 
         var targetAssembly = Assembly.LoadFile(assemblyPath);
 

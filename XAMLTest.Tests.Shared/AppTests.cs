@@ -10,6 +10,9 @@ namespace XamlTest.Tests;
 [TestClass]
 public class AppTests
 {
+    [NotNull]
+    public TestContext? TestContext { get; set; }
+
     [TestMethod]
     public void TestMethod1()
     {
@@ -57,12 +60,11 @@ public class AppTests
     [TestMethod]
     public async Task OnCreateWindow_CanReadTitle()
     {
-        await using var app = await App.StartRemote();
+        await using var app = await App.StartRemote(TestContext.WriteLine);
         await using var recorder = new TestRecorder(app);
-
         await app.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
         IWindow window = await app.CreateWindowWithContent("", title: "Test Window Title");
-
+        
         Assert.AreEqual("Test Window Title", await window.GetTitle());
 
         recorder.Success();

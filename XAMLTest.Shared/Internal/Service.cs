@@ -6,7 +6,7 @@ using Microsoft.UI.Dispatching;
 #endif
 namespace XamlTest.Internal;
 
-internal class Service : IDisposable
+internal sealed class Service : IDisposable
 {
     private NamedPipeServer Server { get; }
     private bool IsDisposed { get; set; }
@@ -28,7 +28,7 @@ internal class Service : IDisposable
         Server.Start();
     }
 
-    protected virtual void Dispose(bool disposing)
+    private void Dispose(bool disposing)
     {
         if (!IsDisposed)
         {

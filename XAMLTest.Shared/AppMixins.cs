@@ -55,13 +55,14 @@ xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006""
     return x.StartsWith("xmlns") ? x : $"xmlns:{x}";
 }))}
 mc:Ignorable=""d""
-Height=""{windowSize?.Height ?? 800}"" 
-Width=""{windowSize?.Width ?? 1100}""
-Title=""{title}""
-Background=""{background}""";
+";
 #if WPF
         xaml += @$"
 WindowStartupLocation=""{startupLocation}""
+Background=""{background}""
+Title=""{title}""
+Height=""{windowSize?.Height ?? 800}"" 
+Width=""{windowSize?.Width ?? 1100}""
 ";
 #endif
         xaml += $@"
@@ -69,7 +70,14 @@ WindowStartupLocation=""{startupLocation}""
 {xamlContent}
 </Window>";
 
-        return await app.CreateWindow(xaml);
+        IWindow window = await app.CreateWindow(xaml);
+#if WIN_UI
+        if (!string.IsNullOrEmpty(title))
+        {
+            await window.SetTitle(title);
+        }
+#endif
+        return window;
     }
 
 #if WPF
