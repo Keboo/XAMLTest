@@ -50,15 +50,15 @@ internal class Program
 
         int pidValue = parseResult.GetValueForArgument(clientPid);
         string? appPathValue = parseResult.GetValueForOption(appPath);
-        bool waitForDebugger = parseResult.GetValueForOption(debug);
-        if (waitForDebugger)
-        {
-            Debugger.Break();
-            for (; !Debugger.IsAttached;)
-            {
-                Thread.Sleep(100);
-            }
-        }
+        //bool waitForDebugger = parseResult.GetValueForOption(debug);
+        //if (waitForDebugger)
+        //{
+        //    Debugger.Break();
+        //    for (; !Debugger.IsAttached;)
+        //    {
+        //        Thread.Sleep(100);
+        //    }
+        //}
 
         XamlCheckProcessRequirements();
 

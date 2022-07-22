@@ -1,5 +1,7 @@
+using ClassLibrary1;
 using System.Diagnostics;
 using XamlTest.Tests.TestControls;
+using XAMLTest.TestApp;
 
 #if WPF
 using MaterialDesignThemes.Wpf;
@@ -73,7 +75,6 @@ public class AppTests
     [TestMethod]
     public async Task OnCreateWindow_CanUseCustomWindow()
     {
-        //Debugger.Launch();
         await using var app = await App.StartRemote();
         await using var recorder = new TestRecorder(app);
 
@@ -82,6 +83,32 @@ public class AppTests
         IWindow window = await app.CreateWindow<TestWindow>();
 
         Assert.AreEqual("Custom Test Window", await window.GetTitle());
+
+        recorder.Success();
+    }
+
+    [TestMethod]
+    public async Task OnCreateWindow2_CanUseCustomWindow()
+    {
+        await using var app = await App.StartRemote();
+        await using var recorder = new TestRecorder(app);
+
+        await app.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
+
+        IWindow window = await app.CreateWindow<BlankWindow1>();
+
+        recorder.Success();
+    }
+
+    [TestMethod]
+    public async Task OnCreateWindow3_CanUseCustomWindow()
+    {
+        await using var app = await App.StartRemote();
+        await using var recorder = new TestRecorder(app);
+
+        await app.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
+
+        IWindow window = await app.CreateWindow<MainWindow>();
 
         recorder.Success();
     }

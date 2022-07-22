@@ -64,9 +64,9 @@
     <Using Include="System.Windows.Markup" />
     <Using Include="System.Windows.Media" />
 
-    <None Include="**/*.winui3.xaml.cs" />
-    <Page Remove="**/*.winui3.xaml" />
-    <Compile Remove="**/*.winui3.xaml.cs" />
+    <None Include="**\*.winui3.xaml.cs" />
+    <Page Remove="**\*.winui3.xaml" />
+    <Compile Remove="**\*.winui3.xaml.cs" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(UseWinUI)' == 'true'">
@@ -86,8 +86,8 @@
     <Using Include="Microsoft.UI.Xaml.Controls.Primitives" />
     <Using Include="Microsoft.UI.Xaml.Media" />
 
-    <None Include="**/*.wpf.xaml.cs" />
-    <Page Remove="**/*.wpf.xaml" />
-    <Compile Remove="**/*.wpf.xaml.cs" />
+    <None Include="**\*.wpf.xaml.cs" />
+    <Page Remove="**\*.wpf.xaml" />
+    <Compile Remove="**\*.wpf.xaml.cs" />
   </ItemGroup>
 </Project>

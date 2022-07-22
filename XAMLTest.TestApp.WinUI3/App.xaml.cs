@@ -1,6 +1,4 @@
-﻿using Microsoft.UI.Xaml;
-
-// To learn more about WinUI, the WinUI project structure,
+﻿// To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace XAMLTest.TestApp;
@@ -26,8 +24,17 @@ public partial class App : Application
     /// <param name="args">Details about the launch request and process.</param>
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
-        m_window = new MainWindow();
+        AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+        Assembly a = Assembly.LoadFrom(@"D:\Dev\XAMLTest\ClassLibrary1\bin\Debug\net6.0-windows10.0.19041.0\ClassLibrary1.dll");
+        Type windowType = a.GetType("ClassLibrary1.BlankWindow1")!;
+        m_window = (Window)Activator.CreateInstance(windowType)!;
+        //m_window = new MainWindow();
         m_window.Activate();
+    }
+
+    private Assembly? CurrentDomain_AssemblyResolve(object? sender, ResolveEventArgs args)
+    {
+        return null;
     }
 
     private Window? m_window;

@@ -32,13 +32,13 @@
     <Compile Include="..\XAMLTest.Tests.Shared\**\*.cs" />
     <Compile Remove="..\XAMLTest.Tests.Shared\obj\**\*.cs" />
     <Compile Remove="..\XAMLTest.Tests.Shared\bin\**\*.cs" />
+    <Compile Remove="..\XAMLTest.Tests.Shared\**\*.winui3.xaml.cs" />
 
     <Page Include="..\XAMLTest.Tests.Shared\**\*.wpf.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     
-    <Compile Remove="..\XAMLTest.Tests.Shared\**\*.winui3.xaml.cs" />
-    <Page Remove="..\XAMLTest.Tests.Shared\**\*.winui3.xaml.cs" />
+    <!--<Page Remove="..\XAMLTest.Tests.Shared\**\*.winui3.xaml.cs" />-->
   </ItemGroup>
 
   <ItemGroup>

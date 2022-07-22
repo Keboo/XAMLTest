@@ -10,8 +10,17 @@
     <UseWinUI>true</UseWinUI>
     <EnableMsixTooling>true</EnableMsixTooling>
 
+    <PrependPriInitialPath>true</PrependPriInitialPath>
+    <EnableDefaultPageItems>false</EnableDefaultPageItems>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
+
+  <!--<ItemGroup>
+    <None Remove="TestWindow.winui3.xaml" />
+  <Page Update="TestWindow.winui3.xaml">
+  <Generator>MSBuild:Compile</Generator>
+</Page>
+  </ItemGroup>-->
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
@@ -30,13 +39,16 @@
     <Compile Include="..\XAMLTest.Tests.Shared\**\*.cs" />
     <Compile Remove="..\XAMLTest.Tests.Shared\obj\**\*.cs" />
     <Compile Remove="..\XAMLTest.Tests.Shared\bin\**\*.cs" />
+    <Compile Remove="..\XAMLTest.Tests.Shared\**\*.wpf.xaml.cs" />
 
+    <!--<Page Include="..\XAMLTest.Tests.Shared\**\*.winui3.xaml" />-->
     <Page Include="..\XAMLTest.Tests.Shared\**\*.winui3.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <!--<Resource Include="..\XAMLTest.Tests.Shared\**\*.winui3.xaml" />
+    <CustomAdditionalCompileInputs Include="..\XAMLTest.Tests.Shared\**\*.winui3.xaml" />
 
-    <Compile Remove="..\XAMLTest.Tests.Shared\**\*.wpf.xaml.cs" />
-    <Page Remove="..\XAMLTest.Tests.Shared\**\*.wpf.xaml.cs" />
+    <Page Remove="..\XAMLTest.Tests.Shared\**\*.wpf.xaml.cs" />-->
   </ItemGroup>
 
   <!-- 
@@ -56,6 +68,14 @@
   <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="BlankPage1.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="BlankPage1.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
   
   <ItemGroup>
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />

@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
+using WinRT;
 using XamlTest.Internal;
 using Brush = Microsoft.UI.Xaml.Media.Brush;
 using Color = Windows.UI.Color;
@@ -79,7 +80,7 @@ internal partial class TestService : InternalTestService
         {
             try
             {
-                DependencyObject? element = GetCachedElement<DependencyObject>(request.ElementId);
+                IWinRTObject? element = GetCachedElement<IWinRTObject>(request.ElementId);
                 if (element is null)
                 {
                     reply.ErrorMessages.Add("Could not find element");
@@ -91,8 +92,8 @@ internal partial class TestService : InternalTestService
                     if (DependencyPropertyHelper.TryGetDependencyProperty(request.Name, request.OwnerType,
                         out DependencyProperty? dependencyProperty))
                     {
-
-                        object? value = element.GetValue(dependencyProperty);
+                        //object? value = null;
+                        //object? value = element.GetValue(dependencyProperty);
                         //SetValue(reply, dependencyProperty.PropertyType, value);
                     }
                     else
@@ -204,7 +205,7 @@ internal partial class TestService : InternalTestService
         {
             try
             {
-                DependencyObject? element = GetCachedElement<DependencyObject>(request.ElementId);
+                IWinRTObject? element = GetCachedElement<IWinRTObject>(request.ElementId);
                 if (element is null)
                 {
                     reply.ErrorMessages.Add("Could not find element");
@@ -219,6 +220,7 @@ internal partial class TestService : InternalTestService
                         out DependencyProperty? dependencyProperty))
                     {
                         propertyType = typeof(Type);
+                        value = null;
                         //TODO
                         //var propertyConverter = TypeDescriptor.GetConverter(dependencyProperty.PropertyType);
                         //value = GetValue(propertyConverter);
@@ -226,7 +228,7 @@ internal partial class TestService : InternalTestService
                         //element.SetValue(dependencyProperty, value);
 
                         //Re-retrive the value in case the dependency property coalesced it
-                        value = element.GetValue(dependencyProperty);
+                        //value = element.GetValue(dependencyProperty);
                         //propertyType = dependencyProperty.PropertyType;
                     }
                     else
@@ -454,7 +456,6 @@ internal partial class TestService : InternalTestService
 
     protected override async Task<ApplicationResult> InitializeApplication(ApplicationConfiguration request)
     {
-        Debugger.Launch();
         ApplicationResult reply = new();
         bool success = await Dispatcher.TryInvokeAsync(() =>
         {
@@ -467,6 +468,7 @@ internal partial class TestService : InternalTestService
             else
             {
                 Application.Resources.TryAdd(Initialized.ToString(), Initialized);
+                AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
                 AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
 
                 foreach (string? assembly in (IEnumerable<string?>)request.AssembliesToLoad ?? Array.Empty<string?>())
@@ -520,6 +522,7 @@ internal partial class TestService : InternalTestService
 
     protected override async Task<WindowResult> CreateWindow(WindowConfiguration request)
     {
+        //Debugger.Launch();
         WindowResult reply = new();
         bool success = await Dispatcher.TryInvokeAsync(() =>
         {

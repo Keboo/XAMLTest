@@ -63,9 +63,10 @@ public static class App
 
         if (Process.Start(startInfo) is Process process)
         {
+            //await Task.Delay(15_000);
             if (useDebugger)
             {
-                await VisualStudioAttacher.AttachVisualStudioToProcess(process);
+                //await VisualStudioAttacher.AttachVisualStudioToProcess(process);
             }
             NamedPipeChannel channel = new(".", Server.PipePrefix + process.Id, new NamedPipeChannelOptions
             {
