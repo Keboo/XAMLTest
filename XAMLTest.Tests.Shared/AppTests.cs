@@ -1,8 +1,10 @@
-using ClassLibrary1;
 using System.Diagnostics;
 using XamlTest.Tests.TestControls;
 using XAMLTest.TestApp;
 
+#if WIN_UI
+using ClassLibrary1;
+#endif
 #if WPF
 using MaterialDesignThemes.Wpf;
 [assembly: XamlTest.GenerateHelpers(typeof(ColorZone))]
@@ -14,12 +16,6 @@ public class AppTests
 {
     [NotNull]
     public TestContext? TestContext { get; set; }
-
-    [TestMethod]
-    public void TestMethod1()
-    {
-        Assert.AreEqual(0, 0);
-    }
 
     [TestMethod]
     public async Task OnStartRemote_LaunchesRemoteApp()
@@ -86,7 +82,7 @@ public class AppTests
 
         recorder.Success();
     }
-
+#if WIN_UI
     [TestMethod]
     public async Task OnCreateWindow2_CanUseCustomWindow()
     {
@@ -112,6 +108,7 @@ public class AppTests
 
         recorder.Success();
     }
+#endif
 
     [TestMethod]
     public async Task OnGetMainWindow_ReturnsNullBeforeWindowCreated()
