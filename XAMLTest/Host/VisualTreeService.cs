@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -268,7 +269,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
         {
             if (propertyConverter != null)
             {
-                return propertyConverter.ConvertFromString(request.Value);
+                return propertyConverter.ConvertFromString(null!, CultureInfo.InvariantCulture, request.Value);
             }
             return request.Value;
         }

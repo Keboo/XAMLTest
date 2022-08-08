@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
@@ -86,7 +87,7 @@ public static partial class VisualElementMixins
 
     private static async Task<T?> SetProperty<T>(IVisualElement element, string propertyName, T value, string? ownerType)
     {
-        IValue newValue = await element.SetProperty(propertyName, value?.ToString() ?? "", typeof(T).AssemblyQualifiedName, ownerType);
+        IValue newValue = await element.SetProperty(propertyName, (value != null ? Convert.ToString(value, CultureInfo.InvariantCulture) : "") ?? "", typeof(T).AssemblyQualifiedName, ownerType);
         if (newValue is { })
         {
             return newValue.GetAs<T?>();
