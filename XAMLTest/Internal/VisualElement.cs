@@ -145,6 +145,82 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
         throw new XAMLTestException("Failed to receive a reply");
     }
 
+    public async Task<IValue> MarkInvalid(string name, string? validationError, string? valueType, string? ownerType)
+    {
+        MarkInvalidRequest query = new()
+        {
+            ElementId = Id,
+            Name = name,
+            ValidationError = validationError,
+            ValueType = valueType,
+            OwnerType = ownerType ?? ""
+        };
+        LogMessage?.Invoke($"{nameof(MarkInvalid)}({name},{validationError},{valueType},{ownerType})");
+        if (await Client.MarkInvalidAsync(query) is { } reply)
+        {
+            if (reply.ErrorMessages.Any())
+            {
+                throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+            }
+            if (reply.PropertyType is { } propertyType)
+            {
+                return new Property(propertyType, "bool", true, null, Context);
+            }
+            throw new XAMLTestException("Property reply does not have a type specified");
+        }
+        throw new XAMLTestException("Failed to receive a reply");
+    }
+
+    public async Task<IValue> ClearInvalid(string name, string? valueType, string? ownerType)
+    {
+        ClearInvalidRequest query = new()
+        {
+            ElementId = Id,
+            Name = name,
+            ValueType = valueType,
+            OwnerType = ownerType ?? ""
+        };
+        LogMessage?.Invoke($"{nameof(ClearInvalid)}({name},{valueType},{ownerType})");
+        if (await Client.ClearInvalidAsync(query) is { } reply)
+        {
+            if (reply.ErrorMessages.Any())
+            {
+                throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+            }
+            if (reply.PropertyType is { } propertyType)
+            {
+                return new Property(propertyType, "bool", true, null, Context);
+            }
+            throw new XAMLTestException("Property reply does not have a type specified");
+        }
+        throw new XAMLTestException("Failed to receive a reply");
+    }
+
+    public async Task<IValue> GetValidationErrorContent(string name, string? valueType, string? ownerType)
+    {
+        GetValidationErrorContentRequest query = new()
+        {
+            ElementId = Id,
+            Name = name,
+            ValueType = valueType,
+            OwnerType = ownerType ?? ""
+        };
+        LogMessage?.Invoke($"{nameof(GetValidationErrorContent)}({name},{valueType},{ownerType})");
+        if (await Client.GetValidationErrorContentAsync(query) is { } reply)
+        {
+            if (reply.ErrorMessages.Any())
+            {
+                throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+            }
+            if (reply.PropertyType is { } propertyType)
+            {
+                return new Property(propertyType, "string", reply.Value, null, Context);
+            }
+            throw new XAMLTestException("Property reply does not have a type specified");
+        }
+        throw new XAMLTestException("Failed to receive a reply");
+    }
+
     public Task<IVisualElement> SetXamlProperty(string propertyName, XamlSegment xaml)
         => SetXamlProperty(propertyName, xaml, null);
 

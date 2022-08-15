@@ -30,7 +30,16 @@ service Protocol {
 
   //Sets a property
   rpc SetProperty (SetPropertyRequest) returns (PropertyResult);
+
+  //Marks a property as having a validation error
+  rpc MarkInvalid (MarkInvalidRequest) returns (MarkInvalidResult);
+
+  //Clear a validation error from a property
+  rpc ClearInvalid (ClearInvalidRequest) returns (ClearInvalidResult);
   
+  //Marks a property as having a validation error
+  rpc GetValidationErrorContent (GetValidationErrorContentRequest) returns (GetValidationErrorContentResult);
+
   //Set a property with XAML content
   rpc SetXamlProperty (SetXamlPropertyRequest) returns (ElementResult);
 
@@ -111,6 +120,25 @@ message PropertyResult {
   Element element = 5;
 }
 
+message MarkInvalidResult {
+	repeated string errorMessages = 1;
+	string propertyType = 2;
+	Element element = 3;
+}
+
+message GetValidationErrorContentResult {
+	repeated string errorMessages = 1;
+	string value = 2;
+	string valueType = 3;
+	string propertyType = 4;
+}
+
+message ClearInvalidResult {
+	repeated string errorMessages = 1;
+	string propertyType = 2;
+	Element element = 3;
+}
+
 message EffectiveBackgroundQuery {
   string elementId = 1;
   string toElementId = 2;
@@ -130,6 +158,28 @@ message SetPropertyRequest {
   string value = 3;
   string valueType = 4;
   string ownerType = 5;
+}
+
+message MarkInvalidRequest {
+	string elementId = 1;
+	string name = 2;
+	string validationError = 3;
+	string valueType = 4;
+	string ownerType = 5;
+}
+
+message ClearInvalidRequest {
+	string elementId = 1;
+	string name = 2;
+	string valueType = 3;
+	string ownerType = 4;
+}
+
+message GetValidationErrorContentRequest {
+	string elementId = 1;
+	string name = 2;
+	string valueType = 3;
+	string ownerType = 4;
 }
 
 message XamlNamespace {

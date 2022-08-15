@@ -14,6 +14,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Markup;
 using System.Windows.Media;
 using XamlTest.Internal;
@@ -274,6 +275,131 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
             return request.Value;
         }
     }
+
+    public override async Task<MarkInvalidResult> MarkInvalid(MarkInvalidRequest request, ServerCallContext context)
+    {
+        MarkInvalidResult reply = new();
+        await Application.Dispatcher.InvokeAsync(() =>
+        {
+            try
+            {
+                DependencyObject? element = GetCachedElement<DependencyObject>(request.ElementId);
+                if (element is null)
+                {
+                    reply.ErrorMessages.Add("Could not find element");
+                    return;
+                }
+
+                if (!string.IsNullOrWhiteSpace(request.OwnerType))
+                {
+                    if (DependencyPropertyHelper.TryGetDependencyProperty(request.Name, request.OwnerType, out DependencyProperty? dependencyProperty))
+                    {
+                        BindingExpressionBase? bindingExpression = BindingOperations.GetBindingExpression(element, dependencyProperty);
+                        if (bindingExpression == null)
+                        {
+                            var binding = new Binding
+                            {
+                                Path = new PropertyPath(ValidationErrorDummyProperty),
+                                RelativeSource = new RelativeSource(RelativeSourceMode.Self)
+                            };
+                            bindingExpression = BindingOperations.SetBinding(element, dependencyProperty, binding);
+                        }
+                        var validationError = new ValidationError(new DummyValidationRule(request.ValidationError), bindingExpression)
+                        {
+                            ErrorContent = request.ValidationError
+                        };
+                        System.Windows.Controls.Validation.MarkInvalid(bindingExpression, validationError);
+                    }
+                    else
+                    {
+                        reply.ErrorMessages.Add($"Could not find dependency property '{request.Name}' on '{request.OwnerType}'");
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                reply.ErrorMessages.Add(e.ToString());
+            }
+        });
+        return reply;
+    }
+
+    public override async Task<ClearInvalidResult> ClearInvalid(ClearInvalidRequest request, ServerCallContext context)
+    {
+        ClearInvalidResult reply = new();
+        await Application.Dispatcher.InvokeAsync(() =>
+        {
+            try
+            {
+                DependencyObject? element = GetCachedElement<DependencyObject>(request.ElementId);
+                if (element is null)
+                {
+                    reply.ErrorMessages.Add("Could not find element");
+                    return;
+                }
+
+                if (!string.IsNullOrWhiteSpace(request.OwnerType))
+                {
+                    if (DependencyPropertyHelper.TryGetDependencyProperty(request.Name, request.OwnerType, out DependencyProperty? dependencyProperty))
+                    {
+                        var bindingExpression = BindingOperations.GetBindingExpression(element, dependencyProperty);
+                        if (bindingExpression != null)
+                        {
+                            // Clear the invalidation
+                            System.Windows.Controls.Validation.ClearInvalid(bindingExpression);
+                        }
+                    }
+                    else
+                    {
+                        reply.ErrorMessages.Add($"Could not find dependency property '{request.Name}' on '{request.OwnerType}'");
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                reply.ErrorMessages.Add(e.ToString());
+            }
+        });
+        return reply;
+    }
+
+    public override async Task<GetValidationErrorContentResult> GetValidationErrorContent(GetValidationErrorContentRequest request, ServerCallContext context)
+    {
+        GetValidationErrorContentResult reply = new();
+        await Application.Dispatcher.InvokeAsync(() =>
+        {
+            try
+            {
+                DependencyObject? element = GetCachedElement<DependencyObject>(request.ElementId);
+                if (element is null)
+                {
+                    reply.ErrorMessages.Add("Could not find element");
+                    return;
+                }
+
+                if (!string.IsNullOrWhiteSpace(request.OwnerType))
+                {
+                    if (DependencyPropertyHelper.TryGetDependencyProperty(request.Name, request.OwnerType, out DependencyProperty? dependencyProperty))
+                    {
+                        var errors = System.Windows.Controls.Validation.GetErrors(element);
+                        if (errors.Any() && errors[0].ErrorContent is string errorContent)
+                        {
+                            reply.Value = errorContent;
+                        }
+                    }
+                    else
+                    {
+                        reply.ErrorMessages.Add($"Could not find dependency property '{request.Name}' on '{request.OwnerType}'");
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                reply.ErrorMessages.Add(e.ToString());
+            }
+        });
+        return reply;
+    } 
 
     public override async Task<ElementResult> SetXamlProperty(SetXamlPropertyRequest request, ServerCallContext context)
     {
@@ -798,5 +924,36 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
             return (scaleX, scaleY);
         }
         return (1.0, 1.0);
+    }
+
+
+    // TODO The stuff below probably needs to go elsewhere. A simple internal attached DP used to create a binding when one is not present, and a custom ValidationRule to apply the validation error.
+
+    internal static readonly DependencyProperty ValidationErrorDummyProperty = DependencyProperty.RegisterAttached(
+        "ValidationErrorDummy", typeof(object), typeof(VisualTreeService), new PropertyMetadata(default(object)));
+
+    internal static void SetValidationErrorDummy(DependencyObject element, object value)
+    {
+        element.SetValue(ValidationErrorDummyProperty, value);
+    }
+
+    internal static object GetValidationErrorDummy(DependencyObject element)
+    {
+        return (object)element.GetValue(ValidationErrorDummyProperty);
+    }
+
+    internal class DummyValidationRule : ValidationRule
+    {
+        private readonly string _validationError;
+
+        public DummyValidationRule(string validationError)
+        {
+            _validationError = validationError;
+        }
+
+        public override ValidationResult Validate(object value, CultureInfo cultureInfo)
+        {
+            return new ValidationResult(false, _validationError);
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -309,5 +309,63 @@ public class VisualElementTests
         {
             window.Title = "Test Title";
         }
+    }
+
+    [TestMethod]
+    public async Task MarkInvalid_WhenPropertyIsDependencyObjectWithoutExistingBinding_SetsValidationError()
+    {
+        // Arrange
+        await using TestRecorder recorder = new(App);
+
+        const string expectedErrorMessage = "Custom validation error";
+        await Window.SetXamlContent(@"<TextBox x:Name=""TextBox"" />");
+        IVisualElement<TextBox> textBox = await Window.GetElement<TextBox>("TextBox");
+
+        //Act (set validation)
+        await textBox.MarkInvalid(TextBox.TextProperty, expectedErrorMessage);
+        var result1 = await textBox.GetProperty<bool>(System.Windows.Controls.Validation.HasErrorProperty);
+        var validationError1 = await textBox.GetValidationErrorContent<string>(TextBox.TextProperty);
+
+        //Act (clear validation)
+        await textBox.ClearInvalid(TextBox.TextProperty);
+        var result2 = await textBox.GetProperty<bool>(System.Windows.Controls.Validation.HasErrorProperty);
+        var validationError2 = await textBox.GetValidationErrorContent<string>(TextBox.TextProperty);
+
+        //Assert
+        Assert.AreEqual(true, result1);
+        Assert.AreEqual(expectedErrorMessage, validationError1);
+        Assert.AreEqual(false, result2);
+        Assert.IsNull(validationError2);
+
+        recorder.Success();
+    }
+
+    [TestMethod]
+    public async Task MarkInvalid_WhenPropertyIsDependencyObjectWithExistingBinding_SetsValidationError()
+    {
+        // Arrange
+        await using TestRecorder recorder = new(App);
+
+        const string expectedErrorMessage = "Custom validation error";
+        await Window.SetXamlContent(@"<TextBox x:Name=""TextBox"" Text=""{Binding RelativeSource={RelativeSource Self}, Path=Tag}"" />");
+        IVisualElement<TextBox> textBox = await Window.GetElement<TextBox>("TextBox");
+
+        //Act (set validation)
+        await textBox.MarkInvalid(TextBox.TextProperty, expectedErrorMessage);
+        var result1 = await textBox.GetProperty<bool>(System.Windows.Controls.Validation.HasErrorProperty);
+        var validationError1 = await textBox.GetValidationErrorContent<string>(TextBox.TextProperty);
+
+        //Act (clear validation)
+        await textBox.ClearInvalid(TextBox.TextProperty);
+        var result2 = await textBox.GetProperty<bool>(System.Windows.Controls.Validation.HasErrorProperty);
+        var validationError2 = await textBox.GetValidationErrorContent<string>(TextBox.TextProperty);
+
+        //Assert
+        Assert.AreEqual(true, result1);
+        Assert.AreEqual(expectedErrorMessage, validationError1);
+        Assert.AreEqual(false, result2);
+        Assert.IsNull(validationError2);
+
+        recorder.Success();
     }
 }

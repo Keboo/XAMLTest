@@ -57,6 +57,34 @@ public interface IVisualElement : IEquatable<IVisualElement>
     Task<IValue> SetProperty(string name, string value, string? valueType, string? ownerType);
 
     /// <summary>
+    /// Marks a property as invalid using an internal (XAMLTest specific) validation rule.
+    /// </summary>
+    /// <param name="name">The name of the property</param>
+    /// <param name="validationError">The validation error to set on the property binding</param>
+    /// <param name="valueType">The assembly qualified type of the value</param>
+    /// <param name="ownerType">The assembly qualified name of the type that owns the property</param>
+    /// <returns></returns>
+    Task<IValue> MarkInvalid(string name, string? validationError, string? valueType, string? ownerType);
+
+    /// <summary>
+    /// Clears validation errors for a property (if any).
+    /// </summary>
+    /// <param name="name">The name of the property</param>
+    /// <param name="valueType">The assembly qualified type of the value</param>
+    /// <param name="ownerType">The assembly qualified name of the type that owns the property</param>
+    /// <returns></returns>
+    Task<IValue> ClearInvalid(string name, string? valueType, string? ownerType);
+
+    /// <summary>
+    /// Gets the validation error content for a property (if any).
+    /// </summary>
+    /// <param name="name">The name of the property</param>
+    /// <param name="valueType">The assembly qualified type of the value</param>
+    /// <param name="ownerType">The assembly qualified name of the type that owns the property</param>
+    /// <returns></returns>
+    Task<IValue> GetValidationErrorContent(string name, string? valueType, string? ownerType);
+
+    /// <summary>
     /// Sets the value of a property by loading XAML content.
     /// </summary>
     /// <param name="propertyName">The name of the property</param>

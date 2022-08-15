@@ -94,4 +94,60 @@ public static partial class VisualElementMixins
         }
         return default;
     }
+
+    public static async Task<bool> MarkInvalid(this IVisualElement element, DependencyProperty dependencyProperty, string validationError)
+    {
+        if (element is null)
+        {
+            throw new ArgumentNullException(nameof(element));
+        }
+
+        if (dependencyProperty is null)
+        {
+            throw new ArgumentNullException(nameof(dependencyProperty));
+        }
+
+        IValue result = await element.MarkInvalid(dependencyProperty.Name, validationError, typeof(bool).AssemblyQualifiedName, dependencyProperty.OwnerType.AssemblyQualifiedName);
+        if (result is { })
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public static async Task<bool> ClearInvalid(this IVisualElement element, DependencyProperty dependencyProperty)
+    {
+        if (element is null)
+        {
+            throw new ArgumentNullException(nameof(element));
+        }
+
+        if (dependencyProperty is null)
+        {
+            throw new ArgumentNullException(nameof(dependencyProperty));
+        }
+
+        IValue result = await element.ClearInvalid(dependencyProperty.Name, typeof(bool).AssemblyQualifiedName, dependencyProperty.OwnerType.AssemblyQualifiedName);
+        if (result is { })
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public static async Task<T?> GetValidationErrorContent<T>(this IVisualElement element, DependencyProperty dependencyProperty)
+    {
+        if (element is null)
+        {
+            throw new ArgumentNullException(nameof(element));
+        }
+
+        if (dependencyProperty is null)
+        {
+            throw new ArgumentNullException(nameof(dependencyProperty));
+        }
+
+        IValue result = await element.GetValidationErrorContent(dependencyProperty.Name, typeof(T).AssemblyQualifiedName, dependencyProperty.OwnerType.AssemblyQualifiedName);
+        return result.GetAs<T?>();
+    }
 }
