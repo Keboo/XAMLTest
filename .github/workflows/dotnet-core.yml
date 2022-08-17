@@ -61,11 +61,18 @@ jobs:
       run: (New-Object -ComObject "Shell.Application").minimizeall()
 
     - name: Test
-      run: dotnet test --no-build --verbosity normal --configuration ${{ env.configuration }} --logger "console" --blame-hang --blame-hang-timeout 5m
+      run: dotnet test --no-build --verbosity normal --configuration ${{ env.configuration }} --logger "console" --blame-crash --blame-crash-collect-always --blame-hang --blame-hang-timeout 5m
+
+    - name: Upload Crash Dumps
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: Crash Dumps
+        path: ${{ github.workspace }}\XAMLTest.Tests\TestResults\**\*.dmp
 
     - name: Upload Screenshots
       if: ${{ always() }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: Test Images
         path: ${{ github.workspace }}\XAMLTest.Tests\bin\${{ env.configuration }}\netcoreapp3.1\Screenshots

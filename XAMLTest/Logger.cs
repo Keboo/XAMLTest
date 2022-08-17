@@ -14,7 +14,8 @@ internal static class Logger
 
     public static IReadOnlyList<string> GetLogMessages(this DependencyObject source)
     {
-        lock(LogProperty)
+        if (source is null) return Array.Empty<string>();
+        lock (LogProperty)
         {
             List<string> logs = (List<string>)source.GetValue(LogProperty);
             return logs?.AsReadOnly() ?? (IReadOnlyList<string>)Array.Empty<string>();
@@ -23,6 +24,7 @@ internal static class Logger
 
     public static void LogMessage(this DependencyObject source, string message)
     {
+        if (source is null) return;
         lock (LogProperty)
         {
             List<string> logs = (List<string>)source.GetValue(LogProperty);
