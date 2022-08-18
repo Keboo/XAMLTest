@@ -279,4 +279,60 @@ public class VisualElementTests
             window.Title = "Test Title";
         }
     }
+
+    [TestMethod]
+    public async Task MarkInvalid_WhenPropertyIsDependencyObjectWithoutExistingBinding_SetsValidationError()
+    {
+        // Arrange 
+        await using TestRecorder recorder = new(App);
+
+        const string expectedErrorMessage = "Custom validation error";
+        IVisualElement<TextBox> textBox = await Window.SetXamlContent<TextBox>(@"<TextBox />");
+
+        //Act (set validation)
+        await textBox.SetValidationError(TextBox.TextProperty, expectedErrorMessage);
+        var result1 = await textBox.GetProperty<bool>(System.Windows.Controls.Validation.HasErrorProperty);
+        var validationError1 = await textBox.GetValidationError<TextBox, string>(TextBox.TextProperty);
+
+        //Act (clear validation) 
+        await textBox.ClearValidationError(TextBox.TextProperty);
+        var result2 = await textBox.GetProperty<bool>(System.Windows.Controls.Validation.HasErrorProperty);
+        var validationError2 = await textBox.GetValidationError<TextBox, string>(TextBox.TextProperty);
+
+        //Assert 
+        Assert.AreEqual(true, result1);
+        Assert.AreEqual(expectedErrorMessage, validationError1);
+        Assert.AreEqual(false, result2);
+        Assert.IsNull(validationError2);
+
+        recorder.Success();
+    }
+
+    [TestMethod]
+    public async Task MarkInvalid_WhenPropertyIsDependencyObjectWithExistingBinding_SetsValidationError()
+    {
+        // Arrange 
+        await using TestRecorder recorder = new(App);
+
+        const string expectedErrorMessage = "Custom validation error";
+        IVisualElement<TextBox> textBox = await Window.SetXamlContent<TextBox>(@"<TextBox Text=""{Binding RelativeSource={RelativeSource Self}, Path=Tag}"" />");
+
+        //Act (set validation) 
+        await textBox.SetValidationError(TextBox.TextProperty, expectedErrorMessage);
+        var result1 = await textBox.GetProperty<bool>(System.Windows.Controls.Validation.HasErrorProperty);
+        var validationError1 = await textBox.GetValidationError<TextBox, string>(TextBox.TextProperty);
+
+        //Act (clear validation) 
+        await textBox.ClearValidationError(TextBox.TextProperty);
+        var result2 = await textBox.GetProperty<bool>(System.Windows.Controls.Validation.HasErrorProperty);
+        var validationError2 = await textBox.GetValidationError<TextBox, string>(TextBox.TextProperty);
+
+        //Assert 
+        Assert.AreEqual(true, result1);
+        Assert.AreEqual(expectedErrorMessage, validationError1);
+        Assert.AreEqual(false, result2);
+        Assert.IsNull(validationError2);
+
+        recorder.Success();
+    }
 }

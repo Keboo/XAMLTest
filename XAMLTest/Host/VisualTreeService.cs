@@ -28,7 +28,10 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
 {
     private static Guid Initialized { get; } = Guid.NewGuid();
 
-    private List<Assembly> LoadedAssemblies { get; } = new List<Assembly>();
+    private List<Assembly> LoadedAssemblies { get; } = new List<Assembly>
+    {
+        Assembly.GetExecutingAssembly()
+    };
 
     private Application Application { get; }
 

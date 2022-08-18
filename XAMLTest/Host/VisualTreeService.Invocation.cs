@@ -32,7 +32,34 @@ partial class VisualTreeService
                     {
                         if (containingType.GetMethod(request.MethodName, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy) is { } method)
                         {
-                            method.Invoke(null, new object?[] { element });
+                            var parameters = new object?[request.Parameters.Count + 1];
+                            parameters[0] = element;
+                            var methodParameters = method.GetParameters();
+                            if (methodParameters.Length == parameters.Length)
+                            {
+                                for (int i = 0; i < request.Parameters.Count; i++)
+                                {
+                                    Type parameterType = methodParameters[i + 1].ParameterType;
+                                    parameters[i + 1] = Serializer.Deserialize(parameterType, request.Parameters[i]);
+                                }
+
+                                if (request.MethodGenericTypes.Any())
+                                {
+                                    Type[] genericTypes = request.MethodGenericTypes.Select(x => Type.GetType(x, true)!).ToArray();
+                                    method = method.MakeGenericMethod(genericTypes);
+                                }
+
+                                object? response = method.Invoke(null, parameters);
+                                reply.ValueType = method.ReturnType.AssemblyQualifiedName;
+                                if (method.ReturnType != typeof(void))
+                                {
+                                    reply.Value = Serializer.Serialize(method.ReturnType, response);
+                                }
+                            }
+                            else
+                            {
+                                reply.ErrorMessages.Add($"{request.MethodContainerType}.{request.MethodName} contains {methodParameters.Length} does not match the number of passed parameters {parameters.Length}");
+                            }
                         }
                         else
                         {

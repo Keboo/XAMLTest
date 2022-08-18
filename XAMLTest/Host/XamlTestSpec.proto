@@ -300,10 +300,14 @@ message RemoteInvocationRequest {
   string methodContainerType = 2;
   string methodName = 3;
   string assembly = 4;
+  repeated string parameters = 5;
+  repeated string methodGenericTypes = 6;
 }
 
 message RemoteInvocationResult {
   repeated string errorMessages = 1;
+  string value = 2;
+  string valueType = 3;
 }
 
 message VersionRequest {

@@ -2,8 +2,9 @@
 using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Media;
-
 namespace XamlTest;
 
 public static partial class VisualElementMixins
@@ -93,5 +94,92 @@ public static partial class VisualElementMixins
             return newValue.GetAs<T?>();
         }
         return default;
+    }
+
+    public static Task<TResult?> RemoteExecute<T, T1, TResult>(this IVisualElement<T> element,
+        Func<T, T1, TResult> action, T1 param1)
+    {
+        return element.RemoteExecute<TResult>(action, new object?[] { param1 });
+    }
+
+    public static Task RemoteExecute<T, T1>(this IVisualElement<T> element,
+        Action<T, T1> action, T1 param1)
+    {
+        return element.RemoteExecute<object?>(action, new object?[] { param1 });
+    }
+
+    public static Task RemoteExecute<T, T1, T2>(this IVisualElement<T> element, 
+        Action<T, T1, T2> action, T1 param1, T2 param2)
+    {
+        return element.RemoteExecute<object?>(action, new object?[] { param1, param2 });
+    }
+
+    public static Task SetValidationError<T>(this IVisualElement<T> element, DependencyProperty property, object errorContent)
+        where T : DependencyObject
+    {
+        return element.RemoteExecute(SetError, property, errorContent);
+
+        static void SetError(T element, DependencyProperty property, object errorContent)
+        {
+            BindingExpressionBase? bindingExpression = BindingOperations.GetBindingExpression(element, property);
+            if (bindingExpression is null)
+            {
+                Binding binding = new()
+                {
+                    Path = new PropertyPath(Internal.Validation.ErrorProperty),
+                    RelativeSource = new RelativeSource(RelativeSourceMode.Self)
+                };
+                bindingExpression = BindingOperations.SetBinding(element, property, binding);
+            }
+            ValidationError validationError = new(new Internal.Validation.Rule(errorContent), bindingExpression)
+            {
+                ErrorContent = errorContent
+            };
+            System.Windows.Controls.Validation.MarkInvalid(bindingExpression, validationError);
+        }
+    }
+
+    public static Task ClearValidationError<T>(this IVisualElement<T> element, DependencyProperty property)
+        where T : DependencyObject
+    {
+        return element.RemoteExecute(ClearInvalid, property);
+
+        static void ClearInvalid(T element, DependencyProperty property)
+        {
+            BindingExpressionBase? bindingExpression = BindingOperations.GetBindingExpression(element, property);
+            if (bindingExpression != null)
+            {
+                // Clear the invalidation
+                System.Windows.Controls.Validation.ClearInvalid(bindingExpression);
+            }
+        }
+    }
+
+    public static Task<TErrorContext?> GetValidationError<T, TErrorContext>(this IVisualElement<T> element, DependencyProperty dependencyProperty)
+        where T : DependencyObject
+    {
+        if (element is null)
+        {
+            throw new ArgumentNullException(nameof(element));
+        }
+
+        return element.RemoteExecute(GetValidationErrorContent, dependencyProperty);
+
+        static TErrorContext? GetValidationErrorContent(T element, DependencyProperty property)
+        {
+            var errors = System.Windows.Controls.Validation.GetErrors(element);
+            foreach (var error in errors)
+            {
+                if (error.BindingInError is BindingExpressionBase bindingExpressionBase &&
+                    bindingExpressionBase.TargetProperty == property)
+                {
+                    if (error.ErrorContent is TErrorContext converted)
+                    {
+                        return converted;
+                    }
+                }
+            }
+            return default;
+        }
     }
 }

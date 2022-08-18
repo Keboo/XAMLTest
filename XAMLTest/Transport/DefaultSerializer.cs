@@ -24,10 +24,6 @@ public class DefaultSerializer : ISerializer
             {
                 return null;
             }
-            if (type == typeof(Brush))
-            {
-
-            }
             return converter.ConvertFromInvariantString(value);
         }
         return value;
