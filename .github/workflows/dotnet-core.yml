@@ -61,7 +61,7 @@ jobs:
       run: (New-Object -ComObject "Shell.Application").minimizeall()
 
     - name: Test
-      run: dotnet test --no-build --verbosity normal --configuration ${{ env.configuration }} --logger "console" --blame-crash --blame-crash-collect-always --blame-hang --blame-hang-timeout 5m
+      run: dotnet test --no-build --verbosity normal --configuration ${{ env.configuration }} --logger "console" --blame-crash --blame-crash-collect-always --blame-hang --blame-hang-timeout 10m
 
     - name: Upload Crash Dumps
       if: ${{ always() }}
