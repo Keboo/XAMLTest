@@ -45,87 +45,94 @@ internal class Program
             Logger.AddLogOutput(logFileInfo.Open(FileMode.Create, FileAccess.Write, FileShare.Read));
         }
 
-        AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+        try
+        {
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
-        Application application;
-        if (!string.IsNullOrWhiteSpace(appPathValue) &&
-            Path.GetFullPath(appPathValue) is { } fullPath &&
-            File.Exists(fullPath))
-        {
-            application = CreateFromAssembly(fullPath);
-        }
-        else
-        {
-            application = new Application
+            Application application;
+            if (!string.IsNullOrWhiteSpace(appPathValue) &&
+                Path.GetFullPath(appPathValue) is { } fullPath &&
+                File.Exists(fullPath))
             {
-                ShutdownMode = ShutdownMode.OnLastWindowClose
-            };
-        }
-
-        IDisposable? service = null;
-
-        application.Startup += ApplicationStartup;
-        application.Exit += ApplicationExit;
-        application.DispatcherUnhandledException += ApplicationUnhandledException;
-
-        int exitCode = application.Run();
-        Logger.CloseLogger();
-
-        return exitCode;
-
-        void ApplicationStartup(object sender, StartupEventArgs e)
-        {
-            Logger.Log("Starting XAMLTest server");
-            service = Server.Start(application);
-            Logger.Log("Started XAMLTest server");
-
-            HeartbeatTimer = new(HeartbeatCheck, pidValue, TimeSpan.Zero, TimeSpan.FromSeconds(1));
-            if (waitForDebugger)
+                application = CreateFromAssembly(fullPath);
+            }
+            else
             {
-                for (; !Debugger.IsAttached;)
+                application = new Application
                 {
-                    Thread.Sleep(100);
+                    ShutdownMode = ShutdownMode.OnLastWindowClose
+                };
+            }
+
+            IDisposable? service = null;
+
+            application.Startup += ApplicationStartup;
+            application.Exit += ApplicationExit;
+            application.DispatcherUnhandledException += ApplicationUnhandledException;
+
+            return application.Run();
+
+
+            void ApplicationStartup(object sender, StartupEventArgs e)
+            {
+                Logger.Log("Starting XAMLTest server");
+                service = Server.Start(application);
+                Logger.Log("Started XAMLTest server");
+
+                HeartbeatTimer = new(HeartbeatCheck, pidValue, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+                if (waitForDebugger)
+                {
+                    for (; !Debugger.IsAttached;)
+                    {
+                        Thread.Sleep(100);
+                    }
                 }
             }
-        }
 
-        void ApplicationExit(object sender, ExitEventArgs e)
-        {
-            Logger.CloseLogger();
-            service?.Dispose();
-        }
-
-        static void ApplicationUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
-            => Logger.Log(e.ToString() ?? "Unhandled exception");
-
-        static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
-            => Logger.Log(e.ToString() ?? "Domain unhandled exception");
-
-
-        void HeartbeatCheck(object? state)
-        {
-            var pid = (int)state!;
-            bool shutdown = false;
-            try
+            void ApplicationExit(object sender, ExitEventArgs e)
             {
-                using Process p = Process.GetProcessById(pid);
-                shutdown = p is null || p.HasExited;
+                Logger.CloseLogger();
+                service?.Dispose();
+            }
+
+            static void ApplicationUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+                => Logger.Log(e.ToString() ?? "Unhandled exception");
+
+            static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+                => Logger.Log(e.ToString() ?? "Domain unhandled exception");
+
+
+            void HeartbeatCheck(object? state)
+            {
+                var pid = (int)state!;
+                bool shutdown = false;
+                try
+                {
+                    using Process p = Process.GetProcessById(pid);
+                    shutdown = p is null || p.HasExited;
+                    if (shutdown)
+                    {
+                        Logger.Log($"Host process {pid} {(p is null ? "not found" : "has exited")}");
+                    }
+                }
+                catch (Exception e)
+                {
+                    shutdown = true;
+                    Logger.Log($"Error retriving processes {e}");
+                }
+
                 if (shutdown)
                 {
-                    Logger.Log($"Host process {pid} {(p is null ? "not found" : "has exited")}");
+                    HeartbeatTimer?.Change(0, Timeout.Infinite);
+                    application.Dispatcher.Invoke(() => application.Shutdown());
                 }
             }
-            catch (Exception e)
-            {
-                shutdown = true;
-                Logger.Log($"Error retriving processes {e}");
-            }
-
-            if (shutdown)
-            {
-                HeartbeatTimer?.Change(0, Timeout.Infinite);
-                application.Dispatcher.Invoke(() => application.Shutdown());
-            }
+        }
+        catch (Exception e)
+        {
+            Logger.Log(e.ToString());
+            Logger.CloseLogger();
+            return -2;
         }
     }
 

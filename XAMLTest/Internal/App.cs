@@ -262,13 +262,12 @@ internal class App : IApp
     public Task<IReadOnlyList<ISerializer>> GetSerializers()
         => Task.FromResult<IReadOnlyList<ISerializer>>(Context.Serializer.Serializers.AsReadOnly());
 
-    public async Task<IVersion> GetVersion(bool waitForReady = false)
+    public async Task<IVersion> GetVersion()
     {
         LogMessage?.Invoke($"{nameof(GetVersion)}()");
         VersionRequest versionRequest = new();
         try
         {
-            var callOptions = new CallOptions().WithWaitForReady(waitForReady);
             if (await Client.GetVersionAsync(versionRequest) is { } reply)
             {
                 if (reply.ErrorMessages.Any())

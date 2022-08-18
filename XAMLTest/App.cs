@@ -83,7 +83,7 @@ public static class App
             IVersion version;
             try
             {
-                version = await Wait.For(() => app.GetVersion(true));
+                version = await Wait.For(() => app.GetVersion());
             }
             catch(TimeoutException)
             {
@@ -95,6 +95,7 @@ public static class App
                         logMessage($"Remote process not running");
                     }
                 }
+                await app.DisposeAsync();
                 throw;
             }
             if (logMessage is not null)
