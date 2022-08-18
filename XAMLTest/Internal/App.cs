@@ -1,6 +1,7 @@
 ﻿using Grpc.Core;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using XamlTest.Host;
@@ -9,14 +10,15 @@ namespace XamlTest.Internal;
 
 internal class App : IApp
 {
-    public App(Protocol.ProtocolClient client, Action<string>? logMessage)
+    public App(Protocol.ProtocolClient client, AppOptions appOptions)
     {
         Client = client ?? throw new ArgumentNullException(nameof(client));
-        LogMessage = logMessage;
+        AppOptions = appOptions ?? throw new ArgumentNullException(nameof(appOptions));
     }
 
     protected Protocol.ProtocolClient Client { get; }
-    protected Action<string>? LogMessage { get; }
+    protected AppOptions AppOptions { get; }
+    protected Action<string>? LogMessage => AppOptions?.LogMessage;
     protected AppContext Context { get; } = new();
 
     public IList<XmlNamespace> DefaultXmlNamespaces => Context.DefaultNamespaces;
@@ -28,16 +30,22 @@ internal class App : IApp
             ExitCode = 0
         };
         LogMessage?.Invoke($"{nameof(IApp)}.{nameof(Dispose)}()");
-        if (Client.Shutdown(request) is { } reply)
+        try
         {
-            if (reply.ErrorMessages.Any())
+            if (Client.Shutdown(request) is { } reply)
             {
-                throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                if (reply.ErrorMessages.Any())
+                {
+                    throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                }
+                return;
             }
-
-            return;
+            throw new XAMLTestException("Failed to get a reply");
         }
-        throw new XAMLTestException("Failed to get a reply");
+        finally
+        {
+            CleanupLogFiles().Wait();
+        }
     }
 
     public virtual async ValueTask DisposeAsync()
@@ -47,15 +55,44 @@ internal class App : IApp
             ExitCode = 0
         };
         LogMessage?.Invoke($"{nameof(IApp)}.{nameof(DisposeAsync)}()");
-        if (await Client.ShutdownAsync(request) is { } reply)
+        try
         {
-            if (reply.ErrorMessages.Any())
+            if (await Client.ShutdownAsync(request) is { } reply)
             {
-                throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                if (reply.ErrorMessages.Any())
+                {
+                    throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                }
+                return;
             }
-            return;
+            throw new XAMLTestException("Failed to get a reply");
         }
-        throw new XAMLTestException("Failed to get a reply");
+        finally
+        {
+            await CleanupLogFiles();
+        }
+    }
+
+    private async Task CleanupLogFiles()
+    {
+        if (AppOptions.LogMessage is { } logMessage &&
+            AppOptions.RemoteProcessLogFile is { } logFile)
+        {
+            logFile.Refresh();
+            if (logFile.Exists)
+            {
+                logMessage("-- Remote log start --");
+                using StreamReader sr = new(logFile.OpenRead());
+                logMessage((await sr.ReadToEndAsync()).Trim());
+                logMessage("-- Remote log end --");
+
+            }
+        }
+        try
+        {
+            AppOptions.RemoteProcessLogFile?.Delete();
+        }
+        catch { }
     }
 
     public async Task Initialize(string applicationResourceXaml, params string[] assemblies)

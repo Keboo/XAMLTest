@@ -52,6 +52,11 @@ public static class App
         {
             startInfo.ArgumentList.Add($"--debug");
         }
+        if (options.RemoteProcessLogFile is { } logFile)
+        {
+            startInfo.ArgumentList.Add($"--log-file");
+            startInfo.ArgumentList.Add(logFile.FullName);
+        }
 
         var logMessage = options.LogMessage;
 
@@ -73,9 +78,25 @@ public static class App
                 await VisualStudioAttacher.AttachVisualStudioToProcess(process);
             }
 
-            var app = new ManagedApp(process, client, options.LogMessage);
+            var app = new ManagedApp(process, client, options);
 
-            IVersion version = await Wait.For(() => app.GetVersion(true));
+            IVersion version;
+            try
+            {
+                version = await Wait.For(() => app.GetVersion(true));
+            }
+            catch(TimeoutException)
+            {
+                if (logMessage is not null)
+                {
+                    process.Refresh();
+                    if (process.HasExited)
+                    {
+                        logMessage($"Remote process not running");
+                    }
+                }
+                throw;
+            }
             if (logMessage is not null)
             {
                 logMessage($"XAML Test v{version.XamlTestVersion}, App Version v{version.AppVersion}");

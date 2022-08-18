@@ -20,11 +20,13 @@ internal class Program
         Argument<int> clientPid = new("clientPid");
         Option<string> appPath = new("--application-path");
         Option<bool> debug = new("--debug");
+        Option<FileInfo> logFile = new("--log-file");
         RootCommand command = new()
         {
             clientPid,
             appPath,
-            debug
+            debug,
+            logFile
         };
 
         var parseResult = command.Parse(args);
@@ -36,6 +38,14 @@ internal class Program
         int pidValue = parseResult.GetValueForArgument(clientPid);
         string? appPathValue = parseResult.GetValueForOption(appPath);
         bool waitForDebugger = parseResult.GetValueForOption(debug);
+        FileInfo? logFileInfo = parseResult.GetValueForOption(logFile);
+
+        if (logFileInfo is not null)
+        {
+            Logger.AddLogOutput(logFileInfo.Open(FileMode.Create, FileAccess.Write, FileShare.Read));
+        }
+
+        AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
         Application application;
         if (!string.IsNullOrWhiteSpace(appPathValue) &&
@@ -56,12 +66,19 @@ internal class Program
 
         application.Startup += ApplicationStartup;
         application.Exit += ApplicationExit;
+        application.DispatcherUnhandledException += ApplicationUnhandledException;
 
-        return application.Run();
+        int exitCode = application.Run();
+        Logger.CloseLogger();
+
+        return exitCode;
 
         void ApplicationStartup(object sender, StartupEventArgs e)
         {
+            Logger.Log("Starting XAMLTest server");
             service = Server.Start(application);
+            Logger.Log("Started XAMLTest server");
+
             HeartbeatTimer = new(HeartbeatCheck, pidValue, TimeSpan.Zero, TimeSpan.FromSeconds(1));
             if (waitForDebugger)
             {
@@ -73,7 +90,17 @@ internal class Program
         }
 
         void ApplicationExit(object sender, ExitEventArgs e)
-            => service?.Dispose();
+        {
+            Logger.CloseLogger();
+            service?.Dispose();
+        }
+
+        static void ApplicationUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+            => Logger.Log(e.ToString() ?? "Unhandled exception");
+
+        static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+            => Logger.Log(e.ToString() ?? "Domain unhandled exception");
+
 
         void HeartbeatCheck(object? state)
         {
@@ -83,10 +110,15 @@ internal class Program
             {
                 using Process p = Process.GetProcessById(pid);
                 shutdown = p is null || p.HasExited;
+                if (shutdown)
+                {
+                    Logger.Log($"Host process {pid} {(p is null ? "not found" : "has exited")}");
+                }
             }
-            catch
+            catch (Exception e)
             {
                 shutdown = true;
+                Logger.Log($"Error retriving processes {e}");
             }
 
             if (shutdown)

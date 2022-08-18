@@ -27,7 +27,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     
     - name: Set Version
       run: |
@@ -42,11 +42,10 @@ jobs:
         }
     
     - name: Setup .NET
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v2
       with:
         dotnet-version: |
           3.1.x
-          5.x
           6.x
       env:
         NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
@@ -61,7 +60,7 @@ jobs:
       run: (New-Object -ComObject "Shell.Application").minimizeall()
 
     - name: Test
-      run: dotnet test --no-build --verbosity normal --configuration ${{ env.configuration }} --logger "console" --blame-crash --blame-crash-collect-always --blame-hang --blame-hang-timeout 10m
+      run: dotnet test --no-build --verbosity normal --configuration ${{ env.configuration }} --logger "console" --blame-crash --blame-crash-collect-always --blame-hang --blame-hang-timeout 5m
 
     - name: Upload Crash Dumps
       if: ${{ always() }}
@@ -83,7 +82,7 @@ jobs:
     
     - name: Upload Artifacts
       if: ${{ github.event_name != 'pull_request' }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: NuGet
         path: ${{ github.workspace }}\XAMLTest\bin\${{ env.configuration }}\XAMLTest.${{ env.nugetVersion }}*nupkg

@@ -530,7 +530,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
                 {
                     Rect windowRect = new(window.Left, window.Top, window.Width, window.Height);
                     Screen screen = Screen.FromRect(windowRect);
-                    window.LogMessage($"Fitting window {windowRect} to screen {screen.WorkingArea}");
+                    Logger.Log($"Fitting window {windowRect} to screen {screen.WorkingArea}");
                     if (!screen.WorkingArea.Contains(windowRect))
                     {
                         window.Left = Math.Max(window.Left, screen.WorkingArea.Left);
@@ -542,7 +542,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
                         window.Width = Math.Min(window.Width, screen.WorkingArea.Width);
                         window.Height = Math.Min(window.Height, screen.WorkingArea.Height);
 
-                        window.LogMessage($"Window's new size and location {new Rect(window.Left, window.Top, window.Width, window.Height)}");
+                        Logger.Log($"Window's new size and location {new Rect(window.Left, window.Top, window.Width, window.Height)}");
                     }
                 }
 
@@ -552,7 +552,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
                     return;
                 }
 
-                reply.LogMessages.AddRange(window.GetLogMessages());
+                reply.LogMessages.AddRange(Logger.GetMessages());
             }
             else
             {
@@ -607,6 +607,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
         ShutdownResult reply = new();
         try
         {
+            Logger.CloseLogger();
             _ = Application.Dispatcher.InvokeAsync(() =>
               {
                   Application.Shutdown(request.ExitCode);
@@ -714,11 +715,11 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
 
     private static bool ActivateWindow(Window window)
     {
-        window.LogMessage("Activating window");
+        Logger.Log("Activating window");
 
         if (window.IsActive)
         {
-            window.LogMessage("Window already active");
+            Logger.Log("Window already active");
             return true;
         }
 
@@ -727,7 +728,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
             return true;
         }
 
-        window.LogMessage("Using mouse to activate Window");
+        Logger.Log("Using mouse to activate Window");
 
         //Fall back, attempt to click on the window to activate it
         foreach (Point clickPoint in GetClickPoints(window))

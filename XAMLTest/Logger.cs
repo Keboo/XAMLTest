@@ -1,39 +1,55 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Windows;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Reflection;
 
 namespace XamlTest;
 
 internal static class Logger
 {
-    private static readonly DependencyProperty LogProperty = DependencyProperty.RegisterAttached(
-       "Log",
-       typeof(List<string>),
-       typeof(Logger),
-       new PropertyMetadata(null));
+    private static List<string> LogMessages { get; } = new();
+    private static List<StreamWriter> Writers { get; } = new();
 
-    public static IReadOnlyList<string> GetLogMessages(this DependencyObject source)
+    public static void AddLogOutput(Stream stream)
     {
-        if (source is null) return Array.Empty<string>();
-        lock (LogProperty)
+        StreamWriter writer = new(stream);
+        lock(LogMessages)
         {
-            List<string> logs = (List<string>)source.GetValue(LogProperty);
-            return logs?.AsReadOnly() ?? (IReadOnlyList<string>)Array.Empty<string>();
+            Writers.Add(writer);
         }
     }
 
-    public static void LogMessage(this DependencyObject source, string message)
+    public static void CloseLogger()
     {
-        if (source is null) return;
-        lock (LogProperty)
+        lock (LogMessages)
         {
-            List<string> logs = (List<string>)source.GetValue(LogProperty);
-            if (logs is null)
+            foreach(var writer in Writers)
             {
-                logs = new List<string>();
-                source.SetValue(LogProperty, logs);
+                writer.Flush();
+                writer.Dispose();
             }
-            logs.Add(message);
+            Writers.Clear();
+        }
+    }
+
+
+    public static IReadOnlyList<string> GetMessages()
+    {
+        lock (LogMessages)
+        {
+            return LogMessages.AsReadOnly();
+        }
+    }
+
+    public static void Log(string message)
+    {
+        lock (LogMessages)
+        {
+            LogMessages.Add(message);
+            foreach(var writer in Writers)
+            {
+                writer.WriteLine(message);
+            }
         }
     }
 }

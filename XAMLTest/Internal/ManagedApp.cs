@@ -8,8 +8,11 @@ namespace XamlTest.Internal;
 
 internal class ManagedApp : App
 {
-    public ManagedApp(Process managedProcess, Protocol.ProtocolClient client, Action<string>? logMessage)
-        : base(client, logMessage) 
+    public ManagedApp(
+        Process managedProcess,
+        Protocol.ProtocolClient client,
+        AppOptions appOptions)
+        : base(client, appOptions) 
         => ManagedProcess = managedProcess ?? throw new ArgumentNullException(nameof(managedProcess));
 
     public Process ManagedProcess { get; }
