@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using XamlTest.Host;
 
@@ -57,7 +58,9 @@ internal class App : IApp
         LogMessage?.Invoke($"{nameof(IApp)}.{nameof(DisposeAsync)}()");
         try
         {
-            if (await Client.ShutdownAsync(request) is { } reply)
+            using CancellationTokenSource cts = new();
+            cts.CancelAfter(TimeSpan.FromSeconds(1));
+            if (await Client.ShutdownAsync(request, cancellationToken: cts.Token) is { } reply)
             {
                 if (reply.ErrorMessages.Any())
                 {
@@ -67,6 +70,8 @@ internal class App : IApp
             }
             throw new XAMLTestException("Failed to get a reply");
         }
+        catch (OperationCanceledException)
+        { }
         finally
         {
             await CleanupLogFiles();

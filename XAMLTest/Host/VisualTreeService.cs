@@ -605,18 +605,16 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
     public override Task<ShutdownResult> Shutdown(ShutdownRequest request, ServerCallContext context)
     {
         ShutdownResult reply = new();
-        try
+        Logger.CloseLogger();
+        Task.Run(async () =>
         {
-            Logger.CloseLogger();
+            //Allow for some time for the response to be sent back to the caller
+            await Task.Delay(500);
             _ = Application.Dispatcher.InvokeAsync(() =>
-              {
-                  Application.Shutdown(request.ExitCode);
-              });
-        }
-        catch (Exception e)
-        {
-            reply.ErrorMessages.Add(e.ToString());
-        }
+            {
+                Application.Shutdown(request.ExitCode);
+            });
+        });
         return Task.FromResult(reply);
     }
 
