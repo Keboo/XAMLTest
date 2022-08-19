@@ -29,7 +29,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
                 if (searchRoot is null) return;
 
                 var window = searchRoot as Window ?? Window.GetWindow(searchRoot);
-                window.LogMessage("Getting element");
+                Logger.Log("Getting element");
 
                 if (!string.IsNullOrWhiteSpace(request.Query))
                 {
@@ -41,7 +41,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
 
                     reply.Elements.Add(GetElement(element));
 
-                    window.LogMessage("Got element");
+                    Logger.Log("Got element");
                     return;
                 }
 

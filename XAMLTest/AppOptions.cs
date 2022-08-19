@@ -24,8 +24,19 @@ public class AppOptions
         set => _xamlTestPath = value;
     }
     public Action<string>? LogMessage { get; set; }
+    public FileInfo? RemoteProcessLogFile 
+    {
+        get;
+    }
     public bool AllowVisualStudioDebuggerAttach { get; set; } = true;
     public TimeSpan ConnectionTimeout { get; set; } = TimeSpan.FromSeconds(1);
+
+    public AppOptions()
+    {
+        var directory = Path.GetDirectoryName(XamlTestPath);
+        var file = Path.ChangeExtension(Path.GetRandomFileName(), ".xamltest.log");
+        RemoteProcessLogFile = new FileInfo(Path.Combine(directory!, file));
+    }
 
     public void WithRemoteApp<TApp>()
     {

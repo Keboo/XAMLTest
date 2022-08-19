@@ -2,6 +2,7 @@ using MaterialDesignThemes.Wpf;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -14,10 +15,13 @@ namespace XamlTest.Tests;
 [TestClass]
 public class AppTests
 {
+    [NotNull]
+    public TestContext? TestContext { get; set; }
+    
     [TestMethod]
     public async Task OnStartRemote_LaunchesRemoteApp()
     {
-        await using var app = await App.StartRemote<XAMLTest.TestApp.App>();
+        await using var app = await App.StartRemote<XAMLTest.TestApp.App>(x => TestContext.WriteLine(x));
         IWindow? window = await app.GetMainWindow();
         Assert.AreEqual("Test App Window", await window!.GetTitle());
     }

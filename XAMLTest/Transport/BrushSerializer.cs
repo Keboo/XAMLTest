@@ -147,11 +147,13 @@ public class BrushSerializer : ISerializer
 
         public SolidColorBrush GetBrush()
         {
-            return new SolidColorBrush
+            var brush = new SolidColorBrush
             {
                 Color = Color,
                 Opacity = Opacity
             };
+            brush.Freeze();
+            return brush;
         }
     }
 
@@ -207,12 +209,14 @@ public class BrushSerializer : ISerializer
 
         public LinearGradientBrush GetBrush()
         {
-            return new LinearGradientBrush
+            var brush = new LinearGradientBrush
             {
                 StartPoint = StartPoint,
                 EndPoint = EndPoint,
                 GradientStops = new GradientStopCollection(GradientStops?.Select(x => new GradientStop(x.Color, x.Offset)) ?? Enumerable.Empty<GradientStop>())
             };
+            brush.Freeze();
+            return brush;
         }
     }
 
@@ -238,7 +242,7 @@ public class BrushSerializer : ISerializer
 
         public RadialGradientBrush GetBrush()
         {
-            return new RadialGradientBrush
+            var brush = new RadialGradientBrush
             {
                 Center = Center,
                 RadiusX = RadiusX,
@@ -246,6 +250,8 @@ public class BrushSerializer : ISerializer
                 GradientOrigin = GradientOrigin,
                 GradientStops = new GradientStopCollection(GradientStops?.Select(x => new GradientStop(x.Color, x.Offset)) ?? Enumerable.Empty<GradientStop>())
             };
+            brush.Freeze();
+            return brush;
         }
     }
 }

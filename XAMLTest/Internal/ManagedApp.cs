@@ -8,8 +8,11 @@ namespace XamlTest.Internal;
 
 internal class ManagedApp : App
 {
-    public ManagedApp(Process managedProcess, Protocol.ProtocolClient client, Action<string>? logMessage)
-        : base(client, logMessage) 
+    public ManagedApp(
+        Process managedProcess,
+        Protocol.ProtocolClient client,
+        AppOptions appOptions)
+        : base(client, appOptions) 
         => ManagedProcess = managedProcess ?? throw new ArgumentNullException(nameof(managedProcess));
 
     public Process ManagedProcess { get; }
@@ -41,7 +44,7 @@ internal class ManagedApp : App
         {
             LogMessage?.Invoke($"Invoking kill");
             process.Kill();
-            process.WaitForExit(1000);
+            process.WaitForExit(1_000);
         }
     }
 }

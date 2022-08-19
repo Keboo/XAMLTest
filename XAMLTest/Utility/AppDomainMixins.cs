@@ -43,6 +43,10 @@ internal static class AppDomainMixins
                 {
                     Assemblies.Add((AssemblyName.GetAssemblyName(file), new Lazy<Assembly>(() => Assembly.LoadFrom(file))));
                 }
+                catch(FileLoadException)
+                {
+                    continue;
+                }
                 catch (BadImageFormatException)
                 {
                     continue;

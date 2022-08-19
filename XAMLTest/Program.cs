@@ -20,11 +20,13 @@ internal class Program
         Argument<int> clientPid = new("clientPid");
         Option<string> appPath = new("--application-path");
         Option<bool> debug = new("--debug");
+        Option<FileInfo> logFile = new("--log-file");
         RootCommand command = new()
         {
             clientPid,
             appPath,
-            debug
+            debug,
+            logFile
         };
 
         var parseResult = command.Parse(args);
@@ -36,64 +38,101 @@ internal class Program
         int pidValue = parseResult.GetValueForArgument(clientPid);
         string? appPathValue = parseResult.GetValueForOption(appPath);
         bool waitForDebugger = parseResult.GetValueForOption(debug);
+        FileInfo? logFileInfo = parseResult.GetValueForOption(logFile);
 
-        Application application;
-        if (!string.IsNullOrWhiteSpace(appPathValue) &&
-            Path.GetFullPath(appPathValue) is { } fullPath &&
-            File.Exists(fullPath))
+        if (logFileInfo is not null)
         {
-            application = CreateFromAssembly(fullPath);
-        }
-        else
-        {
-            application = new Application
-            {
-                ShutdownMode = ShutdownMode.OnLastWindowClose
-            };
+            Logger.AddLogOutput(logFileInfo.Open(FileMode.Create, FileAccess.Write, FileShare.Read));
         }
 
-        IDisposable? service = null;
-
-        application.Startup += ApplicationStartup;
-        application.Exit += ApplicationExit;
-
-        return application.Run();
-
-        void ApplicationStartup(object sender, StartupEventArgs e)
+        try
         {
-            service = Server.Start(application);
-            HeartbeatTimer = new(HeartbeatCheck, pidValue, TimeSpan.Zero, TimeSpan.FromSeconds(1));
-            if (waitForDebugger)
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+
+            Application application;
+            if (!string.IsNullOrWhiteSpace(appPathValue) &&
+                Path.GetFullPath(appPathValue) is { } fullPath &&
+                File.Exists(fullPath))
             {
-                for (; !Debugger.IsAttached;)
+                application = CreateFromAssembly(fullPath);
+            }
+            else
+            {
+                application = new Application
                 {
-                    Thread.Sleep(100);
+                    ShutdownMode = ShutdownMode.OnLastWindowClose
+                };
+            }
+
+            IDisposable? service = null;
+
+            application.Startup += ApplicationStartup;
+            application.Exit += ApplicationExit;
+            application.DispatcherUnhandledException += ApplicationUnhandledException;
+
+            return application.Run();
+
+
+            void ApplicationStartup(object sender, StartupEventArgs e)
+            {
+                Logger.Log("Starting XAMLTest server");
+                service = Server.Start(application);
+                Logger.Log("Started XAMLTest server");
+
+                HeartbeatTimer = new(HeartbeatCheck, pidValue, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+                if (waitForDebugger)
+                {
+                    for (; !Debugger.IsAttached;)
+                    {
+                        Thread.Sleep(100);
+                    }
+                }
+            }
+
+            void ApplicationExit(object sender, ExitEventArgs e)
+            {
+                Logger.CloseLogger();
+                service?.Dispose();
+            }
+
+            static void ApplicationUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+                => Logger.Log(e.ToString() ?? "Unhandled exception");
+
+            static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+                => Logger.Log(e.ToString() ?? "Domain unhandled exception");
+
+
+            void HeartbeatCheck(object? state)
+            {
+                var pid = (int)state!;
+                bool shutdown = false;
+                try
+                {
+                    using Process p = Process.GetProcessById(pid);
+                    shutdown = p is null || p.HasExited;
+                    if (shutdown)
+                    {
+                        Logger.Log($"Host process {pid} {(p is null ? "not found" : "has exited")}");
+                    }
+                }
+                catch (Exception e)
+                {
+                    shutdown = true;
+                    Logger.Log($"Error retriving processes {e}");
+                }
+
+                if (shutdown)
+                {
+                    HeartbeatTimer?.Change(0, Timeout.Infinite);
+                    application.Dispatcher.Invoke(() => application.Shutdown());
                 }
             }
         }
-
-        void ApplicationExit(object sender, ExitEventArgs e)
-            => service?.Dispose();
-
-        void HeartbeatCheck(object? state)
+        catch (Exception e)
         {
-            var pid = (int)state!;
-            bool shutdown = false;
-            try
-            {
-                using Process p = Process.GetProcessById(pid);
-                shutdown = p is null || p.HasExited;
-            }
-            catch
-            {
-                shutdown = true;
-            }
-
-            if (shutdown)
-            {
-                HeartbeatTimer?.Change(0, Timeout.Infinite);
-                application.Dispatcher.Invoke(() => application.Shutdown());
-            }
+            Logger.Log(e.ToString());
+            Logger.CloseLogger();
+            return -2;
         }
     }
 
