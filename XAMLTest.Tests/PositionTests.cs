@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using XamlTest.Tests.TestControls;
 
@@ -41,21 +42,93 @@ public class PositionTests
         }
     }
 
-    [DataTestMethod]
-    [DataRow(Position.Center, "182x120")]
-    [DataRow(Position.TopLeft, "0x0")]
-    [DataRow(Position.TopCenter, "182x0")]
-    [DataRow(Position.TopRight, "364x0")]
-    [DataRow(Position.RightCenter, "364x120")]
-    [DataRow(Position.BottomRight, "364x241")]
-    [DataRow(Position.BottomCenter, "182x241")]
-    [DataRow(Position.BottomLeft, "0x241")]
-    [DataRow(Position.LeftCenter, "0x120")]
-    public async Task CanClickAtAllPositions(Position position, string expectedValue)
+    [TestMethod]
+    public async Task CanClick_Center()
     {
-        await UserControl.LeftClick(position);
+        Rect coordinates = await UserControl.GetCoordinates();
+        Point clickPosition = await UserControl.LeftClick(Position.Center);
 
-        string? clickPositon = await PositionTextElement.GetText();
-        Assert.AreEqual(expectedValue, clickPositon);
+        Assert.AreEqual(coordinates.Left + coordinates.Width / 2.0, clickPosition.X, 2.0);
+        Assert.AreEqual(coordinates.Top + coordinates.Height / 2.0, clickPosition.Y, 2.0);
+    }
+
+    [TestMethod]
+    public async Task CanClick_TopLeft()
+    {
+        Rect coordinates = await UserControl.GetCoordinates();
+        Point clickPosition = await UserControl.LeftClick(Position.TopLeft);
+
+        Assert.AreEqual(coordinates.Left, clickPosition.X, 2.0);
+        Assert.AreEqual(coordinates.Top, clickPosition.Y, 2.0);
+    }
+
+    [TestMethod]
+    public async Task CanClick_TopCenter()
+    {
+        Rect coordinates = await UserControl.GetCoordinates();
+        Point clickPosition = await UserControl.LeftClick(Position.TopCenter);
+
+        Assert.AreEqual(coordinates.Left + coordinates.Width / 2.0, clickPosition.X, 2.0);
+        Assert.AreEqual(coordinates.Top, clickPosition.Y, 2.0);
+    }
+
+    [TestMethod]
+    public async Task CanClick_TopRight()
+    {
+        Rect coordinates = await UserControl.GetCoordinates();
+        Point clickPosition = await UserControl.LeftClick(Position.TopRight);
+
+        Assert.AreEqual(coordinates.Right, clickPosition.X, 2.0);
+        Assert.AreEqual(coordinates.Top, clickPosition.Y, 2.0);
+    }
+
+    [TestMethod]
+    public async Task CanClick_RightCenter()
+    {
+        Rect coordinates = await UserControl.GetCoordinates();
+        Point clickPosition = await UserControl.LeftClick(Position.RightCenter);
+
+        Assert.AreEqual(coordinates.Right, clickPosition.X, 2.0);
+        Assert.AreEqual(coordinates.Top + coordinates.Height / 2.0, clickPosition.Y, 2.0);
+    }
+
+    [TestMethod]
+    public async Task CanClick_BottomRight()
+    {
+        Rect coordinates = await UserControl.GetCoordinates();
+        Point clickPosition = await UserControl.LeftClick(Position.BottomRight);
+
+        Assert.AreEqual(coordinates.Right, clickPosition.X, 2.0);
+        Assert.AreEqual(coordinates.Bottom, clickPosition.Y, 2.0);
+    }
+
+    [TestMethod]
+    public async Task CanClick_BottomCenter()
+    {
+        Rect coordinates = await UserControl.GetCoordinates();
+        Point clickPosition = await UserControl.LeftClick(Position.BottomCenter);
+
+        Assert.AreEqual(coordinates.Left + coordinates.Width / 2.0, clickPosition.X, 2.0);
+        Assert.AreEqual(coordinates.Bottom, clickPosition.Y, 2.0);
+    }
+
+    [TestMethod]
+    public async Task CanClick_BottomLeft()
+    {
+        Rect coordinates = await UserControl.GetCoordinates();
+        Point clickPosition = await UserControl.LeftClick(Position.BottomLeft);
+
+        Assert.AreEqual(coordinates.Left, clickPosition.X, 2.0);
+        Assert.AreEqual(coordinates.Bottom, clickPosition.Y, 2.0);
+    }
+
+    [TestMethod]
+    public async Task CanClick_LeftCenter()
+    {
+        Rect coordinates = await UserControl.GetCoordinates();
+        Point clickPosition = await UserControl.LeftClick(Position.LeftCenter);
+
+        Assert.AreEqual(coordinates.Left, clickPosition.X, 2.0);
+        Assert.AreEqual(coordinates.Top + coordinates.Height / 2.0, clickPosition.Y, 2.0);
     }
 }

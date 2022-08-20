@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Media.Media3D;
 using XamlTest.Internal;
 
 namespace XamlTest;
@@ -101,4 +103,24 @@ public static partial class VisualElementMixins
     {
         return new Validation<T>(element);
     }
+
+    public static Task<Vector> GetScale<T>(this IVisualElement<T> element)
+        where T : Visual
+    {
+        return element.RemoteExecute(Scale);
+
+        static Vector Scale(T element)
+        {
+            PresentationSource source = PresentationSource.FromVisual(element);
+
+            if (source != null)
+            {
+                double scaleX = source.CompositionTarget.TransformToDevice.M11;
+                double scaleY = source.CompositionTarget.TransformToDevice.M22;
+                return new(scaleX, scaleY);
+            }
+            return new(1.0, 1.0);
+        }
+    }
 }
+

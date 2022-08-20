@@ -58,17 +58,18 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
     [TestMethod]
     public async Task OnGetCoordinate_ReturnsFractionalCoordinatesOfElement()
     {
+        Vector scale = await Window.GetScale();
         IVisualElement<Border> element = await Window.SetXamlContent<Border>(@"<Border x:Name=""MyBorder"" 
 Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left""/>");
 
         Rect initialCoordinates = await element.GetCoordinates();
-        await element.SetWidth(30.7);
-        await element.SetHeight(40.3);
+        await element.SetWidth(await element.GetWidth() + 0.7);
+        await element.SetHeight(await element.GetHeight() + 0.3);
         await element.SetMargin(new Thickness(0.1));
 
         Rect newCoordinates = await element.GetCoordinates();
-        Assert.AreEqual(30.7, Math.Round(newCoordinates.Width, 5));
-        Assert.AreEqual(40.3, Math.Round(newCoordinates.Height, 5));
+        Assert.AreEqual(initialCoordinates.Width + 0.7 * scale.X, Math.Round(newCoordinates.Width, 5));
+        Assert.AreEqual(40.3 * scale.Y, Math.Round(newCoordinates.Height, 5));
         Assert.AreEqual(0.1, Math.Round(newCoordinates.Left - initialCoordinates.Left, 5));
         Assert.AreEqual(0.1, Math.Round(newCoordinates.Top - initialCoordinates.Top, 5));
     }
