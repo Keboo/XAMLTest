@@ -8,17 +8,7 @@ namespace XamlTest.Internal;
 internal static class Validation
 {
     internal static readonly DependencyProperty ErrorProperty = DependencyProperty.RegisterAttached(
-        $"Error-{Guid.NewGuid()}", typeof(object), typeof(Validation), new PropertyMetadata(default(object)));
-
-    internal static void SetValidationErrorDummy(DependencyObject element, object value)
-    {
-        element.SetValue(ErrorProperty, value);
-    }
-
-    internal static object GetValidationErrorDummy(DependencyObject element)
-    {
-        return element.GetValue(ErrorProperty);
-    }
+        $"Error-{Guid.NewGuid()}", typeof(object), typeof(Validation), new PropertyMetadata(default(object?)));
 
     internal class Rule : ValidationRule
     {

@@ -442,7 +442,7 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
     }
 
     protected virtual Host.ElementQuery GetFindElementQuery(string query)
-        => new Host.ElementQuery
+        => new()
         {
             ParentId = Id,
             Query = query
@@ -528,34 +528,6 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
     public IVisualElement<TElement> As<TElement>() where TElement : DependencyObject
         => Convert<IVisualElement<TElement>>();
     
-    public async Task RemoteExecute(Action<T> action)
-    {
-        if (action.Target is not null)
-        {
-            throw new ArgumentException("Cannot execute a non-static delegate remotely");
-        }
-        if (action.Method.DeclaringType is null)
-        {
-            throw new ArgumentException("Could not find containing type for delegate");
-        }
-
-        var request = new RemoteInvocationRequest()
-        {
-            ElementId = Id,
-            MethodName = action.Method.Name,
-            MethodContainerType = action.Method.DeclaringType!.AssemblyQualifiedName,
-            Assembly = action.Method.DeclaringType.Assembly.FullName,
-        };
-        if (await Client.RemoteInvocationAsync(request) is { } reply)
-        {
-            if (reply.ErrorMessages.Any())
-            {
-                throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
-            }
-            return;
-        }
-    }
-
     public async Task<TReturn?> RemoteExecute<TReturn>(Delegate @delegate, object?[] parameters)
     {
         if (@delegate.Target is not null)
@@ -585,46 +557,7 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
                 request.MethodGenericTypes.Add(genericArguments.AssemblyQualifiedName);
             }
         }
-        if (await Client.RemoteInvocationAsync(request) is { } reply)
-        {
-            if (reply.ErrorMessages.Any())
-            {
-                throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
-            }
-
-            if (reply.ValueType is null)
-            {
-                return default;
-            }
-
-            if (reply.Value is TReturn converted && typeof(TReturn) != typeof(string))
-            {
-                return converted;
-            }
-
-            return (TReturn)Serializer.Deserialize(typeof(TReturn), reply.Value ?? "")!;
-        }
-        return default;
-    }
-
-    public async Task<TReturn?> RemoteExecute<TReturn>(Func<T, TReturn?> action)
-    {
-        if (action.Target is not null)
-        {
-            throw new ArgumentException("Cannot execute a non-static delegate remotely");
-        }
-        if (action.Method.DeclaringType is null)
-        {
-            throw new ArgumentException("Could not find containing type for delegate");
-        }
-
-        var request = new RemoteInvocationRequest()
-        {
-            ElementId = Id,
-            MethodName = action.Method.Name,
-            MethodContainerType = action.Method.DeclaringType!.AssemblyQualifiedName,
-            Assembly = action.Method.DeclaringType.Assembly.FullName,
-        };
+        LogMessage?.Invoke($"{nameof(RemoteExecute)}({request})");
         if (await Client.RemoteInvocationAsync(request) is { } reply)
         {
             if (reply.ErrorMessages.Any())

@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Controls;
@@ -36,60 +37,119 @@ public class ValidationTests
     }
 
     [TestMethod]
-    public async Task MarkInvalid_WhenPropertyIsDependencyObjectWithoutExistingBinding_SetsValidationError()
+    public async Task SetValidationError_WithoutBinding_SetsValidationError()
     {
-        // Arrange 
+        //Arrange 
         await using TestRecorder recorder = new(App);
 
         const string expectedErrorMessage = "Custom validation error";
         IVisualElement<TextBox> textBox = await Window.SetXamlContent<TextBox>(@"<TextBox />");
         IValidation<TextBox> validation = textBox.Validation();
 
-        //Act (set validation)
+        //Act
         await validation.SetValidationError(TextBox.TextProperty, expectedErrorMessage);
-        var result1 = await textBox.GetProperty<bool>(System.Windows.Controls.Validation.HasErrorProperty);
-        var validationError1 = await validation.GetValidationError<string>(TextBox.TextProperty);
-
-        //Act (clear validation) 
-        await validation.ClearValidationError(TextBox.TextProperty);
-        var result2 = await textBox.GetProperty<bool>(System.Windows.Controls.Validation.HasErrorProperty);
-        var validationError2 = await validation.GetValidationError<string>(TextBox.TextProperty);
+        var hasError = await validation.GetHasError();
+        var validationError = await validation.GetValidationError<string>(TextBox.TextProperty);
 
         //Assert 
-        Assert.AreEqual(true, result1);
-        Assert.AreEqual(expectedErrorMessage, validationError1);
-        Assert.AreEqual(false, result2);
-        Assert.IsNull(validationError2);
+        Assert.IsTrue(hasError);
+        Assert.AreEqual(expectedErrorMessage, validationError);
 
         recorder.Success();
     }
 
     [TestMethod]
-    public async Task MarkInvalid_WhenPropertyIsDependencyObjectWithExistingBinding_SetsValidationError()
+    public async Task SetValidationError_WithExistingBinding_SetsValidationError()
     {
-        // Arrange 
+        //Arrange 
         await using TestRecorder recorder = new(App);
 
         const string expectedErrorMessage = "Custom validation error";
         IVisualElement<TextBox> textBox = await Window.SetXamlContent<TextBox>(@"<TextBox Text=""{Binding RelativeSource={RelativeSource Self}, Path=Tag}"" />");
         IValidation<TextBox> validation = textBox.Validation();
 
-        //Act (set validation) 
+        //Act
         await validation.SetValidationError(TextBox.TextProperty, expectedErrorMessage);
-        var result1 = await textBox.GetProperty<bool>(System.Windows.Controls.Validation.HasErrorProperty);
-        var validationError1 = await validation.GetValidationError<string>(TextBox.TextProperty);
-
-        //Act (clear validation) 
-        await validation.ClearValidationError(TextBox.TextProperty);
-        var result2 = await textBox.GetProperty<bool>(System.Windows.Controls.Validation.HasErrorProperty);
-        var validationError2 = await validation.GetValidationError<string>(TextBox.TextProperty);
+        var hasError = await validation.GetHasError();
+        var validationError = await validation.GetValidationError<string>(TextBox.TextProperty);
 
         //Assert 
-        Assert.AreEqual(true, result1);
-        Assert.AreEqual(expectedErrorMessage, validationError1);
-        Assert.AreEqual(false, result2);
-        Assert.IsNull(validationError2);
+        Assert.IsTrue(hasError);
+        Assert.AreEqual(expectedErrorMessage, validationError);
 
         recorder.Success();
+    }
+
+    [TestMethod]
+    public async Task ClearValidationError_ClearsValidationError()
+    {
+        //Arrange 
+        await using TestRecorder recorder = new(App);
+
+        IVisualElement<TextBox> textBox = await Window.SetXamlContent<TextBox>(@"<TextBox />");
+        IValidation<TextBox> validation = textBox.Validation();
+        await validation.SetValidationError(TextBox.TextProperty, "Some error");
+
+        //Act
+        await validation.ClearValidationError(TextBox.TextProperty);
+        var hasError = await validation.GetHasError();
+        var validationError = await validation.GetValidationError<string>(TextBox.TextProperty);
+
+        //Assert 
+        Assert.IsFalse(hasError);
+        Assert.IsNull(validationError);
+
+        recorder.Success();
+    }
+
+    [TestMethod]
+    public async Task SetValidationRule_WithoutBinding_AppliesValidationRule()
+    {
+        //Arrange 
+        await using TestRecorder recorder = new(App);
+
+        IVisualElement<TextBox> textBox = await Window.SetXamlContent<TextBox>(@"<TextBox />");
+        IValidation<TextBox> validation = textBox.Validation();
+
+        //Act
+        await validation.SetValidationRule<CustomValidationRule>(TextBox.TextProperty);
+        var hasError = await validation.GetHasError();
+        var validationError = await validation.GetValidationError<string>(TextBox.TextProperty);
+
+        //Assert 
+        Assert.IsTrue(hasError);
+        Assert.AreEqual(CustomValidationRule.ErrorObject, validationError);
+
+        recorder.Success();
+    }
+
+    [TestMethod]
+    public async Task SetValidationRule_WithExistingBinding_AppliesValidationRule()
+    {
+        //Arrange 
+        await using TestRecorder recorder = new(App);
+
+        IVisualElement<TextBox> textBox = await Window.SetXamlContent<TextBox>(@"<TextBox Text=""{Binding RelativeSource={RelativeSource Self}, Path=Tag}""/>");
+        IValidation<TextBox> validation = textBox.Validation();
+
+        //Act
+        await validation.SetValidationRule<CustomValidationRule>(TextBox.TextProperty);
+        await textBox.SetTag("foo");
+        var hasError = await validation.GetHasError();
+        var validationError = await validation.GetValidationError<string>(TextBox.TextProperty);
+
+        //Assert 
+        Assert.IsTrue(hasError);
+        Assert.AreEqual(CustomValidationRule.ErrorObject, validationError);
+
+        recorder.Success();
+    }
+
+    private class CustomValidationRule : ValidationRule
+    {
+        public const string ErrorObject = "Custom Validation Rule Failure";
+
+        public override ValidationResult Validate(object value, CultureInfo cultureInfo)
+            => new ValidationResult(false, ErrorObject);
     }
 }

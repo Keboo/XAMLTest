@@ -248,7 +248,8 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
                     {
                         propertyTypeConverter = foundProperty.Converter;
                     }
-                    else if (Type.GetType(request.ValueType) is { } requestedValueType)
+                    else if (Type.GetType(request.ValueType) is { } requestedValueType &&
+                             requestedValueType != typeof(object))
                     {
                         propertyTypeConverter = TypeDescriptor.GetConverter(requestedValueType);
                     }

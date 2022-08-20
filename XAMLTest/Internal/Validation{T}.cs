@@ -27,16 +27,45 @@ internal class Validation<T> : IValidation<T>
             {
                 Binding binding = new()
                 {
-                    Path = new PropertyPath(Internal.Validation.ErrorProperty),
+                    Path = new PropertyPath(Validation.ErrorProperty),
                     RelativeSource = new RelativeSource(RelativeSourceMode.Self)
                 };
                 bindingExpression = BindingOperations.SetBinding(element, property, binding);
             }
-            ValidationError validationError = new(new Internal.Validation.Rule(errorContent), bindingExpression)
+            ValidationError validationError = new(new Validation.Rule(errorContent), bindingExpression)
             {
                 ErrorContent = errorContent
             };
             System.Windows.Controls.Validation.MarkInvalid(bindingExpression, validationError);
+        }
+    }
+    
+    public Task SetValidationRule<TRule>(DependencyProperty property)
+        where TRule : ValidationRule, new()
+    {
+        return Element.RemoteExecute(SetRule, property);
+
+        static void SetRule(T element, DependencyProperty property)
+        {
+            TRule rule = new()
+            {
+                ValidatesOnTargetUpdated = true
+            };
+            Binding binding = BindingOperations.GetBinding(element, property);
+            if (binding is null)
+            {
+                binding = new()
+                {
+                    Path = new PropertyPath(Validation.ErrorProperty),
+                    RelativeSource = new RelativeSource(RelativeSourceMode.Self)
+                };
+                binding.ValidationRules.Add(rule);
+                BindingOperations.SetBinding(element, property, binding);
+            }
+            else
+            {
+                binding.ValidationRules.Add(rule);
+            }
         }
     }
 
@@ -76,4 +105,7 @@ internal class Validation<T> : IValidation<T>
             return default;
         }
     }
+
+    public Task<bool> GetHasError()
+        => Element.GetProperty<bool>(System.Windows.Controls.Validation.HasErrorProperty);
 }
