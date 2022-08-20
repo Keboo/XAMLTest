@@ -33,7 +33,9 @@ internal class App : IApp
         LogMessage?.Invoke($"{nameof(IApp)}.{nameof(Dispose)}()");
         try
         {
-            if (Client.Shutdown(request) is { } reply)
+            using CancellationTokenSource cts = new();
+            cts.CancelAfter(TimeSpan.FromSeconds(1));
+            if (Client.Shutdown(request, cancellationToken: cts.Token) is { } reply)
             {
                 if (reply.ErrorMessages.Any())
                 {
@@ -43,9 +45,13 @@ internal class App : IApp
             }
             throw new XAMLTestException("Failed to get a reply");
         }
+        catch (OperationCanceledException)
+        { }
+        catch (RpcException rpcException) when (rpcException.StatusCode == StatusCode.Unavailable)
+        { }
         finally
         {
-            CleanupLogFiles().Wait();
+            CleanupLogFiles();
         }
     }
 
@@ -72,13 +78,15 @@ internal class App : IApp
         }
         catch (OperationCanceledException)
         { }
+        catch(RpcException rpcException) when (rpcException.StatusCode == StatusCode.Unavailable)
+        { }
         finally
         {
-            await CleanupLogFiles();
+            await CleanupLogFilesAsync();
         }
     }
 
-    private async Task CleanupLogFiles()
+    private async Task CleanupLogFilesAsync()
     {
         if (AppOptions.LogMessage is { } logMessage &&
             AppOptions.RemoteProcessLogFile is { } logFile)
@@ -89,6 +97,28 @@ internal class App : IApp
                 logMessage("-- Remote log start --");
                 using StreamReader sr = new(logFile.OpenRead());
                 logMessage((await sr.ReadToEndAsync()).Trim());
+                logMessage("-- Remote log end --");
+
+            }
+        }
+        try
+        {
+            AppOptions.RemoteProcessLogFile?.Delete();
+        }
+        catch { }
+    }
+
+    private void CleanupLogFiles()
+    {
+        if (AppOptions.LogMessage is { } logMessage &&
+            AppOptions.RemoteProcessLogFile is { } logFile)
+        {
+            logFile.Refresh();
+            if (logFile.Exists)
+            {
+                logMessage("-- Remote log start --");
+                using StreamReader sr = new(logFile.OpenRead());
+                logMessage(sr.ReadToEnd().Trim());
                 logMessage("-- Remote log end --");
 
             }
