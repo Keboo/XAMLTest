@@ -16,6 +16,7 @@ internal class Serializer
         Serializers.Add(new BrushSerializer());
         Serializers.Add(new CharSerializer());
         Serializers.Add(new GridSerializer());
+        Serializers.Add(new DependencyPropertyConverter());
         Serializers.Add(new SecureStringSerializer());
         Serializers.Add(new DefaultSerializer());
     }

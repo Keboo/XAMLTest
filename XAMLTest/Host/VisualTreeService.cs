@@ -28,7 +28,13 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
 {
     private static Guid Initialized { get; } = Guid.NewGuid();
 
-    private List<Assembly> LoadedAssemblies { get; } = new List<Assembly>();
+    private List<Assembly> LoadedAssemblies { get; } = new List<Assembly>
+
+    {
+
+        Assembly.GetExecutingAssembly()
+
+    };
 
     private Application Application { get; }
 
@@ -242,7 +248,8 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
                     {
                         propertyTypeConverter = foundProperty.Converter;
                     }
-                    else if (Type.GetType(request.ValueType) is { } requestedValueType)
+                    else if (Type.GetType(request.ValueType) is { } requestedValueType &&
+                             requestedValueType != typeof(object))
                     {
                         propertyTypeConverter = TypeDescriptor.GetConverter(requestedValueType);
                     }

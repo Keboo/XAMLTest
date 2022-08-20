@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using XamlTest.Internal;
 
 namespace XamlTest;
 
@@ -93,5 +94,11 @@ public static partial class VisualElementMixins
             return newValue.GetAs<T?>();
         }
         return default;
+    }
+
+    public static IValidation<T> Validation<T>(this IVisualElement<T> element)
+        where T : DependencyObject
+    {
+        return new Validation<T>(element);
     }
 }
