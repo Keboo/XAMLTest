@@ -418,7 +418,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
 
             if (dependencyObject is FrameworkElement element)
             {
-                Rect rect = GetCoordinates(element);
+                Rect rect = GetCoordinates(element, request.ApplyScaling);
 
                 reply.Left = rect.Left;
                 reply.Top = rect.Top;
@@ -767,7 +767,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
         }
     }
 
-    private static Rect GetCoordinates(FrameworkElement element)
+    private static Rect GetCoordinates(FrameworkElement element, bool applyScaling = false)
     {
         if (element is null)
         {
@@ -777,7 +777,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
         var window = element as Window ?? Window.GetWindow(element);
         Point windowOrigin = window.PointToScreen(new Point(0, 0));
 
-        var scale = GetScalingFromVisual(element);
+        var scale = applyScaling ? GetScalingFromVisual(element) : (1,1);
         Point topLeft = element.TranslatePoint(new Point(0, 0), window);
         Point bottomRight = element.TranslatePoint(new Point(element.ActualWidth, element.ActualHeight), window);
         double left = windowOrigin.X + topLeft.X * scale.ScaleX;

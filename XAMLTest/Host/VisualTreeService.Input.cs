@@ -83,7 +83,7 @@ partial class VisualTreeService
                             case MouseData.Types.MouseEvent.MoveToElement:
                                 if (element is FrameworkElement frameworkElement)
                                 {
-                                    Rect coordinates = GetCoordinates(frameworkElement);
+                                    Rect coordinates = GetCoordinates(frameworkElement, true);
                                     Position position = Position.Center;
                                     if (!string.IsNullOrEmpty(mouseData.Value))
                                     {

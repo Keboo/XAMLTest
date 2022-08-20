@@ -77,8 +77,13 @@ public interface IVisualElement : IEquatable<IVisualElement>
     /// <summary>
     /// Gets the coordinates of the element in screen coordinates.
     /// </summary>
-    /// <returns>Teh smallest bounding rectangle encompasing the element in screen coordinates.</returns>
+    /// <returns>The smallest bounding rectangle encompassing the element in screen coordinates.</returns>
     Task<Rect> GetCoordinates();
+    /// <summary>
+    /// Gets the coordinates of the element in screen coordinates while respecting the DPI scaling applied on the monitor on which the test runs.
+    /// </summary>
+    /// <returns>The smallest bounding rectangle encompassing the element in screen coordinates.</returns>
+    Task<Rect> GetCoordinatesRespectScaling();
 
     Task<IEventRegistration> RegisterForEvent(string name);
     Task UnregisterEvent(IEventRegistration eventRegistration);

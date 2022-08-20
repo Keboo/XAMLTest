@@ -241,11 +241,22 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
         throw new XAMLTestException("Failed to receive a reply");
     }
 
-    public async Task<Rect> GetCoordinates()
+    public Task<Rect> GetCoordinates()
+    {
+        return GetCoordinates(false);
+    }
+
+    public Task<Rect> GetCoordinatesRespectScaling()
+    {
+        return GetCoordinates(true);
+    }
+
+    private async Task<Rect> GetCoordinates(bool applyScaling)
     {
         CoordinatesQuery query = new()
         {
-            ElementId = Id
+            ElementId = Id,
+            ApplyScaling = applyScaling
         };
         LogMessage?.Invoke($"{nameof(GetCoordinates)}()");
         if (await Client.GetCoordinatesAsync(query) is { } reply)

@@ -1,5 +1,7 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Controls;
@@ -55,7 +57,17 @@ public class PositionTests
     {
         await UserControl.LeftClick(position);
 
-        string? clickPositon = await PositionTextElement.GetText();
-        Assert.AreEqual(expectedValue, clickPositon);
+        string? clickPosition = await PositionTextElement.GetText();
+        Assert.IsNotNull(clickPosition);
+        AssertAreEqual(expectedValue, clickPosition);
+    }
+
+    private static void AssertAreEqual(string expectedValue, string actualValue, int allowedDeviation = 1) // When 8K monitors become a standard, the allowedDeviation may need to increase slightly.
+    {
+        var expectedValues = expectedValue.Split('x').Select(v => Convert.ToInt32(v)).ToList();
+        var actualValues = actualValue.Split('x').Select(v => Convert.ToInt32(v)).ToList();
+
+        Assert.IsTrue(Math.Abs(expectedValues[0] - actualValues[0]) <= allowedDeviation, $"X value deviates too much. Expected '{expectedValues[0]}' (allowedDeviation={allowedDeviation}), but got '{actualValues[0]}'");
+        Assert.IsTrue(Math.Abs(expectedValues[1] - actualValues[1]) <= allowedDeviation, $"Y value deviates too much. Expected '{expectedValues[1]}' (allowedDeviation={allowedDeviation}), but got '{actualValues[1]}'");
     }
 }

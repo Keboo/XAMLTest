@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -85,7 +85,7 @@ public class SendMouseInputTests
     [TestMethod]
     public async Task LeftClick_WithPositionOffset_OffsetsCursor()
     {
-        Rect coordinates = await TopMenuItem.GetCoordinates();
+        Rect coordinates = await TopMenuItem.GetCoordinatesRespectScaling();
         Point mousePosition = await TopMenuItem.LeftClick(Position.BottomLeft, 15, -5);
 
         Point expected = coordinates.BottomLeft + new Vector(15, -5);
@@ -117,7 +117,7 @@ public class SendMouseInputTests
     {
         const double tollerance = 1.0;
 
-        Rect coordinates = await Grid.GetCoordinates();
+        Rect coordinates = await Grid.GetCoordinatesRespectScaling();
         Point center = new(
             coordinates.Left + coordinates.Width / 2.0,
             coordinates.Top + coordinates.Height / 2.0);
@@ -148,7 +148,7 @@ public class SendMouseInputTests
     {
         const double tollerance = 1.0;
 
-        Rect coordinates = await Grid.GetCoordinates();
+        Rect coordinates = await Grid.GetCoordinatesRespectScaling();
         Point center = new(
             coordinates.Left + coordinates.Width / 2.0,
             coordinates.Top + coordinates.Height / 2.0);
@@ -163,7 +163,7 @@ public class SendMouseInputTests
     {
         const double tollerance = 1.0;
 
-        Rect coordinates = await Grid.GetCoordinates();
+        Rect coordinates = await Grid.GetCoordinatesRespectScaling();
         Point center = new(
             coordinates.Left + coordinates.Width / 2.0,
             coordinates.Top + coordinates.Height / 2.0);

@@ -159,6 +159,7 @@ message ResourceResult {
 
 message CoordinatesQuery {
   string elementId = 1;
+  bool applyScaling = 2;
 }
 
 message CoordinatesResult {
