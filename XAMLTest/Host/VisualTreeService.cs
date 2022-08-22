@@ -775,17 +775,17 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
         }
 
         var window = element as Window ?? Window.GetWindow(element);
-        
+
+        Point windowOrigin = window.PointToScreen(new Point(0, 0));
+
         var scale = VisualElementMixins.GetVisualScale(element);
         Point topLeft = element.TranslatePoint(new Point(0, 0), window);
         Point bottomRight = element.TranslatePoint(new Point(element.ActualWidth, element.ActualHeight), window);
-        topLeft.Offset(window.Left, window.Top);
-        bottomRight.Offset(window.Left, window.Top);
         
-        double left = topLeft.X * scale.DpiScaleX;
-        double top = topLeft.Y * scale.DpiScaleY;
-        double right = bottomRight.X * scale.DpiScaleX;
-        double bottom = bottomRight.Y * scale.DpiScaleY;
+        double left = windowOrigin.X + (topLeft.X * scale.DpiScaleX);
+        double top = windowOrigin.Y + (topLeft.Y * scale.DpiScaleY);
+        double right = windowOrigin.X + (bottomRight.X * scale.DpiScaleX);
+        double bottom = windowOrigin.Y + (bottomRight.Y * scale.DpiScaleY);
 
         var rvleft = Math.Min(left, right);
         var rvtop = Math.Min(top, bottom);
