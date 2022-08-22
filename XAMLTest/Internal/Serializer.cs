@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 using XamlTest.Transport;
 
 namespace XamlTest.Internal;
@@ -14,6 +15,7 @@ internal class Serializer
         //NB: Order matters here. Items earlier in the list take precedence
         Serializers.Add(new XamlSegmentSerializer());
         Serializers.Add(new BrushSerializer());
+        Serializers.Add(new DpiScaleSerializer());
         Serializers.Add(new CharSerializer());
         Serializers.Add(new GridSerializer());
         Serializers.Add(new DependencyPropertyConverter());

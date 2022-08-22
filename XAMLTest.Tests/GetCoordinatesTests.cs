@@ -51,32 +51,35 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         Rect newCoordinates = await element.GetCoordinates();
         Assert.AreEqual(3.0, Math.Round(newCoordinates.Width / initialCoordinates.Width));
         Assert.AreEqual(2.0, Math.Round(newCoordinates.Height / initialCoordinates.Height));
-        Assert.AreEqual(initialCoordinates.Width, Math.Round(newCoordinates.Left - initialCoordinates.Left));
-        Assert.AreEqual(initialCoordinates.Width, Math.Round(newCoordinates.Top - initialCoordinates.Top));
+        Assert.AreEqual(initialCoordinates.Width, newCoordinates.Left - initialCoordinates.Left);
+        Assert.AreEqual(initialCoordinates.Width, newCoordinates.Top - initialCoordinates.Top);
     }
 
     [TestMethod]
     public async Task OnGetCoordinate_ReturnsFractionalCoordinatesOfElement()
     {
-        Vector scale = await Window.GetScale();
+        DpiScale scale = await Window.GetScale();
         IVisualElement<Border> element = await Window.SetXamlContent<Border>(@"<Border x:Name=""MyBorder"" 
 Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left""/>");
 
+        //38.375
         Rect initialCoordinates = await element.GetCoordinates();
         await element.SetWidth(await element.GetWidth() + 0.7);
         await element.SetHeight(await element.GetHeight() + 0.3);
         await element.SetMargin(new Thickness(0.1));
 
         Rect newCoordinates = await element.GetCoordinates();
-        Assert.AreEqual(initialCoordinates.Width + 0.7 * scale.X, Math.Round(newCoordinates.Width, 5));
-        Assert.AreEqual(40.3 * scale.Y, Math.Round(newCoordinates.Height, 5));
-        Assert.AreEqual(0.1, Math.Round(newCoordinates.Left - initialCoordinates.Left, 5));
-        Assert.AreEqual(0.1, Math.Round(newCoordinates.Top - initialCoordinates.Top, 5));
+        Assert.AreEqual(initialCoordinates.Width + (0.7 * scale.DpiScaleX), newCoordinates.Width, 0.00001);
+        Assert.AreEqual(initialCoordinates.Height + (0.3 * scale.DpiScaleY), newCoordinates.Height, 0.00001);
+        Assert.AreEqual(0.1 * scale.DpiScaleX, Math.Round(newCoordinates.Left - initialCoordinates.Left, 5));
+        Assert.AreEqual(0.1 * scale.DpiScaleY, Math.Round(newCoordinates.Top - initialCoordinates.Top, 5));
     }
 
     [TestMethod]
     public async Task OnGetCoordinate_ReturnsRotatedElementLocation()
     {
+        DpiScale scale = await Window.GetScale();
+
         IVisualElement<Border> element = await Window.SetXamlContent<Border>(@"
 <Border x:Name=""MyBorder"" Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"">
     <Border.LayoutTransform>
@@ -86,7 +89,7 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
 ");
 
         Rect coordinates = await element.GetCoordinates();
-        Assert.AreEqual(40, Math.Round(coordinates.Width, 5));
-        Assert.AreEqual(30, Math.Round(coordinates.Height, 5));
+        Assert.AreEqual(40 * scale.DpiScaleX, coordinates.Width, 0.00001);
+        Assert.AreEqual(30 * scale.DpiScaleY, coordinates.Height, 0.00001);
     }
 }

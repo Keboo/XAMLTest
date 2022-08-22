@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
-using System.Windows.Media.Media3D;
+using XamlTest.Host;
 using XamlTest.Internal;
 
 namespace XamlTest;
@@ -104,23 +103,23 @@ public static partial class VisualElementMixins
         return new Validation<T>(element);
     }
 
-    public static Task<Vector> GetScale<T>(this IVisualElement<T> element)
+    public static Task<DpiScale> GetScale<T>(this IVisualElement<T> element)
         where T : Visual
     {
-        return element.RemoteExecute(Scale);
+        return element.RemoteExecute(GetVisualScale);
+    }
 
-        static Vector Scale(T element)
+    internal static DpiScale GetVisualScale(Visual visual)
+    {
+        PresentationSource source = PresentationSource.FromVisual(visual);
+
+        if (source is not null)
         {
-            PresentationSource source = PresentationSource.FromVisual(element);
-
-            if (source != null)
-            {
-                double scaleX = source.CompositionTarget.TransformToDevice.M11;
-                double scaleY = source.CompositionTarget.TransformToDevice.M22;
-                return new(scaleX, scaleY);
-            }
-            return new(1.0, 1.0);
+            double scaleX = source.CompositionTarget.TransformToDevice.M11;
+            double scaleY = source.CompositionTarget.TransformToDevice.M22;
+            return new(scaleX, scaleY);
         }
+        return new(1.0, 1.0);
     }
 }
 

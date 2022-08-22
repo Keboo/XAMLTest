@@ -31,7 +31,6 @@
 
   <PropertyGroup>
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);IncludeExeInPackage</TargetsForTfmSpecificContentInPackage>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 	
   <ItemGroup>
