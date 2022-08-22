@@ -74,7 +74,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: Test Images
-        path: ${{ github.workspace }}\XAMLTest.Tests\bin\${{ env.configuration }}\netcoreapp3.1\Screenshots
+        path: ${{ github.workspace }}\XAMLTest.Tests\bin\${{ env.configuration }}\**\Screenshots
 
     - name: Pack
       if: ${{ github.event_name != 'pull_request' }}
