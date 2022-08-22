@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
@@ -77,7 +77,7 @@ public interface IVisualElement : IEquatable<IVisualElement>
     /// <summary>
     /// Gets the coordinates of the element in screen coordinates.
     /// </summary>
-    /// <returns>The smallest bounding rectangle encompasing the element in screen coordinates.</returns>
+    /// <returns>The smallest bounding rectangle encompassing the element in screen coordinates.</returns>
     Task<Rect> GetCoordinates();
 
     Task<IEventRegistration> RegisterForEvent(string name);
