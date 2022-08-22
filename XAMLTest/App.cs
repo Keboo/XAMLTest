@@ -78,7 +78,7 @@ public static class App
                 await VisualStudioAttacher.AttachVisualStudioToProcess(process);
             }
 
-            var app = new ManagedApp(process, client, options);
+            var app = new Internal.App(process, client, options);
 
             IVersion version;
             try

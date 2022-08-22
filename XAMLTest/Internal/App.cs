@@ -1,6 +1,7 @@
 ﻿using Grpc.Core;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -9,22 +10,28 @@ using XamlTest.Host;
 
 namespace XamlTest.Internal;
 
-internal class App : IApp
+internal sealed class App : IApp
 {
-    public App(Protocol.ProtocolClient client, AppOptions appOptions)
+    public App(
+        Process process,
+        Protocol.ProtocolClient client,
+        AppOptions appOptions)
     {
+        Process = process ?? throw new ArgumentNullException(nameof(process));
         Client = client ?? throw new ArgumentNullException(nameof(client));
         AppOptions = appOptions ?? throw new ArgumentNullException(nameof(appOptions));
     }
 
-    protected Protocol.ProtocolClient Client { get; }
-    protected AppOptions AppOptions { get; }
-    protected Action<string>? LogMessage => AppOptions?.LogMessage;
-    protected AppContext Context { get; } = new();
+    public Process Process { get; }
+
+    private Protocol.ProtocolClient Client { get; }
+    private AppOptions AppOptions { get; }
+    private Action<string>? LogMessage => AppOptions?.LogMessage;
+    private AppContext Context { get; } = new();
 
     public IList<XmlNamespace> DefaultXmlNamespaces => Context.DefaultNamespaces;
 
-    public virtual void Dispose()
+    public void Dispose()
     {
         ShutdownRequest request = new()
         {
@@ -51,11 +58,12 @@ internal class App : IApp
         { }
         finally
         {
+            KillProcess();
             CleanupLogFiles();
         }
     }
 
-    public virtual async ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         ShutdownRequest request = new()
         {
@@ -82,6 +90,7 @@ internal class App : IApp
         { }
         finally
         {
+            KillProcess();
             await CleanupLogFilesAsync();
         }
     }
@@ -128,6 +137,25 @@ internal class App : IApp
             AppOptions.RemoteProcessLogFile?.Delete();
         }
         catch { }
+    }
+
+    private void KillProcess()
+    {
+        LogMessage?.Invoke("Waiting for process exit");
+        using CancellationTokenSource cts = new();
+        cts.CancelAfter(TimeSpan.FromSeconds(10));
+        Process? process = Process.GetProcessById(Process.Id);
+        while (process?.HasExited == false && !cts.IsCancellationRequested)
+        {
+            process = Process.GetProcessById(Process.Id);
+        }
+        LogMessage?.Invoke($"Process Exited? {process?.HasExited}");
+        if (process?.HasExited == false)
+        {
+            LogMessage?.Invoke($"Invoking kill");
+            process.Kill();
+            process.WaitForExit(1_000);
+        }
     }
 
     public async Task Initialize(string applicationResourceXaml, params string[] assemblies)
