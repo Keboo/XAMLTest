@@ -1,9 +1,14 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using System.Collections.ObjectModel;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using XamlTest.Tests.TestControls;
 
 namespace XamlTest.Tests;
 
@@ -145,6 +150,28 @@ public class ValidationTests
         recorder.Success();
     }
 
+    [TestMethod]
+    public async Task GetProperty_TextBoxWithValidationError_ReturnsListOfValidationErrors()
+    {
+        //Arrange
+        await using TestRecorder recorder = new(App);
+
+        await App.RegisterSerializer<ValidationErrorReadOnlyObservableCollectionSerializer>();
+        IWindow window = await App.CreateWindowWithUserControl<TextBox_ValidationError>();
+        IVisualElement<TextBox> textBox = await window.GetElement<TextBox>("/TextBox");
+
+        //Act
+        ReadOnlyObservableCollection<ValidationError>? errors = await textBox.GetProperty<ReadOnlyObservableCollection<ValidationError>>(System.Windows.Controls.Validation.ErrorsProperty);
+
+        //Assert
+        Assert.IsNotNull(errors);
+        var errorList = errors.ToList();
+        Assert.IsInstanceOfType(errorList[0].RuleInError, typeof(NotEmptyValidationRule));
+        Assert.AreEqual("Field is required.", errorList[0].ErrorContent);
+
+        recorder.Success();
+    }
+
     private class CustomValidationRule : ValidationRule
     {
         public const string ErrorObject = "Custom Validation Rule Failure";
@@ -152,4 +179,85 @@ public class ValidationTests
         public override ValidationResult Validate(object value, CultureInfo cultureInfo)
             => new ValidationResult(false, ErrorObject);
     }
+
+
+    private class NotEmptyValidationRuleSerializer : ISerializer
+    {
+        public bool CanSerialize(Type type) => typeof(NotEmptyValidationRule).IsAssignableFrom(type);
+
+        public string Serialize(Type type, object? value) => "*";   // No actual properties to serialize
+
+        public object? Deserialize(Type type, string value) => new NotEmptyValidationRule();
+    }
+
+    private class ValidationErrorSerializer : ISerializer
+    {
+        private static readonly ISerializer NotEmptyValidationRuleSerializer = new NotEmptyValidationRuleSerializer();
+
+        private static char SeparatorChar = ';';
+
+        public bool CanSerialize(Type type) => typeof(ValidationError).IsAssignableFrom(type);
+
+        public string Serialize(Type type, object? value)
+        {
+            if (value is ValidationError { RuleInError: NotEmptyValidationRule rule } error)
+            {
+                return NotEmptyValidationRuleSerializer.Serialize(typeof(NotEmptyValidationRule), rule) + SeparatorChar + error.ErrorContent;
+            }
+            return string.Empty;
+        }
+
+        public object? Deserialize(Type type, string value)
+        {
+            // Create uninitialized version of ValidationError because I don't really care about the Binding at this time - and don't want to add, yet another, serializer for it :)
+            var error = (ValidationError)FormatterServices.GetSafeUninitializedObject(type);
+            if (string.IsNullOrWhiteSpace(value))
+                return null;
+
+            var tokens = value.Split(SeparatorChar);
+
+            error.RuleInError = NotEmptyValidationRuleSerializer.Deserialize(typeof(CustomValidationRule), tokens[0]) as ValidationRule;
+            error.ErrorContent = tokens[1];
+
+            return error;
+        }
+    }
+
+    private class ValidationErrorReadOnlyObservableCollectionSerializer : ISerializer
+    {
+        private static readonly ISerializer ValidationErrorSerializer = new ValidationErrorSerializer();
+
+        private static char SeparatorChar = '&';
+
+        public bool CanSerialize(Type type) => typeof(ReadOnlyObservableCollection<ValidationError>).IsAssignableFrom(type);
+
+        public string Serialize(Type type, object? value)
+        {
+            if (value is ReadOnlyObservableCollection<ValidationError> collection)
+            {
+                var result = string.Join(SeparatorChar, collection.Select(e => ValidationErrorSerializer.Serialize(type, e)));
+                return result;
+            }
+            return string.Empty;
+        }
+
+        public object? Deserialize(Type type, string value)
+        {
+            var collection = new ObservableCollection<ValidationError>();
+
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                var tokens = value.Split(SeparatorChar);
+                foreach (var errorString in tokens)
+                {
+                    if (ValidationErrorSerializer.Deserialize(typeof(ValidationError), errorString) is ValidationError error)
+                    {
+                        collection.Add(error);
+                    }
+                }
+            }
+            return new ReadOnlyObservableCollection<ValidationError>(collection);
+        }
+    }
+
 }
