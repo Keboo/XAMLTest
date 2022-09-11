@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using XamlTest.Host;
-using XamlTest.Internal;
 
 namespace XamlTest;
 
@@ -78,7 +77,7 @@ public static class App
                 await VisualStudioAttacher.AttachVisualStudioToProcess(process);
             }
 
-            var app = new ManagedApp(process, client, options);
+            var app = new Internal.App(process, client, options);
 
             IVersion version;
             try

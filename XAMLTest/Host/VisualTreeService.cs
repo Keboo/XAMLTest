@@ -738,7 +738,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
         //Fall back, attempt to click on the window to activate it
         foreach (Point clickPoint in GetClickPoints(window))
         {
-            Input.MouseInput.MoveCursor(clickPoint);
+            Input.MouseInput.MoveCursor(window.PointToScreen(clickPoint));
             Input.MouseInput.LeftClick();
 
             if (window.IsActive)
@@ -754,16 +754,16 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
             //Skip top right and that could cause the window to close
 
             // Top left
-            yield return new Point(window.Left + 1, window.Top + 1);
+            yield return new Point(1, 1);
 
             // Bottom right
-            yield return new Point(window.Left + window.Width - 1, window.Top + window.Height - 1);
+            yield return new Point(window.Width - 1, window.Height - 1);
 
             // Bottom left
-            yield return new Point(window.Left + 1, window.Top + window.Height - 1);
+            yield return new Point(1, window.Height - 1);
 
             // Center
-            yield return new Point(window.Left + window.Width / 2, window.Top + window.Height / 2);
+            yield return new Point(window.Width / 2, window.Height / 2);
         }
     }
 
@@ -775,15 +775,17 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
         }
 
         var window = element as Window ?? Window.GetWindow(element);
+
         Point windowOrigin = window.PointToScreen(new Point(0, 0));
 
-        var scale = GetScalingFromVisual(element);
+        var scale = VisualElementMixins.GetVisualScale(element);
         Point topLeft = element.TranslatePoint(new Point(0, 0), window);
         Point bottomRight = element.TranslatePoint(new Point(element.ActualWidth, element.ActualHeight), window);
-        double left = windowOrigin.X + topLeft.X * scale.ScaleX;
-        double top = windowOrigin.Y + topLeft.Y * scale.ScaleY;
-        double right = windowOrigin.X + bottomRight.X * scale.ScaleX;
-        double bottom = windowOrigin.Y + bottomRight.Y * scale.ScaleY;
+        
+        double left = windowOrigin.X + (topLeft.X * scale.DpiScaleX);
+        double top = windowOrigin.Y + (topLeft.Y * scale.DpiScaleY);
+        double right = windowOrigin.X + (bottomRight.X * scale.DpiScaleX);
+        double bottom = windowOrigin.Y + (bottomRight.Y * scale.DpiScaleY);
 
         var rvleft = Math.Min(left, right);
         var rvtop = Math.Min(top, bottom);
@@ -796,7 +798,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
     private static (double ScaleX, double ScaleY) GetScalingFromVisual(Visual visual)
     {
         PresentationSource source = PresentationSource.FromVisual(visual);
-        
+
         if (source != null)
         {
             double scaleX = source.CompositionTarget.TransformToDevice.M11;

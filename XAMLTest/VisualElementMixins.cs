@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using XamlTest.Host;
 using XamlTest.Internal;
 
 namespace XamlTest;
@@ -101,4 +102,24 @@ public static partial class VisualElementMixins
     {
         return new Validation<T>(element);
     }
+
+    public static Task<DpiScale> GetScale<T>(this IVisualElement<T> element)
+        where T : Visual
+    {
+        return element.RemoteExecute(GetVisualScale);
+    }
+
+    internal static DpiScale GetVisualScale(Visual visual)
+    {
+        PresentationSource source = PresentationSource.FromVisual(visual);
+
+        if (source is not null)
+        {
+            double scaleX = source.CompositionTarget.TransformToDevice.M11;
+            double scaleY = source.CompositionTarget.TransformToDevice.M22;
+            return new(scaleX, scaleY);
+        }
+        return new(1.0, 1.0);
+    }
 }
+
