@@ -1,11 +1,4 @@
-﻿using System;
-using System.CommandLine;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Threading;
-using System.Windows;
+﻿using System.CommandLine;
 using XamlTest.Utility;
 
 namespace XamlTest;
@@ -17,14 +10,28 @@ internal class Program
     [STAThread]
     static int Main(string[] args)
     {
+        Logger.Log("Starting log");
+        
         Argument<int> clientPid = new("clientPid");
         Option<string> appPath = new("--application-path");
+        Option<string> appType = new("--application-type");
+
+        Option<string> remoteMethod = new("--remote-method-name");
+        Option<string> remoteContainerType = new("--remote-method-container-type");
+        Option<string> remoteAssembly = new("--remote-method-assembly");
+
         Option<bool> debug = new("--debug");
         Option<FileInfo> logFile = new("--log-file");
         RootCommand command = new()
         {
             clientPid,
             appPath,
+            appType,
+
+            remoteMethod,
+            remoteContainerType,
+            remoteAssembly,
+
             debug,
             logFile
         };
@@ -32,13 +39,22 @@ internal class Program
         var parseResult = command.Parse(args);
         if (parseResult.Errors.Count > 0)
         {
+            foreach(var error in parseResult.Errors)
+            {
+                Logger.Log(error.Message);
+            }
             return -1;
         }
 
         int pidValue = parseResult.GetValueForArgument(clientPid);
         string? appPathValue = parseResult.GetValueForOption(appPath);
+        string? appTypeValue = parseResult.GetValueForOption(appType);
         bool waitForDebugger = parseResult.GetValueForOption(debug);
         FileInfo? logFileInfo = parseResult.GetValueForOption(logFile);
+
+        string? remoteMethodName = parseResult.GetValueForOption(remoteMethod);
+        string? remoteContainerTypeValue = parseResult.GetValueForOption(remoteContainerType);
+        string? remoteAssemblyValue = parseResult.GetValueForOption(remoteAssembly);
 
         if (logFileInfo is not null)
         {
@@ -54,7 +70,7 @@ internal class Program
                 Path.GetFullPath(appPathValue) is { } fullPath &&
                 File.Exists(fullPath))
             {
-                application = CreateFromAssembly(fullPath);
+                application = CreateFromAssembly(fullPath, appTypeValue, remoteMethodName, remoteContainerTypeValue, remoteAssemblyValue);
             }
             else
             {
@@ -118,7 +134,7 @@ internal class Program
                 catch (Exception e)
                 {
                     shutdown = true;
-                    Logger.Log($"Error retriving processes {e}");
+                    Logger.Log($"Error retrieving processes '{pid}' {e}");
                 }
 
                 if (shutdown)
@@ -136,18 +152,78 @@ internal class Program
         }
     }
 
-    private static Application CreateFromAssembly(string assemblyPath)
+    private static Application CreateFromAssembly(
+        string assemblyPath,
+        string? applicationType,
+        string? remoteMethodName,
+        string? remoteContainerType,
+        string? remoteAssembly)
     {
         AppDomain.CurrentDomain.IncludeAssembliesIn(Path.GetDirectoryName(assemblyPath)!);
 
         var targetAssembly = Assembly.LoadFile(assemblyPath);
-
-        var appType = targetAssembly.GetTypes().Where(x => x.IsSubclassOf(typeof(Application))).Single();
-        var application = (Application)appType.GetConstructors().Single().Invoke(Array.Empty<object>());
-
-        if (appType.GetMethod("InitializeComponent") is { } initMethod)
+        Application application;
+        if (remoteMethodName != null &&
+            remoteContainerType != null &&
+            remoteAssembly != null)
         {
+            Logger.Log($"Using factory method {remoteMethodName}() in {remoteContainerType} of {remoteAssembly}");
+            var factoryAssembly = Assembly.LoadFrom(remoteAssembly);
+            Type factoryType = factoryAssembly.GetType(remoteContainerType, throwOnError: true)!;
+            var methodFlags = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy;
+            MethodInfo factoryMethod = factoryType.GetMethod(remoteMethodName, methodFlags) 
+                ?? throw new Exception($"Did not find factory method {remoteMethodName} in {remoteContainerType}");
+            application = (Application)(factoryMethod.Invoke(null, Array.Empty<object>())
+                ?? throw new Exception("Factory method did return an application instance"));
+        }
+        else
+        {
+            Type appType;
+            if (!string.IsNullOrWhiteSpace(applicationType))
+            {
+                appType = Type.GetType(applicationType, throwOnError: true)
+                    ?? throw new Exception($"Could not find Application type {applicationType}");
+            }
+            else
+            {
+                var applications = targetAssembly.GetTypes().Where(x => x.IsSubclassOf(typeof(Application))).ToList();
+                appType = applications.Count switch
+                {
+                    0 => throw new Exception($"Could not find any Application types"),
+                    1 => applications[0],
+                    _ => throw new Exception($"Found multiple Application types {string.Join(", ", applications.Select(x => x.FullName))}"),
+                };
+            }
+
+            var ctorInfo = appType.GetConstructors().Single();
+            var ctorParameters = ctorInfo.GetParameters();
+
+            object?[] parameters = Array.Empty<object?>();
+            if (ctorParameters.Length > 0)
+            {
+                parameters = new object?[ctorParameters.Length];
+                for (int i = 0; i < ctorParameters.Length; i++)
+                {
+                    if (ctorParameters[i].HasDefaultValue)
+                    {
+                        parameters[i] = ctorParameters[i].DefaultValue;
+                    }
+                }
+            }
+
+            Logger.Log($"Creating application {appType.FullName}({string.Join(", ", parameters.Select(x => x?.ToString() ?? "null"))})");
+            application = (Application)ctorInfo.Invoke(parameters);
+        }
+        
+        BindingFlags flags = BindingFlags.Instance | BindingFlags.InvokeMethod | BindingFlags.FlattenHierarchy | BindingFlags.Public;
+        if (application.GetType().GetMethod("InitializeComponent", flags) is { } initMethod)
+        {
+            Logger.Log("Invoking InitializeComponent");
             initMethod.Invoke(application, Array.Empty<object>());
+        }
+        else
+        {
+            Logger.Log("Did not find InitializeComponent method");
         }
 
         return application;

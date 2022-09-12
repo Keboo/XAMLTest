@@ -1,8 +1,4 @@
 ﻿using GrpcDotNetNamedPipes;
-using System;
-using System.Diagnostics;
-using System.IO;
-using System.Threading.Tasks;
 using XamlTest.Host;
 
 namespace XamlTest;
@@ -10,6 +6,7 @@ namespace XamlTest;
 public static class App
 {
     public static Task<IApp> StartRemote<TApp>(Action<string>? logMessage = null)
+        where TApp : Application
     {
         AppOptions options = new()
         {
@@ -46,6 +43,21 @@ public static class App
             startInfo.ArgumentList.Add("--application-path");
             startInfo.ArgumentList.Add(options.RemoteAppPath);
         }
+        if (!string.IsNullOrWhiteSpace(options.ApplicationType))
+        {
+            startInfo.ArgumentList.Add("--application-type");
+            startInfo.ArgumentList.Add(options.ApplicationType);
+        }
+        if (options.RemoteFactoryMethod is { } remoteFactoryMethod)
+        {
+            startInfo.ArgumentList.Add("--remote-method-name");
+            startInfo.ArgumentList.Add(remoteFactoryMethod.MethodName);
+            startInfo.ArgumentList.Add("--remote-method-container-type");
+            startInfo.ArgumentList.Add(remoteFactoryMethod.MethodContainerType);
+            startInfo.ArgumentList.Add("--remote-method-assembly");
+            startInfo.ArgumentList.Add(remoteFactoryMethod.Assembly);
+        }
+
         bool useDebugger = options.AllowVisualStudioDebuggerAttach && Debugger.IsAttached;
         if (useDebugger)
         {
@@ -61,7 +73,8 @@ public static class App
 
         if (logMessage is not null)
         {
-            logMessage($"Starting XAML Test: {startInfo.FileName} {string.Join(' ', startInfo.ArgumentList)}");
+            string args = string.Join(' ', startInfo.ArgumentList.Select((x, i) => i % 2 == 1 ? x : $"\"{x}\""));
+            logMessage($"Starting XAML Test: {startInfo.FileName} {args}");
         }
 
         if (Process.Start(startInfo) is Process process)

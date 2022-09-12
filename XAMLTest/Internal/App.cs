@@ -1,11 +1,4 @@
 ﻿using Grpc.Core;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using XamlTest.Host;
 
 namespace XamlTest.Internal;
@@ -100,14 +93,16 @@ internal sealed class App : IApp
         if (AppOptions.LogMessage is { } logMessage &&
             AppOptions.RemoteProcessLogFile is { } logFile)
         {
-            logFile.Refresh();
-            if (logFile.Exists)
+            if (File.Exists(logFile.FullName))
             {
                 logMessage("-- Remote log start --");
                 using StreamReader sr = new(logFile.OpenRead());
                 logMessage((await sr.ReadToEndAsync()).Trim());
                 logMessage("-- Remote log end --");
-
+            }
+            else
+            {
+                logMessage("-- Remote log file not found --");
             }
         }
         try

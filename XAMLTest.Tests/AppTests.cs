@@ -1,11 +1,6 @@
 using MaterialDesignThemes.Wpf;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
 using XamlTest;
 using XamlTest.Tests.TestControls;
 
@@ -24,6 +19,29 @@ public class AppTests
         await using var app = await App.StartRemote<XAMLTest.TestApp.App>(x => TestContext.WriteLine(x));
         IWindow? window = await app.GetMainWindow();
         Assert.AreEqual("Test App Window", await window!.GetTitle());
+    }
+
+    [TestMethod]
+    public async Task OnStartRemote_WithOtherApplication_LaunchesRemoteApp()
+    {
+        await using var app = await App.StartRemote<XAMLTest.TestApp.OtherApp>(x => TestContext.WriteLine(x));
+        IWindow? window = await app.GetMainWindow();
+        Assert.AreEqual("Test App Window", await window!.GetTitle());
+    }
+
+    [TestMethod]
+    public async Task OnStartRemote_WithCustomApplicationConstruction_LaunchesRemoteApp()
+    {
+        AppOptions options = new()
+        {
+            LogMessage = x => TestContext.WriteLine(x)
+        };
+        options.WithRemoteApp(FactoryMethod);
+        await using var app = await App.StartRemote(options);
+        IWindow? window = await app.GetMainWindow();
+        Assert.AreEqual("Test App Window", await window!.GetTitle());
+
+        static XAMLTest.TestApp.CustomApp FactoryMethod() => new("custom value");
     }
 
     [TestMethod]

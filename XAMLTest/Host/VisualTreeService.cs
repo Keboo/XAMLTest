@@ -1,18 +1,9 @@
 using Google.Protobuf;
 using Grpc.Core;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Markup;
 using System.Windows.Media;
@@ -29,11 +20,8 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
     private static Guid Initialized { get; } = Guid.NewGuid();
 
     private List<Assembly> LoadedAssemblies { get; } = new List<Assembly>
-
     {
-
         Assembly.GetExecutingAssembly()
-
     };
 
     private Application Application { get; }
@@ -446,6 +434,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
             else
             {
                 Application.Resources[Initialized] = Initialized;
+                AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
                 AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
 
                 foreach (string? assembly in (IEnumerable<string?>)request.AssembliesToLoad ?? Array.Empty<string?>())
