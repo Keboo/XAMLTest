@@ -71,8 +71,8 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
         Rect newCoordinates = await element.GetCoordinates();
         Assert.AreEqual(initialCoordinates.Width + (0.7 * scale.DpiScaleX), newCoordinates.Width, 0.00001);
         Assert.AreEqual(initialCoordinates.Height + (0.3 * scale.DpiScaleY), newCoordinates.Height, 0.00001);
-        Assert.AreEqual(0.1 * scale.DpiScaleX, Math.Round(newCoordinates.Left - initialCoordinates.Left, 5));
-        Assert.AreEqual(0.1 * scale.DpiScaleY, Math.Round(newCoordinates.Top - initialCoordinates.Top, 5));
+        Assert.AreEqual(0.1 * scale.DpiScaleX, Math.Round(newCoordinates.Left - initialCoordinates.Left, 5), 0.00001);
+        Assert.AreEqual(0.1 * scale.DpiScaleY, Math.Round(newCoordinates.Top - initialCoordinates.Top, 5), 0.00001);
     }
 
     [TestMethod]
