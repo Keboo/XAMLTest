@@ -1,16 +1,18 @@
-﻿using System.Collections.Generic;
-using System.IO;
-
-namespace XamlTest;
+﻿namespace XamlTest;
 
 internal static class Logger
 {
     private static List<string> LogMessages { get; } = new();
     private static List<StreamWriter> Writers { get; } = new();
 
+    static Logger()
+    {
+        AddLogOutput(File.Open($"XAMLTest.{Process.GetCurrentProcess().Id}.log", FileMode.Create, FileAccess.Write, FileShare.Read));
+    }
+
     public static void AddLogOutput(Stream stream)
     {
-        StreamWriter writer = new(stream);
+        StreamWriter writer = new(stream) { AutoFlush = true };
         lock(LogMessages)
         {
             Writers.Add(writer);

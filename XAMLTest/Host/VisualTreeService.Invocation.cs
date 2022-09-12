@@ -1,9 +1,4 @@
 ﻿using Grpc.Core;
-using System;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using System.Windows;
 
 namespace XamlTest.Host;
 
