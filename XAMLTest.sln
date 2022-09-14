@@ -9,7 +9,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 		Directory.Build.props = Directory.Build.props
 		Directory.Build.targets = Directory.Build.targets
-		.github\workflows\dotnet-core.yml = .github\workflows\dotnet-core.yml
 		global.json = global.json
 		README.md = README.md
 	EndProjectSection
@@ -21,6 +20,12 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XAMLTest.Generator", "XAMLTest.Generator\XAMLTest.Generator.csproj", "{CBBE847F-498F-4E17-A437-9B02E6DB7398}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XAMLTest.UnitTestGenerator", "XAMLTest.UnitTestGenerator\XAMLTest.UnitTestGenerator.csproj", "{B320FF6B-1691-4BFB-821E-2DD89817AD98}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{F8747EDE-0BE7-4414-A6B2-A4FF5A572E50}"
+	ProjectSection(SolutionItems) = preProject
+		.github\dependabot.yml = .github\dependabot.yml
+		.github\workflows\dotnet-core.yml = .github\workflows\dotnet-core.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +56,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F8747EDE-0BE7-4414-A6B2-A4FF5A572E50} = {0A942BB1-02B4-4E84-AA48-D87BC727E18D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {91636EEB-81BE-4223-B0D5-A5E2C983890A}
