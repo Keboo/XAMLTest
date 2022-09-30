@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Windows;
-
-namespace XamlTest;
+﻿namespace XamlTest;
 
 public interface IApp : IAsyncDisposable, IDisposable
 {

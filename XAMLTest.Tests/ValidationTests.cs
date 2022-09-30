@@ -183,31 +183,30 @@ public class ValidationTests
 
     private class NotEmptyValidationRuleSerializer : ISerializer
     {
-        public bool CanSerialize(Type type) => typeof(NotEmptyValidationRule).IsAssignableFrom(type);
+        public bool CanSerialize(Type type, ISerializer rootSerializer) => typeof(NotEmptyValidationRule).IsAssignableFrom(type);
 
-        public string Serialize(Type type, object? value) => "*";   // No actual properties to serialize
+        public string Serialize(Type type, object? value, ISerializer rootSerializer) => "*";   // No actual properties to serialize
 
-        public object? Deserialize(Type type, string value) => new NotEmptyValidationRule();
+        public object? Deserialize(Type type, string value, ISerializer rootSerializer) => new NotEmptyValidationRule();
     }
 
     private class ValidationErrorSerializer : ISerializer
     {
-        private static readonly ISerializer NotEmptyValidationRuleSerializer = new NotEmptyValidationRuleSerializer();
 
         private static char SeparatorChar = ';';
 
-        public bool CanSerialize(Type type) => typeof(ValidationError).IsAssignableFrom(type);
+        public bool CanSerialize(Type type, ISerializer rootSerializer) => typeof(ValidationError).IsAssignableFrom(type);
 
-        public string Serialize(Type type, object? value)
+        public string Serialize(Type type, object? value, ISerializer rootSerializer)
         {
             if (value is ValidationError { RuleInError: NotEmptyValidationRule rule } error)
             {
-                return NotEmptyValidationRuleSerializer.Serialize(typeof(NotEmptyValidationRule), rule) + SeparatorChar + error.ErrorContent;
+                return rootSerializer.Serialize(typeof(NotEmptyValidationRule), rule, rootSerializer) + SeparatorChar + error.ErrorContent;
             }
             return string.Empty;
         }
 
-        public object? Deserialize(Type type, string value)
+        public object? Deserialize(Type type, string value, ISerializer rootSerializer)
         {
             // Create uninitialized version of ValidationError because I don't really care about the Binding at this time - and don't want to add, yet another, serializer for it :)
             var error = (ValidationError)FormatterServices.GetSafeUninitializedObject(type);
@@ -216,7 +215,7 @@ public class ValidationTests
 
             var tokens = value.Split(SeparatorChar);
 
-            error.RuleInError = NotEmptyValidationRuleSerializer.Deserialize(typeof(CustomValidationRule), tokens[0]) as ValidationRule;
+            error.RuleInError = rootSerializer.Deserialize(typeof(CustomValidationRule), tokens[0], rootSerializer) as ValidationRule;
             error.ErrorContent = tokens[1];
 
             return error;
@@ -225,23 +224,21 @@ public class ValidationTests
 
     private class ValidationErrorReadOnlyObservableCollectionSerializer : ISerializer
     {
-        private static readonly ISerializer ValidationErrorSerializer = new ValidationErrorSerializer();
-
         private static char SeparatorChar = '&';
 
-        public bool CanSerialize(Type type) => typeof(ReadOnlyObservableCollection<ValidationError>).IsAssignableFrom(type);
+        public bool CanSerialize(Type type, ISerializer rootSerializer) => typeof(ReadOnlyObservableCollection<ValidationError>).IsAssignableFrom(type);
 
-        public string Serialize(Type type, object? value)
+        public string Serialize(Type type, object? value, ISerializer rootSerializer)
         {
             if (value is ReadOnlyObservableCollection<ValidationError> collection)
             {
-                var result = string.Join(SeparatorChar, collection.Select(e => ValidationErrorSerializer.Serialize(type, e)));
+                var result = string.Join(SeparatorChar, collection.Select(e => rootSerializer.Serialize(type, e, rootSerializer)));
                 return result;
             }
             return string.Empty;
         }
 
-        public object? Deserialize(Type type, string value)
+        public object? Deserialize(Type type, string value, ISerializer rootSerializer)
         {
             var collection = new ObservableCollection<ValidationError>();
 
@@ -250,7 +247,7 @@ public class ValidationTests
                 var tokens = value.Split(SeparatorChar);
                 foreach (var errorString in tokens)
                 {
-                    if (ValidationErrorSerializer.Deserialize(typeof(ValidationError), errorString) is ValidationError error)
+                    if (rootSerializer.Deserialize(typeof(ValidationError), errorString, rootSerializer) is ValidationError error)
                     {
                         collection.Add(error);
                     }

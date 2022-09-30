@@ -1,11 +1,8 @@
-﻿using System;
-using System.Windows.Media;
-
-namespace XamlTest;
+﻿namespace XamlTest;
 
 public interface ISerializer
 {
-    bool CanSerialize(Type type);
-    string Serialize(Type type, object? value);
-    object? Deserialize(Type type, string value);
+    bool CanSerialize(Type type, ISerializer rootSerializer);
+    string Serialize(Type type, object? value, ISerializer rootSerializer);
+    object? Deserialize(Type type, string value, ISerializer rootSerializer);
 }
