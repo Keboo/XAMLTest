@@ -156,6 +156,8 @@ public class ValidationTests
         //Arrange
         await using TestRecorder recorder = new(App);
 
+        await App.RegisterSerializer<NotEmptyValidationRuleSerializer>();
+        await App.RegisterSerializer<ValidationErrorSerializer>();
         await App.RegisterSerializer<ValidationErrorReadOnlyObservableCollectionSerializer>();
         IWindow window = await App.CreateWindowWithUserControl<TextBox_ValidationError>();
         IVisualElement<TextBox> textBox = await window.GetElement<TextBox>("/TextBox");
