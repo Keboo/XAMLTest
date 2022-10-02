@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Linq;
-using System.Reflection;
+﻿using System.Collections.ObjectModel;
 using System.Runtime.Serialization;
-using System.Threading.Tasks;
 using System.Windows.Controls;
 using XamlTest.Tests.TestControls;
 
@@ -159,17 +152,18 @@ public class ValidationTests
         await App.RegisterSerializer<NotEmptyValidationRuleSerializer>();
         await App.RegisterSerializer<ValidationErrorSerializer>();
         await App.RegisterSerializer<ValidationErrorReadOnlyObservableCollectionSerializer>();
-        IWindow window = await App.CreateWindowWithUserControl<TextBox_ValidationError>();
-        IVisualElement<TextBox> textBox = await window.GetElement<TextBox>("/TextBox");
+        
+        IVisualElement<TextBox_ValidationError> userControl = await Window.SetXamlContentFromUserControl<TextBox_ValidationError>();
+        IVisualElement<TextBox> textBox = await userControl.GetElement<TextBox>();
 
         //Act
         ReadOnlyObservableCollection<ValidationError>? errors = await textBox.GetProperty<ReadOnlyObservableCollection<ValidationError>>(System.Windows.Controls.Validation.ErrorsProperty);
 
         //Assert
         Assert.IsNotNull(errors);
-        var errorList = errors.ToList();
-        Assert.IsInstanceOfType(errorList[0].RuleInError, typeof(NotEmptyValidationRule));
-        Assert.AreEqual("Field is required.", errorList[0].ErrorContent);
+        Assert.AreEqual(1, errors.Count);
+        Assert.IsInstanceOfType(errors[0].RuleInError, typeof(NotEmptyValidationRule));
+        Assert.AreEqual("Field is required.", errors[0].ErrorContent);
 
         recorder.Success();
     }
@@ -179,7 +173,7 @@ public class ValidationTests
         public const string ErrorObject = "Custom Validation Rule Failure";
 
         public override ValidationResult Validate(object value, CultureInfo cultureInfo)
-            => new ValidationResult(false, ErrorObject);
+            => new(false, ErrorObject);
     }
 
 
@@ -217,7 +211,7 @@ public class ValidationTests
 
             var tokens = value.Split(SeparatorChar);
 
-            error.RuleInError = rootSerializer.Deserialize(typeof(CustomValidationRule), tokens[0], rootSerializer) as ValidationRule;
+            error.RuleInError = rootSerializer.Deserialize(typeof(NotEmptyValidationRule), tokens[0], rootSerializer) as ValidationRule;
             error.ErrorContent = tokens[1];
 
             return error;
@@ -234,7 +228,7 @@ public class ValidationTests
         {
             if (value is ReadOnlyObservableCollection<ValidationError> collection)
             {
-                var result = string.Join(SeparatorChar, collection.Select(e => rootSerializer.Serialize(type, e, rootSerializer)));
+                var result = string.Join(SeparatorChar, collection.Select(e => rootSerializer.Serialize(e.GetType(), e, rootSerializer)));
                 return result;
             }
             return string.Empty;

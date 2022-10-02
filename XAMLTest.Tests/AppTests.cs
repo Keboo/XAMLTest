@@ -1,6 +1,4 @@
 using MaterialDesignThemes.Wpf;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Diagnostics.CodeAnalysis;
 using XamlTest;
 using XamlTest.Tests.TestControls;
 
