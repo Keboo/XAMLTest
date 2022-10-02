@@ -1,16 +1,15 @@
-﻿using System;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace XamlTest.Transport;
 
 public abstract class JsonSerializer<T> : ISerializer
 {
-    public bool CanSerialize(Type type)
+    public bool CanSerialize(Type type, ISerializer rootSerializer)
         => type == typeof(T);
 
     public virtual JsonSerializerOptions? Options { get; }
 
-    public object? Deserialize(Type type, string value)
+    public object? Deserialize(Type type, string value, ISerializer rootSerializer)
     {
         if (!string.IsNullOrEmpty(value))
         {
@@ -20,7 +19,7 @@ public abstract class JsonSerializer<T> : ISerializer
         return default(T);
     }
 
-    public string Serialize(Type type, object? value)
+    public string Serialize(Type type, object? value, ISerializer rootSerializer)
     {
         if (value is not null)
         {

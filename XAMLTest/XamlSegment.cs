@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Text;
-
-namespace XamlTest;
+﻿namespace XamlTest;
 
 public sealed class XamlSegment
 {

@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Windows;
-using System.Windows.Media;
+﻿using System.Windows.Media;
 
 namespace XamlTest.Transport;
 
 public class BrushSerializer : ISerializer
 {
-    public bool CanSerialize(Type type)
+    public bool CanSerialize(Type type, ISerializer rootSerializer)
         => type == typeof(Brush) ||
            type == typeof(LinearGradientBrush) ||
            type == typeof(RadialGradientBrush) ||
@@ -16,7 +12,7 @@ public class BrushSerializer : ISerializer
            type == typeof(Color) ||
            type == typeof(Color?);
 
-    public object? Deserialize(Type type, string value)
+    public object? Deserialize(Type type, string value, ISerializer rootSerializer)
     {
         if (type == typeof(LinearGradientBrush))
         {
@@ -83,7 +79,7 @@ public class BrushSerializer : ISerializer
         return null;
     }
 
-    public string Serialize(Type type, object? value)
+    public string Serialize(Type type, object? value, ISerializer rootSerializer)
     {
         return value switch
         {

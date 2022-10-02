@@ -1,21 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
-using System.Windows;
+﻿using System.Text.Json;
 using System.Windows.Controls;
 
 namespace XamlTest.Transport;
 
 public class GridSerializer : ISerializer
 {
-    public bool CanSerialize(Type type)
+    public bool CanSerialize(Type type, ISerializer rootSerializer)
         => typeof(IEnumerable<ColumnDefinition>).IsAssignableFrom(type) ||
            typeof(IEnumerable<RowDefinition>).IsAssignableFrom(type) ||
            type == typeof(ColumnDefinition) ||
            type == typeof(RowDefinition);
 
-    public object? Deserialize(Type type, string value)
+    public object? Deserialize(Type type, string value, ISerializer rootSerializer)
     {
         if (typeof(IEnumerable<ColumnDefinition>).IsAssignableFrom(type))
         {
@@ -48,7 +44,7 @@ public class GridSerializer : ISerializer
         return null;
     }
 
-    public string Serialize(Type type, object? value)
+    public string Serialize(Type type, object? value, ISerializer rootSerializer)
     {
         if (typeof(IEnumerable<ColumnDefinition>).IsAssignableFrom(type) &&
             value is IEnumerable<ColumnDefinition> columnDefinitions)

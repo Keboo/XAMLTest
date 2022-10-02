@@ -1,9 +1,3 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
 using XamlTest.Transport;
 
 namespace XamlTest.Tests;
@@ -78,14 +72,14 @@ public class SerializerTests
 
     private class CustomSerializer : ISerializer
     {
-        public bool CanSerialize(Type type) => type == typeof(string);
+        public bool CanSerialize(Type type, ISerializer rootSerializer) => type == typeof(string);
 
-        public object? Deserialize(Type type, string value)
+        public object? Deserialize(Type type, string value, ISerializer rootSerializer)
         {
             return $"{value}-Out";
         }
 
-        public string Serialize(Type type, object? value)
+        public string Serialize(Type type, object? value, ISerializer rootSerializer)
         {
             return $"In-{value}";
         }

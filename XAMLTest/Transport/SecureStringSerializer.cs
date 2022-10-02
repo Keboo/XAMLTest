@@ -1,15 +1,14 @@
-﻿using System;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Security;
 
 namespace XamlTest.Transport;
 
 public class SecureStringSerializer : ISerializer
 {
-    public bool CanSerialize(Type type)
+    public bool CanSerialize(Type type, ISerializer rootSerializer)
         => type == typeof(SecureString);
 
-    public object? Deserialize(Type type, string value)
+    public object? Deserialize(Type type, string value, ISerializer rootSerializer)
     {
         var rv = new SecureString();
         foreach(var c in value)
@@ -19,7 +18,7 @@ public class SecureStringSerializer : ISerializer
         return rv;
     }
 
-    public string Serialize(Type type, object? value)
+    public string Serialize(Type type, object? value, ISerializer rootSerializer)
     {
         if (value is SecureString secureString)
         {

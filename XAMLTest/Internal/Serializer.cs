@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Windows;
-using XamlTest.Transport;
+﻿using XamlTest.Transport;
 
 namespace XamlTest.Internal;
 
-internal class Serializer
+internal class Serializer : ISerializer
 {
     public List<ISerializer> Serializers { get; } = new List<ISerializer>();
 
@@ -26,20 +22,26 @@ internal class Serializer
     public void AddSerializer(ISerializer serializer, int index) 
         => Serializers.Insert(index, serializer);
 
-    public string? Serialize(Type type, object? value)
+    public string Serialize(Type type, object? value)
+        => ((ISerializer)this).Serialize(type, value, this);
+
+    string ISerializer.Serialize(Type type, object? value, ISerializer rootSerializer)
     {
-        if (Serializers.FirstOrDefault(x => x.CanSerialize(type)) is { } serializer)
+        if (Serializers.FirstOrDefault(x => x.CanSerialize(type, rootSerializer)) is { } serializer)
         {
-            return serializer.Serialize(type, value);
+            return serializer.Serialize(type, value, rootSerializer);
         }
-        return null;
+        return "";
     }
 
     public object? Deserialize(Type type, string value)
+        => ((ISerializer)this).Deserialize(type, value, this);
+
+    object? ISerializer.Deserialize(Type type, string value, ISerializer rootSerializer)
     {
-        if (Serializers.FirstOrDefault(x => x.CanSerialize(type)) is { } serializer)
+        if (Serializers.FirstOrDefault(x => x.CanSerialize(type, rootSerializer)) is { } serializer)
         {
-            return serializer.Deserialize(type, value);
+            return serializer.Deserialize(type, value, rootSerializer);
         }
         return null;
     }
@@ -48,8 +50,11 @@ internal class Serializer
     {
         if (value is not null)
         {
-            return (T?)Deserialize(typeof(T), value);
+            return (T?)((ISerializer)this).Deserialize(typeof(T), value, this);
         }
         return default;
     }
+
+    bool ISerializer.CanSerialize(Type type, ISerializer rootSerializer) 
+        => Serializers.Any(x => x.CanSerialize(type, rootSerializer));
 }
