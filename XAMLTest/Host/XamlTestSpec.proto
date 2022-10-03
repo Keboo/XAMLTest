@@ -72,6 +72,9 @@ service Protocol {
 
   //Highlight an element
   rpc HighlightElement(HighlightRequest) returns (HighlightResult);
+
+  //Get binding errors
+  rpc GetBindingErrors(BindingErrorsRequest) returns (BindingErrorsResult);
 }
 
 message GetWindowsQuery {
@@ -329,4 +332,13 @@ message HighlightRequest {
 
 message HighlightResult {
   repeated string errorMessages = 1;
+}
+
+message BindingErrorsRequest {
+  bool clearCurrentErrors = 1;
+}
+
+message BindingErrorsResult{
+  repeated string errorMessages = 1;
+  repeated string bindingErrors = 2;
 }

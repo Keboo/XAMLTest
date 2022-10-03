@@ -11,7 +11,7 @@ internal class Program
     static int Main(string[] args)
     {
         Logger.Log("Starting log");
-        
+
         Argument<int> clientPid = new("clientPid");
         Option<string> appPath = new("--application-path");
         Option<string> appType = new("--application-type");
@@ -39,7 +39,7 @@ internal class Program
         var parseResult = command.Parse(args);
         if (parseResult.Errors.Count > 0)
         {
-            foreach(var error in parseResult.Errors)
+            foreach (var error in parseResult.Errors)
             {
                 Logger.Log(error.Message);
             }
@@ -64,6 +64,14 @@ internal class Program
         try
         {
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+
+            if (waitForDebugger)
+            {
+                for (; !Debugger.IsAttached;)
+                {
+                    Thread.Sleep(100);
+                }
+            }
 
             Application application;
             if (!string.IsNullOrWhiteSpace(appPathValue) &&
@@ -96,13 +104,6 @@ internal class Program
                 Logger.Log("Started XAMLTest server");
 
                 HeartbeatTimer = new(HeartbeatCheck, pidValue, TimeSpan.Zero, TimeSpan.FromSeconds(1));
-                if (waitForDebugger)
-                {
-                    for (; !Debugger.IsAttached;)
-                    {
-                        Thread.Sleep(100);
-                    }
-                }
             }
 
             void ApplicationExit(object sender, ExitEventArgs e)
@@ -140,7 +141,15 @@ internal class Program
                 if (shutdown)
                 {
                     HeartbeatTimer?.Change(0, Timeout.Infinite);
-                    application.Dispatcher.Invoke(() => application.Shutdown());
+                    try
+                    {
+                        application.Dispatcher.Invoke(() =>
+                        {
+                            application.Shutdown();
+                        });
+                    }
+                    catch (OperationCanceledException)
+                    { }
                 }
             }
         }
@@ -171,7 +180,7 @@ internal class Program
             var factoryAssembly = Assembly.LoadFrom(remoteAssembly);
             Type factoryType = factoryAssembly.GetType(remoteContainerType, throwOnError: true)!;
             var methodFlags = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy;
-            MethodInfo factoryMethod = factoryType.GetMethod(remoteMethodName, methodFlags) 
+            MethodInfo factoryMethod = factoryType.GetMethod(remoteMethodName, methodFlags)
                 ?? throw new Exception($"Did not find factory method {remoteMethodName} in {remoteContainerType}");
             application = (Application)(factoryMethod.Invoke(null, Array.Empty<object>())
                 ?? throw new Exception("Factory method did return an application instance"));
@@ -214,7 +223,7 @@ internal class Program
             Logger.Log($"Creating application {appType.FullName}({string.Join(", ", parameters.Select(x => x?.ToString() ?? "null"))})");
             application = (Application)ctorInfo.Invoke(parameters);
         }
-        
+
         BindingFlags flags = BindingFlags.Instance | BindingFlags.InvokeMethod | BindingFlags.FlattenHierarchy | BindingFlags.Public;
         if (application.GetType().GetMethod("InitializeComponent", flags) is { } initMethod)
         {

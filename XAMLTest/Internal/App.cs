@@ -341,6 +341,29 @@ internal sealed class App : IApp
             throw new XAMLTestException($"Error communicating with host process", e);
         }
     }
-
-    public void AddXamlNamespace(string? prefix, string uri) => throw new NotImplementedException();
+    
+    public async Task<IReadOnlyList<string>> GetBindingErrors(bool clearCurrentErrors = false)
+    {
+        LogMessage?.Invoke($"{nameof(GetBindingErrors)}()");
+        BindingErrorsRequest bindingErrorsRequest = new()
+        {
+            ClearCurrentErrors = clearCurrentErrors
+        };
+        try
+        {
+            if (await Client.GetBindingErrorsAsync(bindingErrorsRequest) is { } reply)
+            {
+                if (reply.ErrorMessages.Any())
+                {
+                    throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                }
+                return reply.BindingErrors;
+            }
+            throw new XAMLTestException("Failed to receive a reply");
+        }
+        catch (RpcException e)
+        {
+            throw new XAMLTestException($"Error communicating with host process", e);
+        }
+    }
 }

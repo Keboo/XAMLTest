@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace XamlTest;
+﻿namespace XamlTest;
 
 public class Retry
 {

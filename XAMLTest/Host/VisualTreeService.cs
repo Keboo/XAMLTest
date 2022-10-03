@@ -1,6 +1,7 @@
 using Google.Protobuf;
 using Grpc.Core;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Globalization;
@@ -28,8 +29,15 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
 
     private Serializer Serializer { get; } = new Serializer();
 
+    private BindingErrorTraceListener BindingErrorsListener { get; } = new();
+
     public VisualTreeService(Application application)
-        => Application = application ?? throw new ArgumentNullException(nameof(application));
+    {
+        Application = application ?? throw new ArgumentNullException(nameof(application));
+        PresentationTraceSources.DataBindingSource.Switch.Level = SourceLevels.Warning;
+        PresentationTraceSources.DataBindingSource.Listeners.Add(BindingErrorsListener);
+        //Type.GetType("MS.Internal.AvTrace").GetField("_enabledInRegistry", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.SetField).SetValue(null, true);
+    }
 
     public override async Task<GetWindowsResult> GetWindows(GetWindowsQuery request, ServerCallContext context)
     {
@@ -651,6 +659,25 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
 
             fvi = FileVersionInfo.GetVersionInfo(Application.GetType().Assembly.Location);
             reply.AppVersion = fvi.FileVersion;
+        }
+        catch (Exception e)
+        {
+            reply.ErrorMessages.Add(e.ToString());
+        }
+        return Task.FromResult(reply);
+    }
+
+    public override Task<BindingErrorsResult> GetBindingErrors(BindingErrorsRequest request, ServerCallContext context)
+    {
+        BindingErrorsResult reply = new();
+        try
+        {
+            bool rv = PresentationTraceSources.DataBindingSource.Switch.ShouldTrace(TraceEventType.Error);
+            PresentationTraceSources.DataBindingSource.Flush();
+            foreach (var error in BindingErrorsListener.GetErrors(request.ClearCurrentErrors))
+            {
+                reply.BindingErrors.Add(error);
+            }
         }
         catch (Exception e)
         {

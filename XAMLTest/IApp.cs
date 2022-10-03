@@ -15,5 +15,7 @@ public interface IApp : IAsyncDisposable, IDisposable
         where T : ISerializer, new();
     Task<IReadOnlyList<ISerializer>> GetSerializers();
 
+    Task<IReadOnlyList<string>> GetBindingErrors(bool clearCurrentErrors = false);
+
     IList<XmlNamespace> DefaultXmlNamespaces { get; }
 }

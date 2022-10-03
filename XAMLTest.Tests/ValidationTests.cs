@@ -252,5 +252,4 @@ public class ValidationTests
             return new ReadOnlyObservableCollection<ValidationError>(collection);
         }
     }
-
 }
