@@ -100,4 +100,4 @@ jobs:
       contents: write
 
     steps:
-      - uses: fastify/github-action-merge-dependabot@v3.4.0  
+      - uses: fastify/github-action-merge-dependabot@v3.4.1  
