@@ -81,8 +81,7 @@ public static class App
         {
             NamedPipeChannel channel = new(".", Server.PipePrefix + process.Id, new NamedPipeChannelOptions
             {
-                ConnectionTimeout = (int)options.ConnectionTimeout.TotalMilliseconds,
-                CurrentUserOnly = true
+                ConnectionTimeout = (int)options.ConnectionTimeout.TotalMilliseconds
             });
             Protocol.ProtocolClient client = new(channel);
             if (useDebugger)
