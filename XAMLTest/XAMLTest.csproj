@@ -15,7 +15,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="GrpcDotNetNamedPipes" Version="1.4.4" />
+    <PackageReference Include="GrpcDotNetNamedPipes" Version="2.0.0" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
     <PackageReference Include="Microsoft.VisualStudio.Debugger.InteropA" Version="17.4.33103.184" />
     <PackageReference Include="PInvoke.User32" Version="0.7.124" />
