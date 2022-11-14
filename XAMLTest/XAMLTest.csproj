@@ -20,7 +20,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Debugger.InteropA" Version="17.3.32804.24" />
     <PackageReference Include="PInvoke.User32" Version="0.7.124" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
-    <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+    <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
     <ProjectReference Include="..\XAMLTest.Generator\XAMLTest.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <Protobuf Include="Host\XamlTestSpec.proto" GrpcServices="Both" />
   </ItemGroup>
