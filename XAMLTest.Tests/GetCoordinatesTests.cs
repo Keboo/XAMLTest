@@ -1,9 +1,3 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Controls;
 
 namespace XamlTest.Tests;
@@ -20,7 +14,7 @@ public class GetCoordinatesTests
     [ClassInitialize]
     public static async Task ClassInitialize(TestContext context)
     {
-        App = await XamlTest.App.StartRemote(logMessage: msg => context.WriteLine(msg));
+        App = await XamlTest.App.StartRemote(logMessage: context.WriteLine);
 
         await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
 

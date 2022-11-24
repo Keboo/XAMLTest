@@ -14,7 +14,7 @@ public class AppTests
     [TestMethod]
     public async Task OnStartRemote_LaunchesRemoteApp()
     {
-        await using var app = await App.StartRemote<XAMLTest.TestApp.App>(x => TestContext.WriteLine(x));
+        await using var app = await App.StartRemote<XAMLTest.TestApp.App>(TestContext.WriteLine);
         IWindow? window = await app.GetMainWindow();
         Assert.AreEqual("Test App Window", await window!.GetTitle());
     }

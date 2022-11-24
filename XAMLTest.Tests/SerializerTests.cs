@@ -14,7 +14,7 @@ public class SerializerTests
     [ClassInitialize]
     public static async Task ClassInitialize(TestContext context)
     {
-        App = await XamlTest.App.StartRemote(logMessage: msg => context.WriteLine(msg));
+        App = await XamlTest.App.StartRemote(logMessage: context.WriteLine);
 
         await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
 

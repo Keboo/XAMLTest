@@ -1,8 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using System.Threading.Tasks;
-using System.Windows.Media;
+﻿using System.Windows.Media;
 
 namespace XamlTest.Tests;
 
@@ -18,7 +14,7 @@ public class GetEffectiveBackgroundTests
     [ClassInitialize]
     public static async Task ClassInitialize(TestContext context)
     {
-        App = await XamlTest.App.StartRemote(logMessage: msg => context.WriteLine(msg));
+        App = await XamlTest.App.StartRemote(logMessage: context.WriteLine);
 
         await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
 

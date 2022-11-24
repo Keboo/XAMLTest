@@ -1,10 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 
 namespace XamlTest.Tests;
 
@@ -23,7 +17,7 @@ public class SendMouseInputTests
     [ClassInitialize]
     public static async Task ClassInitialize(TestContext context)
     {
-        App = await XamlTest.App.StartRemote(logMessage: msg => context.WriteLine(msg));
+        App = await XamlTest.App.StartRemote(logMessage: context.WriteLine);
 
         await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
 
@@ -69,11 +63,14 @@ public class SendMouseInputTests
     [TestMethod]
     public async Task CanClickThroughMenus()
     {
+        await using var recorder = new TestRecorder(App);
         await TopMenuItem.LeftClick();
-        await Task.Delay(100);
+        await Task.Delay(200);
+        await recorder.SaveScreenshot();
         var nestedMenuItem = await TopMenuItem.GetElement<MenuItem>("SubMenu");
         await using IEventRegistration registration = await nestedMenuItem.RegisterForEvent(nameof(MenuItem.Click));
-        await nestedMenuItem.LeftClick(clickTime:TimeSpan.FromMilliseconds(100));
+        await nestedMenuItem.LeftClick(clickTime:TimeSpan.FromMilliseconds(200));
+        await recorder.SaveScreenshot();
 
         await Wait.For(async () =>
         {
