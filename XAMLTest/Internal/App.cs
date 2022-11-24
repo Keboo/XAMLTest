@@ -1,4 +1,5 @@
 ﻿using Grpc.Core;
+using System.Runtime.InteropServices;
 using XamlTest.Host;
 
 namespace XamlTest.Internal;
@@ -139,11 +140,20 @@ internal sealed class App : IApp
         LogMessage?.Invoke("Waiting for process exit");
         using CancellationTokenSource cts = new();
         cts.CancelAfter(TimeSpan.FromSeconds(10));
-        Process? process = Process.GetProcessById(Process.Id);
-        while (process?.HasExited == false && !cts.IsCancellationRequested)
+        Process? process = null;
+        do
         {
-            process = Process.GetProcessById(Process.Id);
+            try
+            {
+                process = Process.GetProcessById(Process.Id);
+            }
+            catch (ArgumentException)
+            {
+                //Thrown when the process specified by the processId parameter is not running.
+            }
         }
+        while (process?.HasExited == false && !cts.IsCancellationRequested);
+
         LogMessage?.Invoke($"Process Exited? {process?.HasExited}");
         if (process?.HasExited == false)
         {
