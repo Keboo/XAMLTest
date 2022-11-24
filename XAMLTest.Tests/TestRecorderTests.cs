@@ -84,7 +84,7 @@ public class TestRecorderTests
         await using var app = await App.StartRemote();
         await using TestRecorder testRecorder = new(app);
         await app.InitializeWithDefaults();
-        var ex = await Assert.ThrowsExceptionAsync<XAMLTestException>(async () => await app.CreateWindowWithContent("<InvalidContent />"));
+        var ex = await Assert.ThrowsExceptionAsync<XamlTestException>(async () => await app.CreateWindowWithContent("<InvalidContent />"));
     }
 
     [TestMethod]

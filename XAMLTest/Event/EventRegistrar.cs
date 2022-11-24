@@ -83,7 +83,7 @@ internal static class EventRegistrar
         
         Type returnType = GetDelegateReturnType(delegateType);
         if (returnType != typeof(void))
-            throw new XAMLTestException("Event delegate must return void.");
+            throw new XamlTestException("Event delegate must return void.");
 
         var delegateParameterTypes = GetDelegateParameterTypes(delegateType);
 
@@ -130,7 +130,7 @@ internal static class EventRegistrar
     {
         if (delegateType.BaseType != typeof(MulticastDelegate))
         {
-            throw new XAMLTestException($"'{delegateType.FullName}' is not a delegate type.");
+            throw new XamlTestException($"'{delegateType.FullName}' is not a delegate type.");
         }
 
         MethodInfo invoke = delegateType.GetMethod(nameof(Action.Invoke))
@@ -149,7 +149,7 @@ internal static class EventRegistrar
     {
         if (delegateType.BaseType != typeof(MulticastDelegate))
         {
-            throw new XAMLTestException($"'{delegateType.FullName}' is not a delegate type.");
+            throw new XamlTestException($"'{delegateType.FullName}' is not a delegate type.");
         }
 
         MethodInfo? invoke = delegateType.GetMethod(nameof(Action.Invoke));

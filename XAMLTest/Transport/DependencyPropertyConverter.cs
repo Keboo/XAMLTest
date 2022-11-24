@@ -8,8 +8,8 @@ public class DependencyPropertyConverter : ISerializer
     {
         if (type == typeof(DependencyProperty) && !string.IsNullOrEmpty(value))
         {
-            var data = System.Text.Json.JsonSerializer.Deserialize<DependencyPropertyData>(value);
-            if (DependencyPropertyHelper.TryGetDependencyProperty(data.Name!, data.OwnerType!,
+            if (System.Text.Json.JsonSerializer.Deserialize<DependencyPropertyData>(value) is { } data &&
+                DependencyPropertyHelper.TryGetDependencyProperty(data.Name!, data.OwnerType!,
                 out DependencyProperty? dependencyProperty))
             {
                 return dependencyProperty;

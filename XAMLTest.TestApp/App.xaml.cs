@@ -15,12 +15,3 @@ public class OtherApp : App
         Name = name ?? "";
     }
 }
-
-public class CustomApp : App
-{
-    public string Value { get; }
-    public CustomApp(string value)
-    {
-        Value = value;
-    }
-}

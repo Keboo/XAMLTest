@@ -1,22 +1,21 @@
-﻿using System;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 
 namespace XamlTest;
 
-public class XAMLTestException : Exception
+public class XamlTestException : Exception
 {
-    public XAMLTestException()
+    public XamlTestException()
     { }
 
-    public XAMLTestException(string? message) 
+    public XamlTestException(string? message) 
         : base(message)
     { }
 
-    public XAMLTestException(string? message, Exception? innerException) 
+    public XamlTestException(string? message, Exception? innerException) 
         : base(message, innerException)
     { }
 
-    protected XAMLTestException(SerializationInfo info, StreamingContext context) 
+    protected XamlTestException(SerializationInfo info, StreamingContext context) 
         : base(info, context)
     { }
 }

@@ -99,7 +99,7 @@ public class HighlightTests
         await grid.Highlight();
         await grid.ClearHighlight();
 
-        var ex = await Assert.ThrowsExceptionAsync<XAMLTestException>(() => grid.GetElement<Adorner>("/SelectionAdorner"));
+        var ex = await Assert.ThrowsExceptionAsync<XamlTestException>(() => grid.GetElement<Adorner>("/SelectionAdorner"));
 
         Assert.IsTrue(ex.Message.Contains("Failed to find child element of type 'SelectionAdorner'"));
     }

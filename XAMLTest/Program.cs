@@ -1,4 +1,6 @@
 ﻿using System.CommandLine;
+using System.IO;
+using XamlTest.Internal;
 using XamlTest.Utility;
 
 namespace XamlTest;
@@ -11,7 +13,7 @@ internal class Program
     static int Main(string[] args)
     {
         Logger.Log("Starting log");
-        
+
         Argument<int> clientPid = new("clientPid");
         Option<string> appPath = new("--application-path");
         Option<string> appType = new("--application-type");
@@ -56,15 +58,14 @@ internal class Program
         string? remoteContainerTypeValue = parseResult.GetValueForOption(remoteContainerType);
         string? remoteAssemblyValue = parseResult.GetValueForOption(remoteAssembly);
 
-        if (logFileInfo is not null)
-        {
-            Logger.AddLogOutput(logFileInfo.Open(FileMode.Create, FileAccess.Write, FileShare.Read));
-        }
-
         try
         {
+            if (logFileInfo is not null)
+            {
+                Logger.AddLogOutput(logFileInfo.Open(FileMode.Create, FileAccess.Write, FileShare.Read));
+            }
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
-
+            
             Application application;
             if (!string.IsNullOrWhiteSpace(appPathValue) &&
                 Path.GetFullPath(appPathValue) is { } fullPath &&
@@ -162,6 +163,7 @@ internal class Program
         AppDomain.CurrentDomain.IncludeAssembliesIn(Path.GetDirectoryName(assemblyPath)!);
 
         var targetAssembly = Assembly.LoadFile(assemblyPath);
+        AppDomain.CurrentDomain.SetData("APP_CONTEXT_BASE_DIRECTORY", Path.GetDirectoryName(assemblyPath));
         Application application;
         if (remoteMethodName != null &&
             remoteContainerType != null &&
@@ -172,9 +174,10 @@ internal class Program
             Type factoryType = factoryAssembly.GetType(remoteContainerType, throwOnError: true)!;
             var methodFlags = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy;
             MethodInfo factoryMethod = factoryType.GetMethod(remoteMethodName, methodFlags) 
-                ?? throw new Exception($"Did not find factory method {remoteMethodName} in {remoteContainerType}");
+                ?? throw new XamlTestException($"Did not find factory method {remoteMethodName} in {remoteContainerType}");
             application = (Application)(factoryMethod.Invoke(null, Array.Empty<object>())
-                ?? throw new Exception("Factory method did return an application instance"));
+                ?? throw new XamlTestException("Factory method did return an application instance"));
+            Application.ResourceAssembly = factoryAssembly;
         }
         else
         {
@@ -182,16 +185,16 @@ internal class Program
             if (!string.IsNullOrWhiteSpace(applicationType))
             {
                 appType = Type.GetType(applicationType, throwOnError: true)
-                    ?? throw new Exception($"Could not find Application type {applicationType}");
+                    ?? throw new XamlTestException($"Could not find Application type {applicationType}");
             }
             else
             {
                 var applications = targetAssembly.GetTypes().Where(x => x.IsSubclassOf(typeof(Application))).ToList();
                 appType = applications.Count switch
                 {
-                    0 => throw new Exception($"Could not find any Application types"),
+                    0 => throw new XamlTestException($"Could not find any Application types"),
                     1 => applications[0],
-                    _ => throw new Exception($"Found multiple Application types {string.Join(", ", applications.Select(x => x.FullName))}"),
+                    _ => throw new XamlTestException($"Found multiple Application types {string.Join(", ", applications.Select(x => x.FullName))}"),
                 };
             }
 

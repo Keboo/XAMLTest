@@ -93,7 +93,7 @@ public sealed class TestRecorder : IAsyncDisposable
                 return fullPath;
             }
         }
-        catch (XAMLTestException) { }
+        catch (XamlTestException) { }
         return null;
     }
 

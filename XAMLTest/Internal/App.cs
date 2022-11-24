@@ -39,11 +39,11 @@ internal sealed class App : IApp
             {
                 if (reply.ErrorMessages.Any())
                 {
-                    throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                    throw new XamlTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
                 }
                 return;
             }
-            throw new XAMLTestException("Failed to get a reply");
+            throw new XamlTestException("Failed to get a reply");
         }
         catch (OperationCanceledException)
         { }
@@ -71,11 +71,11 @@ internal sealed class App : IApp
             {
                 if (reply.ErrorMessages.Any())
                 {
-                    throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                    throw new XamlTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
                 }
                 return;
             }
-            throw new XAMLTestException("Failed to get a reply");
+            throw new XamlTestException("Failed to get a reply");
         }
         catch (OperationCanceledException)
         { }
@@ -167,15 +167,15 @@ internal sealed class App : IApp
             {
                 if (reply.ErrorMessages.Any())
                 {
-                    throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                    throw new XamlTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
                 }
                 return;
             }
-            throw new XAMLTestException("Failed to get a reply");
+            throw new XamlTestException("Failed to get a reply");
         }
         catch (RpcException e)
         {
-            throw new XAMLTestException($"Error communicating with host process", e);
+            throw new XamlTestException($"Error communicating with host process", e);
         }
     }
 
@@ -198,11 +198,11 @@ internal sealed class App : IApp
             }
             if (reply.ErrorMessages.Any())
             {
-                throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages) + Environment.NewLine + windowXaml);
+                throw new XamlTestException(string.Join(Environment.NewLine, reply.ErrorMessages) + Environment.NewLine + windowXaml);
             }
             return new Window(Client, reply.WindowsId, Context, LogMessage);
         }
-        throw new XAMLTestException("Failed to get a reply");
+        throw new XamlTestException("Failed to get a reply");
     }
 
     public async Task<IWindow> CreateWindow<TWindow>() where TWindow : System.Windows.Window
@@ -224,11 +224,11 @@ internal sealed class App : IApp
             }
             if (reply.ErrorMessages.Any())
             {
-                throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                throw new XamlTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
             }
             return new Window(Client, reply.WindowsId, Context, LogMessage);
         }
-        throw new XAMLTestException("Failed to get a reply");
+        throw new XamlTestException("Failed to get a reply");
     }
 
     public async Task<IWindow?> GetMainWindow()
@@ -253,16 +253,16 @@ internal sealed class App : IApp
         {
             if (reply.ErrorMessages.Any())
             {
-                throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                throw new XamlTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
             }
             if (!string.IsNullOrWhiteSpace(reply.ValueType))
             {
                 return new Resource(reply.Key, reply.ValueType, reply.Value, Context);
             }
-            throw new XAMLTestException($"Resource with key '{reply.Key}' not found");
+            throw new XamlTestException($"Resource with key '{reply.Key}' not found");
         }
 
-        throw new XAMLTestException("Failed to receive a reply");
+        throw new XamlTestException("Failed to receive a reply");
     }
 
     public async Task<IReadOnlyList<IWindow>> GetWindows()
@@ -285,15 +285,15 @@ internal sealed class App : IApp
             {
                 if (reply.ErrorMessages.Any())
                 {
-                    throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                    throw new XamlTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
                 }
                 return new BitmapImage(reply.Data);
             }
-            throw new XAMLTestException("Failed to receive a reply");
+            throw new XamlTestException("Failed to receive a reply");
         }
         catch (RpcException e)
         {
-            throw new XAMLTestException($"Error communicating with host process", e);
+            throw new XamlTestException($"Error communicating with host process", e);
         }
     }
 
@@ -309,12 +309,12 @@ internal sealed class App : IApp
         {
             if (reply.ErrorMessages.Any())
             {
-                throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                throw new XamlTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
             }
             Context.Serializer.AddSerializer(new T(), insertIndex);
             return;
         }
-        throw new XAMLTestException("Failed to receive a reply");
+        throw new XamlTestException("Failed to receive a reply");
     }
 
     public Task<IReadOnlyList<ISerializer>> GetSerializers()
@@ -330,15 +330,15 @@ internal sealed class App : IApp
             {
                 if (reply.ErrorMessages.Any())
                 {
-                    throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                    throw new XamlTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
                 }
                 return new Version(reply.AppVersion, reply.XamlTestVersion);
             }
-            throw new XAMLTestException("Failed to receive a reply");
+            throw new XamlTestException("Failed to receive a reply");
         }
         catch (RpcException e)
         {
-            throw new XAMLTestException($"Error communicating with host process", e);
+            throw new XamlTestException($"Error communicating with host process", e);
         }
     }
 

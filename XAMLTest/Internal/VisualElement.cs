@@ -58,7 +58,7 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
         {
             if (reply.ErrorMessages.Any())
             {
-                throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                throw new XamlTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
             }
             if (reply.Elements.Count == 1)
             {
@@ -72,16 +72,16 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
                     if (desiredType != elementType &&
                         !elementType.IsSubclassOf(desiredType))
                     {
-                        throw new XAMLTestException($"Element of type '{element.Type}' does not match desired type '{desiredType.AssemblyQualifiedName}'");
+                        throw new XamlTestException($"Element of type '{element.Type}' does not match desired type '{desiredType.AssemblyQualifiedName}'");
                     }
                     return Create(Client, element.Id, desiredType, Context, LogMessage);
                 }
-                throw new XAMLTestException($"Could not find element type '{element.Type}'");
+                throw new XamlTestException($"Could not find element type '{element.Type}'");
             }
-            throw new XAMLTestException($"Found {reply.Elements.Count} elements");
+            throw new XamlTestException($"Found {reply.Elements.Count} elements");
         }
 
-        throw new XAMLTestException("Failed to receive a reply");
+        throw new XamlTestException("Failed to receive a reply");
     }
 
     public async Task<IValue> GetProperty(string name, string? ownerType)
@@ -97,7 +97,7 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
         {
             if (reply.ErrorMessages.Any())
             {
-                throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                throw new XamlTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
             }
             if (reply.PropertyType is { } propertyType)
             {
@@ -108,15 +108,15 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
                     Type? elementType = Type.GetType(element.Type);
                     if (elementType is null)
                     {
-                        throw new XAMLTestException($"Could not find element type '{element.Type}'");
+                        throw new XamlTestException($"Could not find element type '{element.Type}'");
                     }
                     visualElement = Create(Client, element.Id, elementType, Context, LogMessage);
                 }
                 return new Property(propertyType, reply.ValueType, reply.Value, visualElement, Context);
             }
-            throw new XAMLTestException("Property does not have a type specified");
+            throw new XamlTestException("Property does not have a type specified");
         }
-        throw new XAMLTestException("Failed to receive a reply");
+        throw new XamlTestException("Failed to receive a reply");
     }
 
     public async Task<IValue> SetProperty(string name, string value, string? valueType, string? ownerType)
@@ -134,15 +134,15 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
         {
             if (reply.ErrorMessages.Any())
             {
-                throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                throw new XamlTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
             }
             if (reply.PropertyType is { } propertyType)
             {
                 return new Property(propertyType, reply.ValueType, reply.Value, null, Context);
             }
-            throw new XAMLTestException("Property reply does not have a type specified");
+            throw new XamlTestException("Property reply does not have a type specified");
         }
-        throw new XAMLTestException("Failed to receive a reply");
+        throw new XamlTestException("Failed to receive a reply");
     }
 
     public Task<IVisualElement> SetXamlProperty(string propertyName, XamlSegment xaml)
@@ -171,7 +171,7 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
         {
             if (reply.ErrorMessages.Any())
             {
-                throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                throw new XamlTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
             }
             if (reply.Elements.Count == 1)
             {
@@ -185,15 +185,15 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
                     if (desiredType != elementType &&
                         !elementType.IsSubclassOf(desiredType))
                     {
-                        throw new XAMLTestException($"Element of type '{element.Type}' does not match desired type '{desiredType.AssemblyQualifiedName}'");
+                        throw new XamlTestException($"Element of type '{element.Type}' does not match desired type '{desiredType.AssemblyQualifiedName}'");
                     }
                     return Create(Client, element.Id, desiredType, Context, LogMessage);
                 }
-                throw new XAMLTestException($"Could not find element type '{element.Type}'");
+                throw new XamlTestException($"Could not find element type '{element.Type}'");
             }
-            throw new XAMLTestException("XAML did not contain any elements");
+            throw new XamlTestException("XAML did not contain any elements");
         }
-        throw new XAMLTestException("Failed to receive a reply");
+        throw new XamlTestException("Failed to receive a reply");
     }
 
     public async Task<IResource> GetResource(string key)
@@ -208,16 +208,16 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
         {
             if (reply.ErrorMessages.Any())
             {
-                throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                throw new XamlTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
             }
             if (!string.IsNullOrWhiteSpace(reply.ValueType))
             {
                 return new Resource(reply.Key, reply.ValueType, reply.Value, Context);
             }
-            throw new XAMLTestException($"Resource with key '{reply.Key}' not found");
+            throw new XamlTestException($"Resource with key '{reply.Key}' not found");
         }
 
-        throw new XAMLTestException("Failed to receive a reply");
+        throw new XamlTestException("Failed to receive a reply");
     }
 
     public async Task<Color> GetEffectiveBackground(IVisualElement? toElement)
@@ -234,11 +234,11 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
         {
             if (reply.ErrorMessages.Any())
             {
-                throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                throw new XamlTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
             }
             return Color.FromArgb((byte)reply.Alpha, (byte)reply.Red, (byte)reply.Green, (byte)reply.Blue);
         }
-        throw new XAMLTestException("Failed to receive a reply");
+        throw new XamlTestException("Failed to receive a reply");
     }
 
     public async Task<Rect> GetCoordinates()
@@ -252,12 +252,12 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
         {
             if (reply.ErrorMessages.Any())
             {
-                throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                throw new XamlTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
             }
             return new Rect(reply.Left, reply.Top, reply.Right - reply.Left, reply.Bottom - reply.Top);
         }
 
-        throw new XAMLTestException("Failed to receive a reply");
+        throw new XamlTestException("Failed to receive a reply");
     }
 
     public async Task MoveKeyboardFocus()
@@ -272,12 +272,12 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
         {
             if (reply.ErrorMessages.Any())
             {
-                throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                throw new XamlTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
             }
             return;
         }
 
-        throw new XAMLTestException("Failed to receive a reply");
+        throw new XamlTestException("Failed to receive a reply");
     }
 
     public async Task SendInput(KeyboardInput keyboardInput)
@@ -319,12 +319,12 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
             }
             if (reply.ErrorMessages.Any())
             {
-                throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                throw new XamlTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
             }
             return;
         }
 
-        throw new XAMLTestException("Failed to receive a reply");
+        throw new XamlTestException("Failed to receive a reply");
     }
 
     public async Task<Point> SendInput(MouseInput mouseInput)
@@ -351,12 +351,12 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
             }
             if (reply.ErrorMessages.Any())
             {
-                throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                throw new XamlTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
             }
             return new Point(reply.CursorX, reply.CursorY);
         }
 
-        throw new XAMLTestException("Failed to receive a reply");
+        throw new XamlTestException("Failed to receive a reply");
 
         static IEnumerable<MouseData> GetAll(IInput input)
         {
@@ -404,12 +404,12 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
         {
             if (reply.ErrorMessages.Any())
             {
-                throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                throw new XamlTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
             }
             return new EventRegistration(Client, reply.EventId, name, Serializer, LogMessage);
         }
 
-        throw new XAMLTestException("Failed to receive a reply");
+        throw new XamlTestException("Failed to receive a reply");
     }
 
     public async Task UnregisterEvent(IEventRegistration eventRegistration)
@@ -433,12 +433,12 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
         {
             if (reply.ErrorMessages.Any())
             {
-                throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                throw new XamlTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
             }
             return;
         }
 
-        throw new XAMLTestException("Failed to receive a reply");
+        throw new XamlTestException("Failed to receive a reply");
     }
 
     protected virtual Host.ElementQuery GetFindElementQuery(string query)
@@ -562,7 +562,7 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
         {
             if (reply.ErrorMessages.Any())
             {
-                throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                throw new XamlTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
             }
 
             if (reply.ValueType is null)
@@ -599,7 +599,7 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
         {
             if (reply.ErrorMessages.Any())
             {
-                throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                throw new XamlTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
             }
             return;
         }

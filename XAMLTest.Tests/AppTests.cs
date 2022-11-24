@@ -28,21 +28,6 @@ public class AppTests
     }
 
     [TestMethod]
-    public async Task OnStartRemote_WithCustomApplicationConstruction_LaunchesRemoteApp()
-    {
-        AppOptions options = new()
-        {
-            LogMessage = x => TestContext.WriteLine(x)
-        };
-        options.WithRemoteApp(FactoryMethod);
-        await using var app = await App.StartRemote(options);
-        IWindow? window = await app.GetMainWindow();
-        Assert.AreEqual("Test App Window", await window!.GetTitle());
-
-        static XAMLTest.TestApp.CustomApp FactoryMethod() => new("custom value");
-    }
-
-    [TestMethod]
     public async Task CanGenerateTypedElement_ForCustomControlInRemoteApp()
     {
         await using var app = await App.StartRemote<XAMLTest.TestApp.App>();

@@ -89,7 +89,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
         {
             if (current is null)
             {
-                throw new XAMLTestException($"Could not resolve '{query}' on null element");
+                throw new XamlTestException($"Could not resolve '{query}' on null element");
             }
 
             switch (GetNextQueryType(ref query, out string value))
@@ -178,7 +178,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
             {
                 return propertyDescriptor.GetValue(root);
             }
-            throw new XAMLTestException($"Failed to find property '{property}' on element of type '{root.GetType().FullName}'");
+            throw new XamlTestException($"Failed to find property '{property}' on element of type '{root.GetType().FullName}'");
         }
 
         static object EvaluateChildTypeQuery(DependencyObject root, string childTypeQuery)
@@ -204,7 +204,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
                     index--;
                 }
             }
-            throw new XAMLTestException($"Failed to find child element of type '{childTypeQuery}'");
+            throw new XamlTestException($"Failed to find child element of type '{childTypeQuery}'");
         }
 
         static object EvaluatePropertyExpressionQuery(DependencyObject root, string propertyExpression)
@@ -226,7 +226,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
                     }
                 }
             }
-            throw new XAMLTestException($"Failed to find child element with property expression '{propertyExpression}'");
+            throw new XamlTestException($"Failed to find child element with property expression '{propertyExpression}'");
         }
 
         static IEnumerable<string> GetTypeNames(DependencyObject child)
