@@ -1,5 +1,4 @@
-﻿using System;
-using XamlTest.Tests;
+﻿using XamlTest.Tests;
 
 [assembly: GenerateTests(typeof(System.Windows.Window))]
 [assembly: GenerateTests(typeof(System.Windows.Controls.AccessText))]

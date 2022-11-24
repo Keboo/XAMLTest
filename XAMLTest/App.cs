@@ -6,7 +6,6 @@ namespace XamlTest;
 public static class App
 {
     public static Task<IApp> StartRemote<TApp>(Action<string>? logMessage = null)
-        where TApp : Application
     {
         AppOptions options = new()
         {
@@ -29,7 +28,7 @@ public static class App
     {
         if (!File.Exists(options.XamlTestPath))
         {
-            throw new XAMLTestException($"Could not find test app '{options.XamlTestPath}'");
+            throw new XamlTestException($"Could not find test app '{options.XamlTestPath}'");
         }
 
         ProcessStartInfo startInfo = new(options.XamlTestPath)
@@ -48,15 +47,6 @@ public static class App
             startInfo.ArgumentList.Add("--application-type");
             startInfo.ArgumentList.Add(options.ApplicationType);
         }
-        if (options.RemoteFactoryMethod is { } remoteFactoryMethod)
-        {
-            startInfo.ArgumentList.Add("--remote-method-name");
-            startInfo.ArgumentList.Add(remoteFactoryMethod.MethodName);
-            startInfo.ArgumentList.Add("--remote-method-container-type");
-            startInfo.ArgumentList.Add(remoteFactoryMethod.MethodContainerType);
-            startInfo.ArgumentList.Add("--remote-method-assembly");
-            startInfo.ArgumentList.Add(remoteFactoryMethod.Assembly);
-        }
 
         bool useDebugger = options.AllowVisualStudioDebuggerAttach && Debugger.IsAttached;
         if (useDebugger)
@@ -73,7 +63,7 @@ public static class App
 
         if (logMessage is not null)
         {
-            string args = string.Join(' ', startInfo.ArgumentList.Select((x, i) => i % 2 == 1 ? x : $"\"{x}\""));
+            string args = string.Join(' ', startInfo.ArgumentList.Select(x => x.StartsWith("--", StringComparison.Ordinal) ? x : $"\"{x}\""));
             logMessage($"Starting XAML Test: {startInfo.FileName} {args}");
         }
 
@@ -115,6 +105,6 @@ public static class App
             }
             return app;
         }
-        throw new XAMLTestException("Failed to start remote app");
+        throw new XamlTestException("Failed to start remote app");
     }
 }

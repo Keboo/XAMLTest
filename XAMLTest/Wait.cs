@@ -1,8 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
-
-namespace XamlTest;
+﻿namespace XamlTest;
 
 public static class Wait
 {
@@ -72,6 +68,6 @@ public static class Wait
             return true;
         }, retry, message);
 
-        return rv ?? throw new XAMLTestException("Return value is null");
+        return rv ?? throw new XamlTestException("Return value is null");
     }
 }

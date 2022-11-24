@@ -38,7 +38,7 @@ internal class EventRegistration : IEventRegistration
         {
             if (reply.ErrorMessages.Any())
             {
-                throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                throw new XamlTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
             }
             return reply.EventInvocations
                 .Select(x =>
@@ -47,7 +47,7 @@ internal class EventRegistration : IEventRegistration
                 })
                 .ToList();
         }
-        throw new XAMLTestException("Failed to receive a reply");
+        throw new XamlTestException("Failed to receive a reply");
     }
 
     public async ValueTask DisposeAsync()
@@ -61,11 +61,11 @@ internal class EventRegistration : IEventRegistration
         {
             if (reply.ErrorMessages.Any())
             {
-                throw new XAMLTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+                throw new XamlTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
             }
             return;
         }
-        throw new XAMLTestException("Failed to receive a reply");
+        throw new XamlTestException("Failed to receive a reply");
     }
 }
 

@@ -1,7 +1,3 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Media;
 
@@ -22,7 +18,7 @@ public class GetResourceTests
     [ClassInitialize]
     public static async Task ClassInitialize(TestContext context)
     {
-        App = await XamlTest.App.StartRemote(logMessage: msg => context.WriteLine(msg));
+        App = await XamlTest.App.StartRemote(logMessage: context.WriteLine);
 
         await App.InitializeWithResources(@"
 <Color x:Key=""TestColor"">Red</Color>
@@ -49,7 +45,7 @@ public class GetResourceTests
     }
 
     [TestMethod]
-    [ExpectedException(typeof(XAMLTestException))]
+    [ExpectedException(typeof(XamlTestException))]
     public async Task OnAppGetResource_ThorwsExceptionWhenNotFound()
     {
         await App.GetResource("NotFound");
@@ -76,7 +72,7 @@ public class GetResourceTests
     }
 
     [TestMethod]
-    [ExpectedException(typeof(XAMLTestException))]
+    [ExpectedException(typeof(XamlTestException))]
     public async Task OnVisualElementGetResource_ThorwsExceptionWhenNotFound()
     {
         await Grid.GetResource("NotFound");

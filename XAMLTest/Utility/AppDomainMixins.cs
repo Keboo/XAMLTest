@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-
-namespace XamlTest.Utility;
+﻿namespace XamlTest.Utility;
 
 internal static class AppDomainMixins
 {
     public static void IncludeAssembliesIn(this AppDomain appDomain, string directory)
     {
         AssemblyResolver resolver = new();
-        resolver.IncludeFiles(Directory.EnumerateFiles(directory));
+        resolver.IncludeFiles(Directory.EnumerateFiles(directory)
+            .Where(file => Path.GetExtension(file).ToLowerInvariant() is ".dll" or ".exe"));
 
         appDomain.AssemblyResolve += AppDomainAssemblyResolve;
 

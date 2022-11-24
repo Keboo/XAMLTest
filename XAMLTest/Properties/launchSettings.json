@@ -2,7 +2,7 @@
   "profiles": {
     "XAMLTest": {
       "commandName": "Project",
-      "commandLineArgs": "42 --application-path \"..\\..\\..\\..\\XAMLTest.TestApp\\bin\\Debug\\netcoreapp3.1\\XAMLTest.TestApp.dll\" --debug"
+      "commandLineArgs": "\"298564\" --application-path \"D:\\Dev\\FVS\\iNPUT\\src\\INPUT.UI.Tests\\bin\\Debug\\net6.0-windows\\win-x64\\-iNPUT.dll\" --application-type \"INPUT.App, -iNPUT, Version=2.1.3.0, Culture=neutral, PublicKeyToken=null\" --remote-method-name \"<Test>g__Factory|4_0\" --remote-method-container-type \"INPUT.UI.Tests.Tests.SmokeTest.SmokeTests\" --remote-method-assembly \"D:\\Dev\\FVS\\iNPUT\\src\\INPUT.UI.Tests\\bin\\Debug\\net6.0-windows\\win-x64\\INPUT.UI.Tests.dll\" --log-file \"D:\\Dev\\FVS\\iNPUT\\src\\INPUT.UI.Tests\\bin\\Debug\\net6.0-windows\\win-x64\\ldjzmtih.xamltest.log\""
     }
   }
 }

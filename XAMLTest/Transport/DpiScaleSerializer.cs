@@ -30,11 +30,11 @@ public class DpiScaleSerializer : JsonSerializer<DpiScale>
 
             double dpiX = 0.0;
             double dpiY = 0.0;
-            
+
             ReadDoubleProperty(ref reader, out string property1, out double value1);
             ReadDoubleProperty(ref reader, out string property2, out double value2);
-            
-            switch(property1)
+
+            switch (property1)
             {
                 case nameof(DpiScale.DpiScaleX):
                     dpiX = value1;
@@ -52,7 +52,7 @@ public class DpiScaleSerializer : JsonSerializer<DpiScale>
                     dpiY = value2;
                     break;
             }
-            
+
             reader.Read(); //End object
             return new(dpiX, dpiY);
         }
@@ -68,7 +68,7 @@ public class DpiScaleSerializer : JsonSerializer<DpiScale>
             writer.WriteEndObject();
         }
 
-        private void ReadDoubleProperty(
+        private static void ReadDoubleProperty(
             ref Utf8JsonReader reader,
             out string propertyName,
             out double value)
@@ -79,7 +79,7 @@ public class DpiScaleSerializer : JsonSerializer<DpiScale>
             }
             propertyName = reader.GetString();
             reader.Read(); //Read property name
-            if (reader.TokenType != JsonTokenType.Number )
+            if (reader.TokenType != JsonTokenType.Number)
             {
                 throw new InvalidOperationException($"Expected number token but was '{reader.TokenType}'");
             }
