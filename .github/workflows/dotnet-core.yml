@@ -78,7 +78,6 @@ jobs:
         path: ${{ github.workspace }}\XAMLTest.Tests\bin\${{ env.configuration }}\**\Screenshots
 
     - name: Pack
-      if: ${{ github.event_name != 'pull_request' }}
       run: dotnet pack -p:PackageVersion=${{ env.nugetVersion }} --configuration ${{ env.configuration }} --no-build
     
     - name: Upload Artifacts
