@@ -31,8 +31,8 @@ public class DpiScaleSerializer : JsonSerializer<DpiScale>
             double dpiX = 0.0;
             double dpiY = 0.0;
 
-            ReadDoubleProperty(ref reader, out string property1, out double value1);
-            ReadDoubleProperty(ref reader, out string property2, out double value2);
+            ReadDoubleProperty(ref reader, out string? property1, out double value1);
+            ReadDoubleProperty(ref reader, out string? property2, out double value2);
 
             switch (property1)
             {
@@ -70,7 +70,7 @@ public class DpiScaleSerializer : JsonSerializer<DpiScale>
 
         private static void ReadDoubleProperty(
             ref Utf8JsonReader reader,
-            out string propertyName,
+            out string? propertyName,
             out double value)
         {
             if (reader.TokenType != JsonTokenType.PropertyName)
