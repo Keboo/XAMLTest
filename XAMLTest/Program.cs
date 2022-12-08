@@ -126,7 +126,7 @@ internal class Program
                 try
                 {
                     using Process p = Process.GetProcessById(pid);
-                    shutdown = p is null || p.HasExited;
+                    shutdown = p.HasExited;
                     if (shutdown)
                     {
                         Logger.Log($"Host process {pid} {(p is null ? "not found" : "has exited")}");
