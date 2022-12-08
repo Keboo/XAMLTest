@@ -8,8 +8,7 @@
     <RootNamespace>XamlTest</RootNamespace>
     <IncludePackageReferencesDuringMarkupCompilation>true</IncludePackageReferencesDuringMarkupCompilation>
     <ApplicationIcon>..\Images\Icon.ico</ApplicationIcon>
-	<SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
-	  
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
   </PropertyGroup>
 
   <ItemGroup>
@@ -34,20 +33,20 @@
   <PropertyGroup>
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);IncludeExeInPackage</TargetsForTfmSpecificContentInPackage>
   </PropertyGroup>
-	
+
   <ItemGroup>
     <EmbeddedFiles Include="$(GeneratedAssemblyInfoFile)" />
     <EmbeddedFiles Include="$([System.IO.Path]::Combine('$(IntermediateOutputPath)','*AssemblyAttributes$(DefaultLanguageSourceExtension)'))" />
     <EmbeddedFiles Include="$([System.IO.Path]::Combine('$(IntermediateOutputPath)','Host\XamlTestSpec*$(DefaultLanguageSourceExtension)'))" />
   </ItemGroup>
-    
+
   <Target Name="CopyOutputs" AfterTargets="AfterBuild">
     <ItemGroup>
       <CopyItems Include="$(TargetDir)*" />
     </ItemGroup>
     <Copy SourceFiles="@(CopyItems)" DestinationFolder="$(SolutionDir)XAMLTest.Tests\bin\$(Configuration)\$(TargetFramework)\" />
   </Target>
-  
+
   <ItemGroup>
     <None Include="..\XAMLTest.Generator\bin\$(Configuration)\netstandard2.0\*.dll" Pack="True" PackagePath="analyzers\dotnet\cs\" />
   </ItemGroup>

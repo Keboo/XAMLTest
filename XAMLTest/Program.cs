@@ -126,7 +126,7 @@ internal class Program
                 try
                 {
                     using Process p = Process.GetProcessById(pid);
-                    shutdown = p is null || p.HasExited;
+                    shutdown = p.HasExited;
                     if (shutdown)
                     {
                         Logger.Log($"Host process {pid} {(p is null ? "not found" : "has exited")}");
@@ -163,7 +163,6 @@ internal class Program
         AppDomain.CurrentDomain.IncludeAssembliesIn(Path.GetDirectoryName(assemblyPath)!);
 
         var targetAssembly = Assembly.LoadFile(assemblyPath);
-        AppDomain.CurrentDomain.SetData("APP_CONTEXT_BASE_DIRECTORY", Path.GetDirectoryName(assemblyPath));
         Application application;
         if (remoteMethodName != null &&
             remoteContainerType != null &&
@@ -177,7 +176,6 @@ internal class Program
                 ?? throw new XamlTestException($"Did not find factory method {remoteMethodName} in {remoteContainerType}");
             application = (Application)(factoryMethod.Invoke(null, Array.Empty<object>())
                 ?? throw new XamlTestException("Factory method did return an application instance"));
-            Application.ResourceAssembly = factoryAssembly;
         }
         else
         {

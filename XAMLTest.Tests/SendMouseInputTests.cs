@@ -66,17 +66,17 @@ public class SendMouseInputTests
         await using var recorder = new TestRecorder(App);
         await TopMenuItem.LeftClick();
         await Task.Delay(200);
-        await recorder.SaveScreenshot();
         var nestedMenuItem = await TopMenuItem.GetElement<MenuItem>("SubMenu");
         await using IEventRegistration registration = await nestedMenuItem.RegisterForEvent(nameof(MenuItem.Click));
         await nestedMenuItem.LeftClick(clickTime:TimeSpan.FromMilliseconds(200));
-        await recorder.SaveScreenshot();
 
         await Wait.For(async () =>
         {
             var invocations = await registration.GetInvocations();
             Assert.AreEqual(1, invocations.Count);
         });
+
+        recorder.Success();
     }
 
     [TestMethod]
