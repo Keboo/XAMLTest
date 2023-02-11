@@ -36,7 +36,7 @@ public static class App
             WorkingDirectory = Path.GetDirectoryName(options.XamlTestPath) + Path.DirectorySeparatorChar,
             UseShellExecute = true
         };
-        startInfo.ArgumentList.Add($"{Environment.ProcessId}");
+        startInfo.ArgumentList.Add($"{Process.GetCurrentProcess().Id}");
         if (!string.IsNullOrWhiteSpace(options.RemoteAppPath))
         {
             startInfo.ArgumentList.Add("--application-path");

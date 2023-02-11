@@ -1,4 +1,4 @@
-﻿namespace XamlTest;
+namespace XamlTest;
 
 internal static class Logger
 {
@@ -7,7 +7,7 @@ internal static class Logger
 
     static Logger()
     {
-        AddLogOutput(File.Open($"XAMLTest.{Environment.ProcessId}.log", FileMode.Create, FileAccess.Write, FileShare.Read));
+        AddLogOutput(File.Open($"XAMLTest.{Process.GetCurrentProcess().Id}.log", FileMode.Create, FileAccess.Write, FileShare.Read));
     }
 
     public static void AddLogOutput(Stream stream)
