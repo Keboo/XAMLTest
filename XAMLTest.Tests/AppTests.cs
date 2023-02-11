@@ -15,6 +15,7 @@ public class AppTests
     public async Task OnStartRemote_LaunchesRemoteApp()
     {
         await using var app = await App.StartRemote<XAMLTest.TestApp.App>(TestContext.WriteLine);
+        await using var recorder = new TestRecorder(app);
         IWindow? window = await app.GetMainWindow();
         Assert.AreEqual("Test App Window", await window!.GetTitle());
     }
@@ -23,6 +24,7 @@ public class AppTests
     public async Task CanGenerateTypedElement_ForCustomControlInRemoteApp()
     {
         await using var app = await App.StartRemote<XAMLTest.TestApp.App>();
+        await using var recorder = new TestRecorder(app);
         IWindow? window = await app.GetMainWindow();
         Assert.IsNotNull(window);
 
@@ -35,6 +37,7 @@ public class AppTests
     public async Task CanGenerateTypedElement_ForCustomControlInXaml()
     {
         await using var app = await App.StartRemote<XAMLTest.TestApp.App>();
+        await using var recorder = new TestRecorder(app);
         app.DefaultXmlNamespaces.Add("materialDesign", "http://materialdesigninxaml.net/winfx/xaml/themes");
         IWindow? window = await app.GetMainWindow();
         Assert.IsNotNull(window);
@@ -135,6 +138,8 @@ public class AppTests
             Assert.Inconclusive("This test must be run with a debugger attached");
         }
         await using var app = await App.StartRemote<XAMLTest.TestApp.App>();
+        await using var recorder = new TestRecorder(app);
+
         IWindow? window = await app.GetMainWindow();
 
         Assert.IsNotNull(window);
