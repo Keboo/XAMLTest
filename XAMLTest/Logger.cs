@@ -7,7 +7,7 @@ internal static class Logger
 
     static Logger()
     {
-        AddLogOutput(File.Open($"XAMLTest.{Process.GetCurrentProcess().Id}.log", FileMode.Create, FileAccess.Write, FileShare.Read));
+        AddLogOutput(File.Open($"XAMLTest.{Environment.ProcessId}.log", FileMode.Create, FileAccess.Write, FileShare.Read));
     }
 
     public static void AddLogOutput(Stream stream)
@@ -32,7 +32,6 @@ internal static class Logger
         }
     }
 
-
     public static IReadOnlyList<string> GetMessages()
     {
         lock (LogMessages)
@@ -43,12 +42,14 @@ internal static class Logger
 
     public static void Log(string message)
     {
+        message = $"{DateTime.Now} - {message}";
         lock (LogMessages)
         {
             LogMessages.Add(message);
             foreach(var writer in Writers)
             {
                 writer.WriteLine(message);
+                writer.Flush();
             }
         }
     }

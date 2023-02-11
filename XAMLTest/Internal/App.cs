@@ -96,8 +96,8 @@ internal sealed class App : IApp
         {
             if (File.Exists(logFile.FullName))
             {
-                logMessage("-- Remote log start --");
-                using StreamReader sr = new(logFile.OpenRead());
+                logMessage($"-- Remote log {logFile.FullName} --");
+                using StreamReader sr = new(logFile.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
                 logMessage((await sr.ReadToEndAsync()).Trim());
                 logMessage("-- Remote log end --");
             }
