@@ -22,7 +22,7 @@ public class AppOptions
     public Action<string>? LogMessage { get; set; }
     public FileInfo? RemoteProcessLogFile { get; }
     public bool AllowVisualStudioDebuggerAttach { get; set; } = true;
-    public TimeSpan ConnectionTimeout { get; set; } = TimeSpan.FromSeconds(1);
+    public TimeSpan ConnectionTimeout { get; set; } = TimeSpan.FromSeconds(30);
 
     public AppOptions()
     {

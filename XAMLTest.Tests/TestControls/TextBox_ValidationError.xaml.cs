@@ -1,5 +1,4 @@
-﻿using Microsoft.Toolkit.Mvvm.ComponentModel;
-using System.Globalization;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System.Windows.Controls;
 
 namespace XamlTest.Tests.TestControls;

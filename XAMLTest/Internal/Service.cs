@@ -1,6 +1,4 @@
-﻿using System;
-using System.Windows;
-using GrpcDotNetNamedPipes;
+﻿using GrpcDotNetNamedPipes;
 using XamlTest.Host;
 
 namespace XamlTest.Internal;
@@ -18,7 +16,6 @@ internal class Service : IDisposable
         }
 
         Server = new NamedPipeServer(XamlTest.Server.PipePrefix + id);
-        
         Protocol.BindService(Server.ServiceBinder, new VisualTreeService(application));
         Server.Start();
     }
