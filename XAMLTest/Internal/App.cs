@@ -107,7 +107,7 @@ internal sealed class App : IApp
         }
         try
         {
-            //AppOptions.RemoteProcessLogFile?.Delete();
+            AppOptions.RemoteProcessLogFile?.Delete();
         }
         catch { }
     }
@@ -129,7 +129,7 @@ internal sealed class App : IApp
         }
         try
         {
-            //AppOptions.RemoteProcessLogFile?.Delete();
+            AppOptions.RemoteProcessLogFile?.Delete();
         }
         catch { }
     }
