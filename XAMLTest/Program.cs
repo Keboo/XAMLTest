@@ -1,6 +1,4 @@
 ﻿using System.CommandLine;
-using System.IO;
-using XamlTest.Internal;
 using XamlTest.Utility;
 
 namespace XamlTest;

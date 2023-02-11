@@ -23,7 +23,8 @@ internal static class Logger
     {
         lock (LogMessages)
         {
-            foreach(var writer in Writers)
+            Log("Closing logger");
+            foreach (var writer in Writers)
             {
                 writer.Flush();
                 writer.Dispose();

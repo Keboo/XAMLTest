@@ -1,5 +1,4 @@
 ﻿using Grpc.Core;
-using System.Runtime.InteropServices;
 using XamlTest.Host;
 
 namespace XamlTest.Internal;
@@ -20,7 +19,7 @@ internal sealed class App : IApp
 
     private Protocol.ProtocolClient Client { get; }
     private AppOptions AppOptions { get; }
-    private Action<string>? LogMessage => AppOptions?.LogMessage;
+    private Action<string>? LogMessage => line => AppOptions?.LogMessage?.Invoke($"{DateTime.Now} - {line}");
     private AppContext Context { get; } = new();
 
     public IList<XmlNamespace> DefaultXmlNamespaces => Context.DefaultNamespaces;
@@ -108,7 +107,7 @@ internal sealed class App : IApp
         }
         try
         {
-            AppOptions.RemoteProcessLogFile?.Delete();
+            //AppOptions.RemoteProcessLogFile?.Delete();
         }
         catch { }
     }
@@ -121,8 +120,8 @@ internal sealed class App : IApp
             logFile.Refresh();
             if (logFile.Exists)
             {
-                logMessage("-- Remote log start --");
-                using StreamReader sr = new(logFile.OpenRead());
+                logMessage($"-- Remote log start {logFile.FullName} --");
+                using StreamReader sr = new(logFile.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
                 logMessage(sr.ReadToEnd().Trim());
                 logMessage("-- Remote log end --");
 
@@ -130,7 +129,7 @@ internal sealed class App : IApp
         }
         try
         {
-            AppOptions.RemoteProcessLogFile?.Delete();
+            //AppOptions.RemoteProcessLogFile?.Delete();
         }
         catch { }
     }
