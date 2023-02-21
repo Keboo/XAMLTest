@@ -309,7 +309,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
                         reply.ErrorMessages.Add($"Could not find property with name '{request.Name}'");
                         return;
                     }
-                    
+
                     foundProperty.SetValue(element, value);
 
                     //Re-retrive the value in case the dependency property coalesced it
@@ -461,7 +461,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
                     try
                     {
                         ResourceDictionary appResourceDictionary = LoadXaml<ResourceDictionary>(xaml);
-                        
+
                         foreach (var mergedDictionary in appResourceDictionary.MergedDictionaries)
                         {
                             Application.Resources.MergedDictionaries.Add(mergedDictionary);
@@ -487,71 +487,72 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
         await Application.Dispatcher.InvokeAsync(() =>
         {
             Window? window = null;
-            if (!string.IsNullOrEmpty(request.WindowType))
+            try
             {
-                try
+                if (!string.IsNullOrEmpty(request.WindowType))
                 {
-                    if (Type.GetType(request.WindowType) is Type windowType)
+                    try
                     {
-                        window = (Window?)Activator.CreateInstance(windowType);
+                        if (Type.GetType(request.WindowType) is Type windowType)
+                        {
+                            window = (Window?)Activator.CreateInstance(windowType);
+                        }
+                        else
+                        {
+                            reply.ErrorMessages.Add($"Error loading window type '{request.WindowType}'");
+                        }
                     }
-                    else
+                    catch (Exception e)
                     {
-                        reply.ErrorMessages.Add($"Error loading window type '{request.WindowType}'");
+                        reply.ErrorMessages.Add($"Error creating window '{request.WindowType}'{Environment.NewLine}{e}");
                     }
                 }
-                catch(Exception e)
-                {
-                    reply.ErrorMessages.Add($"Error creating window '{request.WindowType}'{Environment.NewLine}{e}");
-                }
-            }
-            else
-            {
-                try
+                else
                 {
                     window = LoadXaml<Window>(request.Xaml);
-                }
-                catch (Exception e)
-                {
-                    reply.ErrorMessages.Add($"Error loading window{Environment.NewLine}{e}");
-                }
-            }
-            if (window is { })
-            {
-                reply.WindowsId = DependencyObjectTracker.GetOrSetId(window, KnownElements);
-                window.Show();
 
-                if (request.FitToScreen)
+                }
+                if (window is not null)
                 {
-                    Rect windowRect = new(window.Left, window.Top, window.Width, window.Height);
-                    Screen screen = Screen.FromRect(windowRect);
-                    Logger.Log($"Fitting window {windowRect} to screen {screen.WorkingArea}");
-                    if (!screen.WorkingArea.Contains(windowRect))
+                    reply.WindowsId = DependencyObjectTracker.GetOrSetId(window, KnownElements);
+                    window.Show();
+
+                    if (request.FitToScreen)
                     {
-                        window.Left = Math.Max(window.Left, screen.WorkingArea.Left);
-                        window.Left = Math.Max(screen.WorkingArea.Left, window.Left + window.Width - screen.WorkingArea.Right - window.Width);
+                        Rect windowRect = new(window.Left, window.Top, window.Width, window.Height);
+                        Screen screen = Screen.FromRect(windowRect);
+                        Logger.Log($"Fitting window {windowRect} to screen {screen.WorkingArea}");
+                        if (!screen.WorkingArea.Contains(windowRect))
+                        {
+                            window.Left = Math.Max(window.Left, screen.WorkingArea.Left);
+                            window.Left = Math.Max(screen.WorkingArea.Left, window.Left + window.Width - screen.WorkingArea.Right - window.Width);
 
-                        window.Top = Math.Max(window.Top, screen.WorkingArea.Top);
-                        window.Top = Math.Max(screen.WorkingArea.Top, window.Top + window.Height - screen.WorkingArea.Top - window.Height);
+                            window.Top = Math.Max(window.Top, screen.WorkingArea.Top);
+                            window.Top = Math.Max(screen.WorkingArea.Top, window.Top + window.Height - screen.WorkingArea.Top - window.Height);
 
-                        window.Width = Math.Min(window.Width, screen.WorkingArea.Width);
-                        window.Height = Math.Min(window.Height, screen.WorkingArea.Height);
+                            window.Width = Math.Min(window.Width, screen.WorkingArea.Width);
+                            window.Height = Math.Min(window.Height, screen.WorkingArea.Height);
 
-                        Logger.Log($"Window's new size and location {new Rect(window.Left, window.Top, window.Width, window.Height)}");
+                            Logger.Log($"Window's new size and location {new Rect(window.Left, window.Top, window.Width, window.Height)}");
+                        }
                     }
-                }
 
-                if (window.ShowActivated && !ActivateWindow(window))
+                    if (window.ShowActivated && !ActivateWindow(window))
+                    {
+                        reply.ErrorMessages.Add("Failed to activate window");
+                        return;
+                    }
+
+                    reply.LogMessages.AddRange(Logger.GetMessages());
+                }
+                else
                 {
-                    reply.ErrorMessages.Add("Failed to activate window");
-                    return;
+                    reply.ErrorMessages.Add("Failed to load window");
                 }
-
-                reply.LogMessages.AddRange(Logger.GetMessages());
             }
-            else
+            catch (Exception e)
             {
-                reply.ErrorMessages.Add("Failed to load window");
+                reply.ErrorMessages.Add($"Error loading window{Environment.NewLine}{e}");
             }
         });
 
@@ -586,8 +587,8 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
             bmpGraphics.CopyFromScreen(
                 (int)Math.Floor(screen.Bounds.Left),
                 (int)Math.Floor(screen.Bounds.Top),
-                0, 
-                0, 
+                0,
+                0,
                 screenBmp.Size);
             using MemoryStream ms = new();
             screenBmp.Save(ms, ImageFormat.Bmp);
@@ -687,7 +688,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
     {
         using MemoryStream memoryStream = new(Encoding.UTF8.GetBytes(xaml));
         ParserContext context = new();
-        foreach(var @namespace in namespaces)
+        foreach (var @namespace in namespaces)
         {
             context.XmlnsDictionary.Add(@namespace.Prefix, @namespace.Uri);
         }
@@ -769,7 +770,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
         var scale = VisualElementMixins.GetVisualScale(element);
         Point topLeft = element.TranslatePoint(new Point(0, 0), window);
         Point bottomRight = element.TranslatePoint(new Point(element.ActualWidth, element.ActualHeight), window);
-        
+
         double left = windowOrigin.X + (topLeft.X * scale.DpiScaleX);
         double top = windowOrigin.Y + (topLeft.Y * scale.DpiScaleY);
         double right = windowOrigin.X + (bottomRight.X * scale.DpiScaleX);
