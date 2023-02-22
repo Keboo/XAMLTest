@@ -95,6 +95,9 @@ public static partial class VisualElementMixins
                 object? argument = input.GetArgument(argumentIndex++);
                 switch (argument)
                 {
+                    case ModifierKeys modifiers:
+                        inputs.Add(new ModifiersInput(modifiers));
+                        break;
                     case Key key:
                         inputs.Add(new KeysInput(key));
                         break;

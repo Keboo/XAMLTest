@@ -227,6 +227,7 @@ message InputResult {
 message KeyboardData {
   string textInput = 1;
   repeated int32 keys = 2;
+  repeated int32 modifiers = 3;
 }
 
 message MouseData {
