@@ -172,6 +172,10 @@ partial class VisualTreeService
                             {
                                 Input.KeyboardInput.SendKeys(windowHandle, keyboardData.Keys.Cast<Key>().ToArray());
                             }
+                            if (keyboardData.Modifiers.Any())
+                            {
+                                Input.KeyboardInput.SendModifiers(windowHandle, keyboardData.Modifiers.Cast<ModifierKeys>().ToArray());
+                            }
                             await Task.Delay(10);
                         }
                     });

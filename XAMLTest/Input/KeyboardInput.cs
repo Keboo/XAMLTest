@@ -3,11 +3,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
+using static PInvoke.User32;
 
 namespace XamlTest.Input;
 
 internal static class KeyboardInput
 {
+    public static void SendModifiers(IntPtr windowHandle, params ModifierKeys[] modifiers)
+    {
+        IEnumerable<WindowInput> inputs = modifiers.SelectMany(m => GetKeyPress(m));
+        SendInput(windowHandle, inputs);
+    }
+
     public static void SendKeys(IntPtr windowHandle, params Key[] keys)
     {
         IEnumerable<WindowMessage> inputs = keys.SelectMany(k => GetKeyPress(k));
@@ -28,6 +35,21 @@ internal static class KeyboardInput
         }
     }
 
+    private static void SendInput(IntPtr windowHandle, IEnumerable<WindowInput> inputs)
+    {
+        int sizeOfInputStruct;
+        unsafe
+        {
+            // NOTE: There is a potential x86/x64 size issue here
+            sizeOfInputStruct = sizeof(User32.INPUT);
+        }
+
+        foreach (WindowInput input in inputs)
+        {
+            User32.SendInput(1, new[] { input.Input }, sizeOfInputStruct);
+        }
+    }
+
     private static IEnumerable<WindowMessage> GetKeyPress(char character)
     {
         IntPtr wParam = new(character);
@@ -43,6 +65,54 @@ internal static class KeyboardInput
         yield return new WindowMessage(User32.WindowMessage.WM_KEYUP, wParam, lParam);
     }
 
+    private static IEnumerable<WindowInput> GetKeyPress(ModifierKeys modifiers)
+    {
+        // TODO: The messages returned from this method currently do not do what we expect them to!
+
+        IntPtr lParam = new(0x0000_0000);
+        if (modifiers == ModifierKeys.None)
+        {
+            // Special case to remove any modifiers previously set, so we send KEYUP for all modifiers
+            yield return new WindowInput(CreateInput(VirtualKey.VK_MENU, true));
+            yield return new WindowInput(CreateInput(VirtualKey.VK_CONTROL, true));
+            yield return new WindowInput(CreateInput(VirtualKey.VK_SHIFT, true));
+            yield return new WindowInput(CreateInput(VirtualKey.VK_LWIN, true));
+        }
+        else
+        {
+            if (modifiers.HasFlag(ModifierKeys.Alt))
+            {
+                yield return new WindowInput(CreateInput(VirtualKey.VK_MENU, false));
+            }
+            if (modifiers.HasFlag(ModifierKeys.Control)) 
+            {
+                yield return new WindowInput(CreateInput(VirtualKey.VK_CONTROL, false));
+            }
+            if (modifiers.HasFlag(ModifierKeys.Shift))
+            {
+                yield return new WindowInput(CreateInput(VirtualKey.VK_SHIFT, false));
+            }
+            if (modifiers.HasFlag(ModifierKeys.Windows)) 
+            {
+                yield return new WindowInput(CreateInput(VirtualKey.VK_LWIN, false));
+            }
+        }
+    }
+
+    private static User32.INPUT CreateInput(VirtualKey modifierKey, bool keyUp)
+    {
+        User32.INPUT input = new()
+        {
+            type = User32.InputType.INPUT_KEYBOARD
+        };
+        input.Inputs.ki.wVk = modifierKey;
+        if (keyUp)
+        {
+            input.Inputs.ki.dwFlags = KEYEVENTF.KEYEVENTF_KEYUP;
+        }
+        return input;
+    }
+
     private class WindowMessage
     {
         public WindowMessage(User32.WindowMessage message, IntPtr wParam, IntPtr lParam)
@@ -55,5 +125,15 @@ internal static class KeyboardInput
         public User32.WindowMessage Message { get; }
         public IntPtr WParam { get; }
         public IntPtr LParam { get; }
+    }
+
+    private class WindowInput
+    {
+        public WindowInput(INPUT input)
+        {
+            Input = input;
+        }
+
+        public User32.INPUT Input { get; }
     }
 }

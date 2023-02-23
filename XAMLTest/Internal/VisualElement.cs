@@ -296,6 +296,9 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
             KeyboardData rv = new();
             switch (i)
             {
+                case ModifiersInput modifiersInput:
+                    rv.Modifiers.Add((int)modifiersInput.Modifiers);
+                    break;
                 case KeysInput keysInput:
                     rv.Keys.AddRange(keysInput.Keys.Cast<int>());
                     break;
