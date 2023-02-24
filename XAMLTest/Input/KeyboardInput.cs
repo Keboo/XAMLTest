@@ -1,4 +1,4 @@
-﻿using PInvoke;
+using PInvoke;
 using System.Windows.Input;
 using static PInvoke.User32;
 
@@ -75,22 +75,10 @@ internal static class KeyboardInput
         }
         else
         {
-            if (modifiers.HasFlag(ModifierKeys.Alt))
-            {
-                yield return new WindowInput(CreateInput(VirtualKey.VK_MENU, false));
-            }
-            if (modifiers.HasFlag(ModifierKeys.Control)) 
-            {
-                yield return new WindowInput(CreateInput(VirtualKey.VK_CONTROL, false));
-            }
-            if (modifiers.HasFlag(ModifierKeys.Shift))
-            {
-                yield return new WindowInput(CreateInput(VirtualKey.VK_SHIFT, false));
-            }
-            if (modifiers.HasFlag(ModifierKeys.Windows)) 
-            {
-                yield return new WindowInput(CreateInput(VirtualKey.VK_LWIN, false));
-            }
+            yield return new WindowInput(CreateInput(VirtualKey.VK_MENU, !modifiers.HasFlag(ModifierKeys.Alt)));
+            yield return new WindowInput(CreateInput(VirtualKey.VK_CONTROL, !modifiers.HasFlag(ModifierKeys.Control)));
+            yield return new WindowInput(CreateInput(VirtualKey.VK_SHIFT, !modifiers.HasFlag(ModifierKeys.Shift)));
+            yield return new WindowInput(CreateInput(VirtualKey.VK_LWIN, !modifiers.HasFlag(ModifierKeys.Windows)));
         }
     }
 
