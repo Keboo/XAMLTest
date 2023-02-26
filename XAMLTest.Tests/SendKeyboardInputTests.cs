@@ -10,6 +10,9 @@ public class SendKeyboardInputTests
     private static IApp? App { get; set; }
 
     [NotNull]
+    private static IVisualElement<TabControl>? TabControl { get; set; }
+
+    [NotNull]
     private static IVisualElement<TextBox>? TextBox1 { get; set; }
 
     [NotNull]
@@ -25,12 +28,21 @@ public class SendKeyboardInputTests
 
         await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
 
-        var window = await App.CreateWindowWithContent(@$"
-<StackPanel Orientation=""Vertical"">
-  <TextBox x:Name=""TestTextBox1"" />
-  <TextBox x:Name=""TestTextBox2"" />
-  <TextBox x:Name=""TestTextBox3"" />
-</StackPanel>");
+        var window = await App.CreateWindowWithContent("""
+            <TabControl x:Name="TabControl">
+              <TabItem Header="Tab1">
+                <StackPanel Orientation="Vertical">
+                  <TextBox x:Name="TestTextBox1" />
+                  <TextBox x:Name="TestTextBox2" />
+                  <TextBox x:Name="TestTextBox3" />
+                </StackPanel>
+              </TabItem>
+              <TabItem Header="Tab2">
+                <TextBlock Text="Tab 2 content" />
+              </TabItem>
+            </TabControl>
+            """);
+        TabControl = await window.GetElement<TabControl>("TabControl");
         TextBox1 = await window.GetElement<TextBox>("TestTextBox1");
         TextBox2 = await window.GetElement<TextBox>("TestTextBox2");
         TextBox3 = await window.GetElement<TextBox>("TestTextBox3");
@@ -49,7 +61,10 @@ public class SendKeyboardInputTests
     [TestInitialize]
     public async Task TestInitialize()
     {
+        await TabControl.SetSelectedIndex(0);
         await TextBox1.SetText("");
+        await TextBox2.SetText("");
+        await TextBox3.SetText("");
     }
 
     [TestMethod]
@@ -92,5 +107,23 @@ public class SendKeyboardInputTests
         await TextBox2.SendKeyboardInput($"{ModifierKeys.Shift}{Key.Tab}{ModifierKeys.None}");
 
         Assert.IsTrue(await TextBox1.GetIsKeyboardFocusWithin());
+    }
+
+    [TestMethod]
+    public async Task SendInput_WithCopyPasteModifiers_CopyPasteViaClipboardWorks() {
+        await TextBox1.MoveKeyboardFocus();
+        await TextBox1.SendKeyboardInput($"test input");
+        await TextBox1.SendKeyboardInput($"{ModifierKeys.Control}{Key.A}{Key.C}{ModifierKeys.None}{Key.Tab}");
+        await TextBox2.SendKeyboardInput($"{ModifierKeys.Control}{Key.V}{ModifierKeys.None}");
+
+        Assert.AreEqual("test input", await TextBox2.GetText());
+    }
+
+    [TestMethod]
+    public async Task SendInput_WithTabKeyAndControlModifier_ChangesSelectedTab()
+    {
+        Assert.AreEqual(0, await TabControl.GetSelectedIndex());
+        await TabControl.SendKeyboardInput($"{ModifierKeys.Control}{Key.Tab}{ModifierKeys.None}");
+        Assert.AreEqual(1, await TabControl.GetSelectedIndex());
     }
 }

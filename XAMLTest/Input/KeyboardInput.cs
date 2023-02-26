@@ -67,8 +67,6 @@ internal static class KeyboardInput
 
     private static IEnumerable<WindowInput> GetKeyPress(ModifierKeys modifiers)
     {
-        // TODO: The messages returned from this method currently do not do what we expect them to!
-
         IntPtr lParam = new(0x0000_0000);
         if (modifiers == ModifierKeys.None)
         {
