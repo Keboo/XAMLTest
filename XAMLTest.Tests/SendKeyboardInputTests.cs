@@ -190,7 +190,7 @@ public class SendKeyboardInputTests
         await ListBoxItem7.LeftClick();
 
         // Release modifiers
-        await ListBox.SendKeyboardInput($"{ModifierKeys.None}");
+        await ListBox.SendKeyboardInput($"{ModifierKeys.None}"); 
 
         await AssertSelection(ListBoxItem2, ListBoxItem3, ListBoxItem4, ListBoxItem7);
 
