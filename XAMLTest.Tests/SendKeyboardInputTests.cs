@@ -48,7 +48,7 @@ public class SendKeyboardInputTests
         TextBox3 = await window.GetElement<TextBox>("TestTextBox3");
     }
 
-    [ClassCleanup]
+    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
     public static async Task TestCleanup()
     {
         if (App is { } app)

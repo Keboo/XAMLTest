@@ -23,6 +23,8 @@ internal sealed class App : IApp
     private AppOptions AppOptions { get; }
     public SemaphoreSlim SingletonProcessLock { get; }
 
+    void IApp.LogMessage(string message) => LogMessage?.Invoke(message);
+
     private Action<string>? LogMessage => line => AppOptions?.LogMessage?.Invoke($"{DateTime.Now} - {line}");
     private AppContext Context { get; } = new();
 

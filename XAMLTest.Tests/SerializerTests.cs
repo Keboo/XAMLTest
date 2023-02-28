@@ -21,7 +21,7 @@ public class SerializerTests
         Window = await App.CreateWindowWithContent("", title: "Test Window Title");
     }
 
-    [ClassCleanup]
+    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
     public static void TestCleanup()
     {
         App.Dispose();

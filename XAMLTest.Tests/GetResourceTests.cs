@@ -34,7 +34,7 @@ public class GetResourceTests
         Grid = await Window.GetElement<Grid>("MyGrid");
     }
 
-    [ClassCleanup]
+    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
     public static async Task TestCleanup()
     {
         if (App is { } app)

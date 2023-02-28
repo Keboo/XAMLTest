@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Windows;
-
-namespace XamlTest.Tests.Simulators;
+﻿namespace XamlTest.Tests.Simulators;
 
 public class App : IApp
 {
@@ -51,4 +46,5 @@ public class App : IApp
     }
 
     public Task RegisterSerializer<T>(int insertIndex = 0) where T : ISerializer, new() => throw new NotImplementedException();
+    public void LogMessage(string message) => throw new NotImplementedException();
 }

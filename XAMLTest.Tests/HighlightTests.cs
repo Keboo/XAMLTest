@@ -23,6 +23,16 @@ public class HighlightTests
         Window = await App.CreateWindowWithContent(@"");
     }
 
+    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    public static async Task TestCleanup()
+    {
+        if (App is { } app)
+        {
+            await app.DisposeAsync();
+            App = null;
+        }
+    }
+
     [TestMethod]
     public async Task OnHighlight_WithDefaults_AddsHighlightAdorner()
     {

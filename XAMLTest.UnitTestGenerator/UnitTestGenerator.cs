@@ -54,7 +54,7 @@ namespace XamlTest.Tests.Generated
         private static Func<string, string> GetWindowContent {{ get; set; }} = x => x;
 
         private static Func<string, Task<IVisualElement<{targetTypeFullName}>>> GetElement {{ get; set; }}
-            = async x => await Window.GetElement<{targetTypeFullName}>(x);
+            = x => Window.GetElement<{targetTypeFullName}>(x);
 
         static partial void OnClassInitialize();
 
@@ -73,7 +73,7 @@ namespace XamlTest.Tests.Generated
             Window = await App.CreateWindowWithContent(content);
         }}
 
-        [ClassCleanup]
+        [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
         public static async Task TestCleanup()
         {{
             if (App is {{ }} app)
@@ -101,7 +101,7 @@ namespace XamlTest.Tests.Generated
             var actual = await {variableTargetTypeName}.{getMethod.Name}();
 
             //Assert
-            //{GetAssertion(getMethod.Name.Substring(3), methodReturnType)}
+            {GetAssertion(getMethod.Name.Substring(3), methodReturnType)}
 
             recorder.Success();
         }}

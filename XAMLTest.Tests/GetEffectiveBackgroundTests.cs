@@ -21,7 +21,7 @@ public class GetEffectiveBackgroundTests
         Window = await App.CreateWindowWithContent(@"");
     }
 
-    [ClassCleanup]
+    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
     public static async Task TestCleanup()
     {
         if (App is { } app)

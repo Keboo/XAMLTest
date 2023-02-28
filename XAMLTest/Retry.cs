@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace XamlTest;
+﻿namespace XamlTest;
 
 public class Retry
 {
@@ -16,5 +14,5 @@ public class Retry
     public override string ToString() 
         => $"{(MinAttempts != null ? $"Attempts: {MinAttempts}, " : "")}Timeout: {Timeout}";
 
-    public static Retry Default { get; } = new Retry(3, TimeSpan.FromSeconds(2));
+    public static Retry Default { get; } = new Retry(5, TimeSpan.FromSeconds(2));
 }

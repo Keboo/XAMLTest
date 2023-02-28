@@ -23,7 +23,7 @@ public class AppTests
     [TestMethod]
     public async Task CanGenerateTypedElement_ForCustomControlInRemoteApp()
     {
-        await using var app = await App.StartRemote<XAMLTest.TestApp.App>();
+        await using var app = await App.StartRemote<XAMLTest.TestApp.App>(TestContext.WriteLine);
         await using var recorder = new TestRecorder(app);
         IWindow? window = await app.GetMainWindow();
         Assert.IsNotNull(window);
@@ -36,7 +36,7 @@ public class AppTests
     [TestMethod]
     public async Task CanGenerateTypedElement_ForCustomControlInXaml()
     {
-        await using var app = await App.StartRemote<XAMLTest.TestApp.App>();
+        await using var app = await App.StartRemote<XAMLTest.TestApp.App>(TestContext.WriteLine);
         await using var recorder = new TestRecorder(app);
         app.DefaultXmlNamespaces.Add("materialDesign", "http://materialdesigninxaml.net/winfx/xaml/themes");
         IWindow? window = await app.GetMainWindow();
@@ -53,7 +53,7 @@ public class AppTests
     [TestMethod]
     public async Task OnCreateWindow_CanReadTitle()
     {
-        await using var app = await App.StartRemote();
+        await using var app = await App.StartRemote(TestContext.WriteLine);
         await using var recorder = new TestRecorder(app);
 
         await app.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
@@ -67,7 +67,7 @@ public class AppTests
     [TestMethod]
     public async Task OnCreateWindow_CanUseCustomWindow()
     {
-        await using var app = await App.StartRemote();
+        await using var app = await App.StartRemote(TestContext.WriteLine);
         await using var recorder = new TestRecorder(app);
 
         await app.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
@@ -82,7 +82,7 @@ public class AppTests
     [TestMethod]
     public async Task OnGetMainWindow_ReturnsNullBeforeWindowCreated()
     {
-        await using var app = await App.StartRemote();
+        await using var app = await App.StartRemote(TestContext.WriteLine);
         await using var recorder = new TestRecorder(app);
 
         await app.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
@@ -97,7 +97,7 @@ public class AppTests
     [TestMethod]
     public async Task OnGetMainWindow_AfterMainWindowShownReturnsMainWindow()
     {
-        await using var app = await App.StartRemote();
+        await using var app = await App.StartRemote(TestContext.WriteLine);
         await using var recorder = new TestRecorder(app);
 
         await app.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
@@ -115,7 +115,7 @@ public class AppTests
     [TestMethod]
     public async Task OnGetWindows_ReturnsAllWindows()
     {
-        await using var app = await App.StartRemote();
+        await using var app = await App.StartRemote(TestContext.WriteLine);
         await using var recorder = new TestRecorder(app);
 
         await app.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
@@ -137,7 +137,7 @@ public class AppTests
         {
             Assert.Inconclusive("This test must be run with a debugger attached");
         }
-        await using var app = await App.StartRemote<XAMLTest.TestApp.App>();
+        await using var app = await App.StartRemote<XAMLTest.TestApp.App>(TestContext.WriteLine);
         await using var recorder = new TestRecorder(app);
 
         IWindow? window = await app.GetMainWindow();

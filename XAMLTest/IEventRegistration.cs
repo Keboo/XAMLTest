@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-namespace XamlTest;
+﻿namespace XamlTest;
 
 public interface IEventRegistration : IAsyncDisposable
 {
