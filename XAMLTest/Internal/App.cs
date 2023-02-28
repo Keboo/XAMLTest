@@ -8,17 +8,21 @@ internal sealed class App : IApp
     public App(
         Process process,
         Protocol.ProtocolClient client,
-        AppOptions appOptions)
+        AppOptions appOptions, 
+        SemaphoreSlim singletonProcessLock)
     {
         Process = process ?? throw new ArgumentNullException(nameof(process));
         Client = client ?? throw new ArgumentNullException(nameof(client));
         AppOptions = appOptions ?? throw new ArgumentNullException(nameof(appOptions));
+        SingletonProcessLock = singletonProcessLock ?? throw new ArgumentNullException(nameof(singletonProcessLock));
     }
 
     public Process Process { get; }
 
     private Protocol.ProtocolClient Client { get; }
     private AppOptions AppOptions { get; }
+    public SemaphoreSlim SingletonProcessLock { get; }
+
     private Action<string>? LogMessage => line => AppOptions?.LogMessage?.Invoke($"{DateTime.Now} - {line}");
     private AppContext Context { get; } = new();
 
@@ -160,6 +164,7 @@ internal sealed class App : IApp
             process.Kill();
             process.WaitForExit(1_000);
         }
+        SingletonProcessLock.Release();
     }
 
     public async Task Initialize(string applicationResourceXaml, params string[] assemblies)

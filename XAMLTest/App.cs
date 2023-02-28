@@ -5,6 +5,8 @@ namespace XamlTest;
 
 public static class App
 {
+    private static SemaphoreSlim SingletonAppLock { get; } = new(1, 1);
+
     public static Task<IApp> StartRemote<TApp>(Action<string>? logMessage = null)
     {
         AppOptions options = new()
@@ -67,6 +69,7 @@ public static class App
             logMessage($"Starting XAML Test: {startInfo.FileName} {args}");
         }
 
+        await SingletonAppLock.WaitAsync();
         if (Process.Start(startInfo) is Process process)
         {
             NamedPipeChannel channel = new(".", Server.PipePrefix + process.Id, new NamedPipeChannelOptions
@@ -79,7 +82,7 @@ public static class App
                 await VisualStudioAttacher.AttachVisualStudioToProcess(process);
             }
 
-            var app = new Internal.App(process, client, options);
+            var app = new Internal.App(process, client, options, SingletonAppLock);
 
             IVersion version;
             try
