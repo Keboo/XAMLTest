@@ -22,9 +22,8 @@ public class GetCoordinatesTests
     }
 
     [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
-    public static async Task ClassCleanup(TestContext context)
+    public static async Task ClassCleanup()
     {
-        context.WriteLine("Cleaning up");
         if (App is { } app)
         {
             await app.DisposeAsync();
