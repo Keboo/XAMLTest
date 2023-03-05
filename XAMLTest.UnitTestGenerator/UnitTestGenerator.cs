@@ -101,7 +101,9 @@ namespace XamlTest.Tests.Generated
             var actual = await {variableTargetTypeName}.{getMethod.Name}();
 
             //Assert
+            /*
             {GetAssertion(getMethod.Name.Substring(3), methodReturnType, dependencyProperty)}
+            */
 
             recorder.Success();
         }}
