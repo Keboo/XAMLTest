@@ -23,7 +23,7 @@ public class GetElementTests
         Window = await App.CreateWindowWithContent(@"");
     }
 
-    [ClassCleanup]
+    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
     public static async Task TestCleanup()
     {
         if (App is { } app)

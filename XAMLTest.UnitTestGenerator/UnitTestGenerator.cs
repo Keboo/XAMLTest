@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TypeInfo = Microsoft.CodeAnalysis.TypeInfo;
 
@@ -54,7 +54,7 @@ namespace XamlTest.Tests.Generated
         private static Func<string, string> GetWindowContent {{ get; set; }} = x => x;
 
         private static Func<string, Task<IVisualElement<{targetTypeFullName}>>> GetElement {{ get; set; }}
-            = async x => await Window.GetElement<{targetTypeFullName}>(x);
+            = x => Window.GetElement<{targetTypeFullName}>(x);
 
         static partial void OnClassInitialize();
 
@@ -73,7 +73,7 @@ namespace XamlTest.Tests.Generated
             Window = await App.CreateWindowWithContent(content);
         }}
 
-        [ClassCleanup]
+        [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
         public static async Task TestCleanup()
         {{
             if (App is {{ }} app)
@@ -85,7 +85,7 @@ namespace XamlTest.Tests.Generated
 
 ");
 
-            foreach (IMethodSymbol getMethod in GetTestMethods(extensionClass))
+            foreach ((IMethodSymbol getMethod, IFieldSymbol dependencyProperty) in GetTestMethods(extensionClass))
             {
                 string methodReturnType = ((INamedTypeSymbol)getMethod.ReturnType).TypeArguments[0].ToString();
 
@@ -101,7 +101,9 @@ namespace XamlTest.Tests.Generated
             var actual = await {variableTargetTypeName}.{getMethod.Name}();
 
             //Assert
-            //{GetAssertion(getMethod.Name.Substring(3), methodReturnType)}
+            /*
+            {GetAssertion(getMethod.Name.Substring(3), methodReturnType, dependencyProperty)}
+            */
 
             recorder.Success();
         }}
@@ -118,7 +120,7 @@ namespace XamlTest.Tests.Generated
             context.AddSource($"{className}.cs", sb.ToString());
         }
 
-        static IEnumerable<IMethodSymbol> GetTestMethods(INamedTypeSymbol extensionClass)
+        static IEnumerable<(IMethodSymbol, IFieldSymbol)> GetTestMethods(INamedTypeSymbol extensionClass)
         {
             for (INamedTypeSymbol? type = extensionClass;
                 type != null;
@@ -130,33 +132,34 @@ namespace XamlTest.Tests.Generated
                     .OfType<IMethodSymbol>()
                     .Where(x => x.Name.StartsWith("Get") && x.IsStatic))
                 {
-                    yield return getMethod;
+                    IFieldSymbol dependencyProperty = 
+                        type.GetMembers()
+                            .OfType<IFieldSymbol>()
+                            .Where(x => x.Name == getMethod.Name.Substring(3) + "Property")
+                            .FirstOrDefault();
+                    yield return (getMethod, dependencyProperty);
                 }
             }
+        }
+
+        static string GetAssertion(string propertyName, string returnType, IFieldSymbol dependencyProperty)
+        {
+            return propertyName switch
+            {
+                "ActualHeight" or "ActualWidth" => "Assert.IsTrue(actual > 0);",
+                "Width" or "Height" => "Assert.IsTrue(double.IsNaN(actual) || actual >= 0);",
+                _ when dependencyProperty is not null => $"""
+                    object expected = {dependencyProperty.ContainingNamespace}.{dependencyProperty.ContainingType.Name}.{dependencyProperty.Name}.DefaultMetadata.DefaultValue;
+                    Assert.AreEqual(expected, actual);
+                    """,
+                _ => $"Assert.AreEqual(default({returnType}), actual);",
+            };
         }
     }
 
     public void Initialize(GeneratorInitializationContext context)
     {
         context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
-    }
-
-    private static string GetAssertion(string propertyName, string returnType)
-    {
-        switch(propertyName)
-        {
-            case "ActualHeight":
-            case "ActualWidth":
-                return "Assert.IsTrue(actual > 0);";
-            case "Width":
-            case "Height":
-                return "Assert.IsTrue(double.IsNaN(actual) || actual >= 0);";
-            case "VerticalAlignment":
-            case "HorizontalAlignment":
-                
-            default:
-                return $"Assert.AreEqual(default({returnType}), actual);";
-        }
     }
 
     public class SyntaxReceiver : ISyntaxContextReceiver

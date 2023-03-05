@@ -1,8 +1,4 @@
 ﻿using Grpc.Core;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 
@@ -15,7 +11,7 @@ partial class VisualTreeService
         KeyboardFocusResult reply = new();
         await Application.Dispatcher.InvokeAsync(() =>
         {
-            if (!(GetCachedElement<DependencyObject>(request.ElementId) is IInputElement element))
+            if (GetCachedElement<DependencyObject>(request.ElementId) is not IInputElement element)
             {
                 reply.ErrorMessages.Add("Could not find element");
                 return;

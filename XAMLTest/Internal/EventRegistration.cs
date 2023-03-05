@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using XamlTest.Host;
+﻿using XamlTest.Host;
 
 namespace XamlTest.Internal;
 
@@ -33,7 +29,7 @@ internal class EventRegistration : IEventRegistration
         {
             EventId = EventId
         };
-        LogMessage?.Invoke($"{nameof(GetInvocations)}()");
+        LogMessage?.Invoke($"{nameof(GetInvocations)}({EventName})");
         if (await Client.GetEventInvocationsAsync(eventInvocationQuery) is { } reply)
         {
             if (reply.ErrorMessages.Any())
@@ -56,7 +52,7 @@ internal class EventRegistration : IEventRegistration
         {
             EventId = EventId
         };
-        LogMessage?.Invoke($"{nameof(GetInvocations)}()");
+        LogMessage?.Invoke($"Unregister {nameof(GetInvocations)}({EventName})");
         if (await Client.UnregisterForEventAsync(eventInvocationQuery) is { } reply)
         {
             if (reply.ErrorMessages.Any())

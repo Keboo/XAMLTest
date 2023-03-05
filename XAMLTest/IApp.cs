@@ -15,5 +15,8 @@ public interface IApp : IAsyncDisposable, IDisposable
         where T : ISerializer, new();
     Task<IReadOnlyList<ISerializer>> GetSerializers();
 
+    void LogMessage(string message);
+    
     IList<XmlNamespace> DefaultXmlNamespaces { get; }
+
 }

@@ -44,7 +44,7 @@ public class SendMouseInputTests
         TopMenuItem = await window.GetElement<MenuItem>("TopLevel");
     }
 
-    [ClassCleanup]
+    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
     public static async Task TestCleanup()
     {
         if (App is { } app)

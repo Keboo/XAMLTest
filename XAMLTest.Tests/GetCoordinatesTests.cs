@@ -21,9 +21,10 @@ public class GetCoordinatesTests
         Window = await App.CreateWindowWithContent(@"<Border />");
     }
 
-    [ClassCleanup]
-    public static async Task TestCleanup()
+    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    public static async Task ClassCleanup(TestContext context)
     {
+        context.WriteLine("Cleaning up");
         if (App is { } app)
         {
             await app.DisposeAsync();
@@ -81,9 +82,13 @@ Width=""30"" Height=""40"" VerticalAlignment=""Top"" HorizontalAlignment=""Left"
     </Border.LayoutTransform>
 </Border>
 ");
-
+        App.LogMessage("Before");
         Rect coordinates = await element.GetCoordinates();
+        App.LogMessage("After");
+
         Assert.AreEqual(40 * scale.DpiScaleX, coordinates.Width, 0.00001);
+        App.LogMessage("Assert1");
         Assert.AreEqual(30 * scale.DpiScaleY, coordinates.Height, 0.00001);
+        App.LogMessage("Assert2");
     }
 }
