@@ -17,7 +17,7 @@ public class SendKeyboardInputTests
 
     [NotNull]
     private static IVisualElement<TextBox>? TextBox2 { get; set; }
-    
+
     [NotNull]
     private static IVisualElement<TextBox>? TextBox3 { get; set; }
 
@@ -26,7 +26,7 @@ public class SendKeyboardInputTests
     [NotNull]
     private static IVisualElement<ListBoxItem>? ListBoxItem1 { get; set; }
     [NotNull]
-    private static IVisualElement<ListBoxItem>? ListBoxItem2{ get; set; }
+    private static IVisualElement<ListBoxItem>? ListBoxItem2 { get; set; }
     [NotNull]
     private static IVisualElement<ListBoxItem>? ListBoxItem3 { get; set; }
     [NotNull]
@@ -158,7 +158,8 @@ public class SendKeyboardInputTests
     }
 
     [TestMethod]
-    public async Task SendInput_WithCopyPasteModifiers_CopyPasteViaClipboardWorks() {
+    public async Task SendInput_WithCopyPasteModifiers_CopyPasteViaClipboardWorks()
+    {
         await TextBox1.MoveKeyboardFocus();
         await TextBox1.SendKeyboardInput($"test input");
         await TextBox1.SendKeyboardInput($"{ModifierKeys.Control}{Key.A}{Key.C}{ModifierKeys.None}{Key.Tab}");
@@ -182,7 +183,7 @@ public class SendKeyboardInputTests
 
         // Select items 2 through 4
         await ListBoxItem2.LeftClick();
-        await ListBox.SendKeyboardInput($"{ModifierKeys.Control | ModifierKeys.Shift}");    
+        await ListBox.SendKeyboardInput($"{ModifierKeys.Control | ModifierKeys.Shift}");
         await ListBoxItem4.LeftClick();
 
         // Extend selection with item 7
@@ -190,13 +191,13 @@ public class SendKeyboardInputTests
         await ListBoxItem7.LeftClick();
 
         // Release modifiers
-        await ListBox.SendKeyboardInput($"{ModifierKeys.None}"); 
+        await ListBox.SendKeyboardInput($"{ModifierKeys.None}");
 
         await AssertSelection(ListBoxItem2, ListBoxItem3, ListBoxItem4, ListBoxItem7);
 
         async Task AssertSelection(params IVisualElement<ListBoxItem>[] selectedItems)
         {
-            IVisualElement<ListBoxItem>[] allListBoxItems = 
+            IVisualElement<ListBoxItem>[] allListBoxItems =
             {
                 ListBoxItem1,
                 ListBoxItem2,
