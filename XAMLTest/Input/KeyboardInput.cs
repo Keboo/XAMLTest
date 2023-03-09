@@ -8,19 +8,19 @@ internal static class KeyboardInput
 {
     public static void SendModifiers(IntPtr windowHandle, params ModifierKeys[] modifiers)
     {
-        IEnumerable<WindowInput> inputs = modifiers.SelectMany(m => GetKeyPress(m));
+        IEnumerable<WindowInput> inputs = modifiers.SelectMany(GetKeyPress);
         SendInput(windowHandle, inputs);
     }
 
     public static void SendKeys(IntPtr windowHandle, params Key[] keys)
     {
-        IEnumerable<WindowMessage> inputs = keys.SelectMany(k => GetKeyPress(k));
+        IEnumerable<WindowMessage> inputs = keys.SelectMany(GetKeyPress);
         SendInput(windowHandle, inputs);
     }
 
     public static void SendKeysForText(IntPtr windowHandle, string textInput)
     {
-        IEnumerable<WindowMessage> inputs = textInput.SelectMany(c => GetKeyPress(c));
+        IEnumerable<WindowMessage> inputs = textInput.SelectMany(GetKeyPress);
         SendInput(windowHandle, inputs);
     }
 
@@ -38,12 +38,14 @@ internal static class KeyboardInput
         unsafe
         {
             // NOTE: There is a potential x86/x64 size issue here
-            sizeOfInputStruct = sizeof(User32.INPUT);
+            sizeOfInputStruct = sizeof(INPUT);
         }
 
         foreach (WindowInput input in inputs)
         {
             User32.SendInput(1, new[] { input.Input }, sizeOfInputStruct);
+            //https://source.dot.net/#System.Windows.Forms/System/Windows/Forms/SendKeys.cs,720
+            Thread.Sleep(1);
         }
     }
 
@@ -64,7 +66,6 @@ internal static class KeyboardInput
 
     private static IEnumerable<WindowInput> GetKeyPress(ModifierKeys modifiers)
     {
-        IntPtr lParam = new(0x0000_0000);
         if (modifiers == ModifierKeys.None)
         {
             // Special case to remove any modifiers previously set, so we send KEYUP for all modifiers
@@ -82,9 +83,9 @@ internal static class KeyboardInput
         }
     }
 
-    private static User32.INPUT CreateInput(VirtualKey modifierKey, bool keyUp)
+    private static INPUT CreateInput(VirtualKey modifierKey, bool keyUp)
     {
-        User32.INPUT input = new()
+        INPUT input = new()
         {
             type = User32.InputType.INPUT_KEYBOARD
         };
@@ -117,6 +118,6 @@ internal static class KeyboardInput
             Input = input;
         }
 
-        public User32.INPUT Input { get; }
+        public INPUT Input { get; }
     }
 }

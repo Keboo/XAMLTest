@@ -77,9 +77,23 @@ public interface IVisualElement : IEquatable<IVisualElement>
     /// <returns>The smallest bounding rectangle encompassing the element in screen coordinates.</returns>
     Task<Rect> GetCoordinates();
 
+    /// <summary>
+    /// Registers for an event by its name.
+    /// </summary>
+    /// <param name="name">The name of the event</param>
+    /// <returns></returns>
     Task<IEventRegistration> RegisterForEvent(string name);
+    /// <summary>
+    /// Un-regsiter an event that was previously registered. <see cref="RegisterForEvent(string)"/>
+    /// </summary>
+    /// <param name="eventRegistration">The event registration to unregister.</param>
+    /// <returns></returns>
     Task UnregisterEvent(IEventRegistration eventRegistration);
 
+    /// <summary>
+    /// Moves the keyboard focus to this element if it is focusable.
+    /// </summary>
+    /// <returns></returns>
     Task MoveKeyboardFocus();
 
     /// <summary>
@@ -97,7 +111,7 @@ public interface IVisualElement : IEquatable<IVisualElement>
     Task<Point> SendInput(MouseInput mouseInput);
 
     /// <summary>
-    /// Applys highlighting to the control.
+    /// Applies highlighting to the control.
     /// </summary>
     /// <returns></returns>
     Task Highlight(HighlightConfig highlightConfig);

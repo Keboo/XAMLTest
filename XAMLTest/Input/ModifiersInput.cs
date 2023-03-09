@@ -12,5 +12,5 @@ internal class ModifiersInput : IInput
     }
 
     public override string ToString()
-        => $"Modifiers: {Modifiers}";
+        => $"Modifiers:{Modifiers}";
 }
