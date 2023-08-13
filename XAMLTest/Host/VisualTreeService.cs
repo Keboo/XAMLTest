@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Windows.Controls;
+using System.Windows.Interop;
 using System.Windows.Markup;
 using System.Windows.Media;
 using XamlTest.Internal;
@@ -210,7 +211,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
 
                         element.SetValue(dependencyProperty, value);
 
-                        //Re-retrive the value in case the dependency property coalesced it
+                        //Re-retrieve the value in case the dependency property coalesced it
                         value = element.GetValue(dependencyProperty);
                         propertyType = dependencyProperty.PropertyType;
                     }
@@ -244,7 +245,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
 
                     foundProperty.SetValue(element, value);
 
-                    //Re-retrive the value in case the dependency property coalesced it
+                    //Re-retrieve the value in case the dependency property coalesced it
                     value = foundProperty.GetValue(element);
                     propertyType = foundProperty.PropertyType;
                 }
@@ -291,7 +292,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
                     {
                         element.SetValue(dependencyProperty, value);
 
-                        //Re-retrive the value in case the dependency property coalesced it
+                        //Re-retrieve the value in case the dependency property coalesced it
                         value = element.GetValue(dependencyProperty);
                     }
                     else
@@ -312,7 +313,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
 
                     foundProperty.SetValue(element, value);
 
-                    //Re-retrive the value in case the dependency property coalesced it
+                    //Re-retrieve the value in case the dependency property coalesced it
                     value = foundProperty.GetValue(element);
                 }
 
@@ -440,7 +441,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
                 {
                     try
                     {
-                        if (assembly is string)
+                        if (assembly is not null)
                         {
                             LoadedAssemblies.Add(Assembly.LoadFrom(assembly));
                         }
@@ -668,10 +669,10 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
         string likelyAssemblyPath = Path.GetFullPath($"{assemblyName.Name}.dll");
         try
         {
-            if (File.Exists(likelyAssemblyPath) && Assembly.LoadFrom(likelyAssemblyPath) is Assembly localAssemby)
+            if (File.Exists(likelyAssemblyPath) && Assembly.LoadFrom(likelyAssemblyPath) is Assembly localAssembly)
             {
-                LoadedAssemblies.Add(localAssemby);
-                return localAssemby;
+                LoadedAssemblies.Add(localAssembly);
+                return localAssembly;
             }
         }
         catch (Exception)
@@ -720,6 +721,21 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
         if (window.Activate())
         {
             return true;
+        }
+
+        //Check if focus is in child window, such as a popup
+        IntPtr foregroundWindowHandle = PInvoke.User32.GetForegroundWindow();
+        IntPtr expectedParentHandle = new WindowInteropHelper(window).EnsureHandle();
+
+        while (foregroundWindowHandle != IntPtr.Zero &&
+            expectedParentHandle != IntPtr.Zero)
+        {
+            if (foregroundWindowHandle == expectedParentHandle)
+            {
+                Logger.Log("Child window has is foreground");
+                return true;
+            }
+            foregroundWindowHandle = PInvoke.User32.GetParent(foregroundWindowHandle);
         }
 
         Logger.Log("Using mouse to activate Window");
@@ -776,12 +792,12 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
         double right = windowOrigin.X + (bottomRight.X * scale.DpiScaleX);
         double bottom = windowOrigin.Y + (bottomRight.Y * scale.DpiScaleY);
 
-        var rvleft = Math.Min(left, right);
-        var rvtop = Math.Min(top, bottom);
-        var rvright = Math.Max(left, right);
-        var rvbottom = Math.Max(top, bottom);
+        var rvLeft = Math.Min(left, right);
+        var rvTop = Math.Min(top, bottom);
+        var rvRight = Math.Max(left, right);
+        var rvBottom = Math.Max(top, bottom);
 
-        return new Rect(rvleft, rvtop, rvright - rvleft, rvbottom - rvtop);
+        return new Rect(rvLeft, rvTop, rvRight - rvLeft, rvBottom - rvTop);
     }
 
     private static (double ScaleX, double ScaleY) GetScalingFromVisual(Visual visual)

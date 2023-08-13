@@ -29,11 +29,11 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
                 if (searchRoot is null) return;
 
                 var window = searchRoot as Window ?? Window.GetWindow(searchRoot);
-                Logger.Log("Getting element");
+                Logger.Log($"Getting element with query {request.Query}");
 
                 if (!string.IsNullOrWhiteSpace(request.Query))
                 {
-                    if (!(EvaluateQuery(searchRoot, request.Query) is DependencyObject element))
+                    if (EvaluateQuery(searchRoot, request.Query) is not DependencyObject element)
                     {
                         reply.ErrorMessages.Add($"Failed to find element by query '{request.Query}' in '{searchRoot.GetType().FullName}'");
                         return;
@@ -121,13 +121,13 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
             if (propertyExpressionRegex.Match(query) is { } propertyExpressionMatch &&
                 propertyExpressionMatch.Success)
             {
-                currentQuery = query.Substring(0, propertyExpressionMatch.Index + 1);
+                currentQuery = query[..(propertyExpressionMatch.Index + 1)];
                 query = query[(propertyExpressionMatch.Index + 1)..];
             }
             else if (regex.Match(query) is { } match &&
                 match.Success)
             {
-                currentQuery = query.Substring(0, match.Index);
+                currentQuery = query[..match.Index];
                 query = query[match.Index..];
             }
             else
@@ -168,7 +168,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
 
         static object? EvaluateNameQuery(DependencyObject root, string name)
         {
-            return Decendants<FrameworkElement>(root).FirstOrDefault(x => x.Name == name);
+            return Descendants<FrameworkElement>(root).FirstOrDefault(x => x.Name == name);
         }
 
         static object? EvaluatePropertyQuery(DependencyObject root, string property)
@@ -190,10 +190,10 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
             if (match.Success)
             {
                 index = int.Parse(match.Groups["Index"].Value);
-                childTypeQuery = childTypeQuery.Substring(0, match.Index);
+                childTypeQuery = childTypeQuery[..match.Index];
             }
 
-            foreach (DependencyObject child in Decendants<DependencyObject>(root))
+            foreach (DependencyObject child in Descendants<DependencyObject>(root))
             {
                 if (GetTypeNames(child).Any(x => x == childTypeQuery))
                 {
@@ -213,7 +213,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
             string property = parts[0].TrimEnd();
             string propertyValueString = parts[1].Trim('"');
 
-            foreach (DependencyObject child in Decendants<DependencyObject>(root))
+            foreach (DependencyObject child in Descendants<DependencyObject>(root))
             {
                 var properties = TypeDescriptor.GetProperties(child);
                 if (properties.Find(property, false) is PropertyDescriptor propertyDescriptor)
@@ -249,7 +249,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
         PropertyExpression
     }
 
-    private static IEnumerable<T> Decendants<T>(DependencyObject? parent)
+    private static IEnumerable<T> Descendants<T>(DependencyObject? parent)
         where T : DependencyObject
     {
         if (parent is null) yield break;
