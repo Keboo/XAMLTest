@@ -49,7 +49,6 @@ partial class VisualTreeService
         {
             try
             {
-                IntPtr windowHandle = IntPtr.Zero;
                 if (!(GetCachedElement<DependencyObject>(request.ElementId) is { } element))
                 {
                     reply.ErrorMessages.Add("Could not find element");
@@ -62,14 +61,14 @@ partial class VisualTreeService
                     reply.ErrorMessages.Add("Failed to find parent window");
                     return;
                 }
-                windowHandle = new WindowInteropHelper(window).EnsureHandle();
 
                 if (!ActivateWindow(window))
                 {
                     reply.ErrorMessages.Add($"Failed to active window");
                     return;
                 }
-
+                
+                IntPtr windowHandle = new WindowInteropHelper(window).EnsureHandle();
                 if (windowHandle != IntPtr.Zero)
                 {
                     foreach (MouseData mouseData in request.MouseData)
