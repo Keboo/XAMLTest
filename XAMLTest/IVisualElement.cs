@@ -36,6 +36,10 @@ public interface IVisualElement : IEquatable<IVisualElement>
     /// <returns>The found element</returns>
     Task<IVisualElement<TElement>> GetElement<TElement>(string query);
 
+    Task<IReadOnlyList<IVisualElement<TElement>>> GetElements<TElement>(string query);
+
+    Task<IReadOnlyList<IVisualElement>> GetElements(string query);
+
     /// <summary>
     /// Retrieve a property's value
     /// </summary>

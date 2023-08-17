@@ -1,4 +1,4 @@
-﻿using System.Windows.Controls;
+using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using XamlTest.Tests.TestControls;
 
@@ -53,6 +53,32 @@ public class GetElementTests
 
         //Assert
         Assert.AreEqual("Item1", await element.GetContent());
+        recorder.Success();
+    }
+
+
+    [TestMethod]
+    public async Task OnGetElements_ItReturnsAllMatchingElements()
+    {
+        //Arrange
+        await using TestRecorder recorder = new(App);
+
+        await Window.SetXamlContent(
+            """
+            <ListBox MinWidth="200">
+              <ListBoxItem Content="Item1" />
+              <ListBoxItem Content="Item2" />
+            </ListBox>
+            """);
+
+        //Act
+        IReadOnlyList<IVisualElement<ListBoxItem>> listBoxItems = await Window.GetElements<ListBoxItem>();
+
+        //Assert
+        Assert.AreEqual(2, listBoxItems.Count);
+        Assert.AreEqual("Item1", await listBoxItems[0].GetContent());
+        Assert.AreEqual("Item2", await listBoxItems[1].GetContent());
+
         recorder.Success();
     }
 

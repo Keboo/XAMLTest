@@ -50,6 +50,16 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
     public async Task<IVisualElement<TElement>> GetElement<TElement>(string query)
         => (IVisualElement<TElement>)await GetElement(query, typeof(TElement));
 
+    public async Task<IReadOnlyList<IVisualElement>> GetElements(string query)
+    {
+        return await GetElements(query, null);
+    }
+
+    public async Task<IReadOnlyList<IVisualElement<TElement>>> GetElements<TElement>(string query)
+    {
+        return (await GetElements(query, typeof(TElement))).Cast<IVisualElement<TElement>>().ToList();
+    }
+
     private async Task<IVisualElement> GetElement(string query, Type? desiredType)
     {
         Host.ElementQuery elementQuery = GetFindElementQuery(query);
@@ -79,6 +89,49 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
                 throw new XamlTestException($"Could not find element type '{element.Type}'");
             }
             throw new XamlTestException($"Found {reply.Elements.Count} elements");
+        }
+
+        throw new XamlTestException("Failed to receive a reply");
+    }
+
+    private async Task<IReadOnlyList<IVisualElement>> GetElements(string query, Type? desiredType)
+    {
+        Host.ElementQuery elementQuery = GetFindElementQuery(query);
+        LogMessage?.Invoke($"{nameof(GetElements)}({query})");
+        if (await Client.GetElementAsync(elementQuery) is { } reply)
+        {
+            if (reply.ErrorMessages.Any())
+            {
+                throw new XamlTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+            }
+
+            List<IVisualElement> elements = new(reply.Elements.Count);
+
+            foreach (Element element in reply.Elements)
+            {
+                if (Type.GetType(element.Type) is { } elementType)
+                {
+                    if (desiredType is null)
+                    {
+                        elements.Add(Create(Client, element.Id, elementType, Context, LogMessage));
+                    }
+                    else if (desiredType != elementType &&
+                        !elementType.IsSubclassOf(desiredType))
+                    {
+                        throw new XamlTestException($"Element of type '{element.Type}' does not match desired type '{desiredType.AssemblyQualifiedName}'");
+                    }
+                    else
+                    {
+                        elements.Add(Create(Client, element.Id, desiredType, Context, LogMessage));
+                    }
+                }
+                else
+                {
+                    throw new XamlTestException($"Could not find element type '{element.Type}'");
+                }
+            }
+
+            return elements;
         }
 
         throw new XamlTestException("Failed to receive a reply");
