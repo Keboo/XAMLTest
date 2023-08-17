@@ -44,6 +44,10 @@ public interface IVisualElement : IEquatable<IVisualElement>
     /// <returns>The found element</returns>
     Task<IVisualElement<TElement>> GetElement<TElement>(string query);
 
+    Task<IReadOnlyList<IVisualElement<TElement>>> GetElements<TElement>(string query);
+
+    Task<IReadOnlyList<IVisualElement>> GetElements(string query);
+
     /// <summary>
     /// Find an element given a query. The query string is made up of several parts.
     /// ~&lt;Name&gt; - Search for an element by Name. This is the default query behavior if no prefix is specified.
