@@ -45,36 +45,9 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
 
     private async Task<IVisualElement> GetElement(string query, Type? desiredType)
     {
-        Host.ElementQuery elementQuery = GetFindElementQuery(query);
         LogMessage?.Invoke($"{nameof(GetElement)}({query})");
-        if (await Client.GetElementAsync(elementQuery) is { } reply)
-        {
-            if (reply.ErrorMessages.Any())
-            {
-                throw new XamlTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
-            }
-            if (reply.Elements.Count == 1)
-            {
-                Element element = reply.Elements[0];
-                if (Type.GetType(element.Type) is { } elementType)
-                {
-                    if (desiredType is null)
-                    {
-                        return Create(Client, element.Id, elementType, Context, LogMessage);
-                    }
-                    if (desiredType != elementType &&
-                        !elementType.IsSubclassOf(desiredType))
-                    {
-                        throw new XamlTestException($"Element of type '{element.Type}' does not match desired type '{desiredType.AssemblyQualifiedName}'");
-                    }
-                    return Create(Client, element.Id, desiredType, Context, LogMessage);
-                }
-                throw new XamlTestException($"Could not find element type '{element.Type}'");
-            }
-            throw new XamlTestException($"Found {reply.Elements.Count} elements");
-        }
-
-        throw new XamlTestException("Failed to receive a reply");
+        Host.ElementQuery elementQuery = GetFindElementQuery(query);
+        return (await GetElementQuery(elementQuery, desiredType)) ?? throw new XamlTestException($"Did not find element matching query {query}");
     }
 
     public Task<IVisualElement?> FindElement(string query)
@@ -83,11 +56,16 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
     public async Task<IVisualElement<TElement>?> FindElement<TElement>(string query) 
         => (IVisualElement<TElement>?)await FindElement(query, typeof(TElement));
 
-    private async Task<IVisualElement?> FindElement(string query, Type? desiredType)
+    private Task<IVisualElement?> FindElement(string query, Type? desiredType)
     {
         LogMessage?.Invoke($"{nameof(FindElement)}({query})");
         Host.ElementQuery elementQuery = GetFindElementQuery(query);
         elementQuery.IgnoreMissing = true;
+        return GetElementQuery(elementQuery, desiredType);
+    }
+
+    private async Task<IVisualElement?> GetElementQuery(Host.ElementQuery elementQuery, Type? desiredType)
+    {
         if (await Client.GetElementAsync(elementQuery) is { } reply)
         {
             if (reply.ErrorMessages.Any())

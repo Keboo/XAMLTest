@@ -214,7 +214,6 @@ public class GetElementTests
         recorder.Success();
     }
 
-
     [TestMethod]
     public async Task OnGetElement_WithNonGenericReference_CanCastToGeneric()
     {
@@ -248,7 +247,6 @@ public class GetElementTests
         Assert.AreEqual("Panel", await frameworkElement.GetName());
         recorder.Success();
     }
-
 
     [TestMethod]
     public async Task OnGetTypedElement_GetsTypedElement()
