@@ -1,11 +1,6 @@
 using Grpc.Core;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
 using XamlTest.Internal;
@@ -29,13 +24,16 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
                 if (searchRoot is null) return;
 
                 var window = searchRoot as Window ?? Window.GetWindow(searchRoot);
-                Logger.Log($"Getting element with query {request.Query}");
+                Logger.Log($"Getting element with query {request.Query}{(request.IgnoreMissing ? " (ignore missing)" : "")}");
 
                 if (!string.IsNullOrWhiteSpace(request.Query))
                 {
-                    if (EvaluateQuery(searchRoot, request.Query) is not DependencyObject element)
+                    if (EvaluateQuery(searchRoot, request.Query, request.IgnoreMissing) is not DependencyObject element)
                     {
-                        reply.ErrorMessages.Add($"Failed to find element by query '{request.Query}' in '{searchRoot.GetType().FullName}'");
+                        if (!request.IgnoreMissing)
+                        {
+                            reply.ErrorMessages.Add($"Failed to find element by query '{request.Query}' in '{searchRoot.GetType().FullName}'");
+                        }
                         return;
                     }
 
@@ -79,7 +77,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
         }
     }
 
-    private static object? EvaluateQuery(DependencyObject root, string query)
+    private static object? EvaluateQuery(DependencyObject root, string query, bool ignoreMissing)
     {
         object? result = null;
         List<string> errorParts = new();
@@ -101,7 +99,14 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
                     result = EvaluatePropertyQuery(current, value);
                     break;
                 case QueryPartType.ChildType:
-                    result = EvaluateChildTypeQuery(current, value);
+                    if (!TryEvaluateChildTypeQuery(current, value, out result))
+                    {
+                        if (ignoreMissing)
+                        {
+                            return null;
+                        }
+                        throw new XamlTestException($"Failed to find child element of type '{value}'");
+                    }
                     break;
                 case QueryPartType.PropertyExpression:
                     result = EvaluatePropertyExpressionQuery(current, value);
@@ -181,7 +186,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
             throw new XamlTestException($"Failed to find property '{property}' on element of type '{root.GetType().FullName}'");
         }
 
-        static object EvaluateChildTypeQuery(DependencyObject root, string childTypeQuery)
+        static bool TryEvaluateChildTypeQuery(DependencyObject root, string childTypeQuery, [NotNullWhen(true)] out object? found)
         {
             Regex indexerRegex = new(@"\[(?<Index>\d+)]$");
 
@@ -199,12 +204,14 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
                 {
                     if (index == 0)
                     {
-                        return child;
+                        found = child;
+                        return true;
                     }
                     index--;
                 }
             }
-            throw new XamlTestException($"Failed to find child element of type '{childTypeQuery}'");
+            found = null;
+            return false;
         }
 
         static object EvaluatePropertyExpressionQuery(DependencyObject root, string propertyExpression)

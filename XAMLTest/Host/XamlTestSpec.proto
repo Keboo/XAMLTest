@@ -85,6 +85,7 @@ message ElementQuery {
   string windowId = 1;
   string parentId = 2;
   string query = 3;
+  bool ignoreMissing = 4;
 }
 
 message ElementResult {

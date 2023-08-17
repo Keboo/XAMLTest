@@ -1,4 +1,4 @@
-﻿using System.Windows.Controls;
+using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using XamlTest.Tests.TestControls;
 
@@ -33,7 +33,6 @@ public class GetElementTests
         }
     }
 
-
     [TestMethod]
     public async Task OnGetElement_ItRetrievesItemsByType()
     {
@@ -41,18 +40,42 @@ public class GetElementTests
         await using TestRecorder recorder = new(App);
 
         await Window.SetXamlContent(
-            @"<ListBox MinWidth=""200"">
-    <ListBoxItem Content=""Item1"" />
-    <ListBoxItem Content=""Item2"" />
-    <ListBoxItem Content=""Item3"" />
-    <ListBoxItem Content=""Item4"" />
-</ListBox>");
+            """
+            <ListBox MinWidth="200">
+              <ListBoxItem Content="Item1" />
+              <ListBoxItem Content="Item2" />
+              <ListBoxItem Content="Item3" />
+              <ListBoxItem Content="Item4" />
+            </ListBox>
+            """);
 
         //Act
-        IVisualElement<ListBoxItem> element = await Window.GetElement<ListBoxItem>("/ListBoxItem");
+        IVisualElement<ListBoxItem> element = await Window.GetElement<ListBoxItem>();
 
         //Assert
         Assert.AreEqual("Item1", await element.GetContent());
+        recorder.Success();
+    }
+
+    [TestMethod]
+    public async Task OnFindElement_WhenQueryDoesNotMatch_ItReturnsNull()
+    {
+        //Arrange
+        await using TestRecorder recorder = new(App);
+
+        await Window.SetXamlContent(
+            """
+            <ListBox MinWidth="200">
+              <ListBoxItem Content="Item1" />
+              <ListBoxItem Content="Item2" />
+            </ListBox>
+            """);
+
+        //Act
+        IVisualElement<TextBox>? element= await Window.FindElement<TextBox>();
+
+        //Assert
+        Assert.IsNull(element);
         recorder.Success();
     }
 
