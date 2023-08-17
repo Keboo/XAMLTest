@@ -1,10 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Media;
 using XamlTest.Host;
 using XamlTest.Input;
@@ -52,8 +45,27 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
 
     private async Task<IVisualElement> GetElement(string query, Type? desiredType)
     {
-        Host.ElementQuery elementQuery = GetFindElementQuery(query);
         LogMessage?.Invoke($"{nameof(GetElement)}({query})");
+        Host.ElementQuery elementQuery = GetFindElementQuery(query);
+        return (await GetElementQuery(elementQuery, desiredType)) ?? throw new XamlTestException($"Did not find element matching query {query}");
+    }
+
+    public Task<IVisualElement?> FindElement(string query)
+        => FindElement(query, null);
+
+    public async Task<IVisualElement<TElement>?> FindElement<TElement>(string query) 
+        => (IVisualElement<TElement>?)await FindElement(query, typeof(TElement));
+
+    private Task<IVisualElement?> FindElement(string query, Type? desiredType)
+    {
+        LogMessage?.Invoke($"{nameof(FindElement)}({query})");
+        Host.ElementQuery elementQuery = GetFindElementQuery(query);
+        elementQuery.IgnoreMissing = true;
+        return GetElementQuery(elementQuery, desiredType);
+    }
+
+    private async Task<IVisualElement?> GetElementQuery(Host.ElementQuery elementQuery, Type? desiredType)
+    {
         if (await Client.GetElementAsync(elementQuery) is { } reply)
         {
             if (reply.ErrorMessages.Any())
@@ -76,9 +88,8 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
                     }
                     return Create(Client, element.Id, desiredType, Context, LogMessage);
                 }
-                throw new XamlTestException($"Could not find element type '{element.Type}'");
             }
-            throw new XamlTestException($"Found {reply.Elements.Count} elements");
+            return null;
         }
 
         throw new XamlTestException("Failed to receive a reply");

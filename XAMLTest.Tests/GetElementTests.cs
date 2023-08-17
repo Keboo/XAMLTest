@@ -1,4 +1,4 @@
-﻿using System.Windows.Controls;
+using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using XamlTest.Tests.TestControls;
 
@@ -33,7 +33,6 @@ public class GetElementTests
         }
     }
 
-
     [TestMethod]
     public async Task OnGetElement_ItRetrievesItemsByType()
     {
@@ -41,15 +40,17 @@ public class GetElementTests
         await using TestRecorder recorder = new(App);
 
         await Window.SetXamlContent(
-            @"<ListBox MinWidth=""200"">
-    <ListBoxItem Content=""Item1"" />
-    <ListBoxItem Content=""Item2"" />
-    <ListBoxItem Content=""Item3"" />
-    <ListBoxItem Content=""Item4"" />
-</ListBox>");
+            """
+            <ListBox MinWidth="200">
+              <ListBoxItem Content="Item1" />
+              <ListBoxItem Content="Item2" />
+              <ListBoxItem Content="Item3" />
+              <ListBoxItem Content="Item4" />
+            </ListBox>
+            """);
 
         //Act
-        IVisualElement<ListBoxItem> element = await Window.GetElement<ListBoxItem>("/ListBoxItem");
+        IVisualElement<ListBoxItem> element = await Window.GetElement<ListBoxItem>();
 
         //Assert
         Assert.AreEqual("Item1", await element.GetContent());
@@ -137,7 +138,7 @@ public class GetElementTests
     }
 
     [TestMethod]
-    public async Task OnGetElement_ItRetrievesItemsByName()
+    public async Task OnGetElement_ItRetrievesNestedItemsByName()
     {
         //Arrange
         await using TestRecorder recorder = new(App);
@@ -191,7 +192,6 @@ public class GetElementTests
         recorder.Success();
     }
 
-
     [TestMethod]
     public async Task OnGetElement_WithNonGenericReference_CanCastToGeneric()
     {
@@ -225,7 +225,6 @@ public class GetElementTests
         Assert.AreEqual("Panel", await frameworkElement.GetName());
         recorder.Success();
     }
-
 
     [TestMethod]
     public async Task OnGetTypedElement_GetsTypedElement()
@@ -384,12 +383,14 @@ public class GetElementTests
         //Arrange
         await using TestRecorder recorder = new(App);
 
-        await Window.SetXamlContent(@"
-<StackPanel>
-  <TextBlock Text=""Text1"" Tag=""1""/>
-  <TextBlock Text=""Text2"" Tag=""2""/>
-  <TextBlock Text=""Text3"" Tag=""3""/>
-</StackPanel>");
+        await Window.SetXamlContent(
+            """
+            <StackPanel>
+              <TextBlock Text="Text1" Tag="1"/>
+              <TextBlock Text="Text2" Tag="2"/>
+              <TextBlock Text="Text3" Tag="3"/>
+            </StackPanel>
+            """);
 
         var stackPanel = await Window.GetElement<StackPanel>();
 
@@ -421,6 +422,121 @@ public class GetElementTests
 
         //Assert
         Assert.AreEqual("Item3", await element.GetContent());
+        recorder.Success();
+    }
+
+    [TestMethod]
+    public async Task OnFindElement_WhenChildTypeQueryDoesNotMatch_ItReturnsNull()
+    {
+        //Arrange
+        await using TestRecorder recorder = new(App);
+
+        await Window.SetXamlContent(
+            """
+            <ListBox MinWidth="200">
+              <ListBoxItem Content="Item1" />
+              <ListBoxItem Content="Item2" />
+            </ListBox>
+            """);
+
+        //Act
+        IVisualElement<TextBox>? element = await Window.FindElement<TextBox>();
+
+        //Assert
+        Assert.IsNull(element);
+        recorder.Success();
+    }
+
+    [TestMethod]
+    public async Task OnFindElement_WhenElementNameQueryDoesNotMatch_ItReturnsNull()
+    {
+        //Arrange
+        await using TestRecorder recorder = new(App);
+
+        await Window.SetXamlContent(
+            """
+            <ListBox MinWidth="200">
+              <ListBoxItem Content="Item1" />
+              <ListBoxItem Content="Item2" />
+            </ListBox>
+            """);
+
+        //Act
+        IVisualElement<ListBox>? element = await Window.FindElement(ElementQuery.WithName<ListBox>("BadName"));
+
+        //Assert
+        Assert.IsNull(element);
+        recorder.Success();
+    }
+
+    [TestMethod]
+    public async Task OnFindElement_WhenPropertyQueryDoesNotMatch_ItThrowsError()
+    {
+        //Arrange
+        await using TestRecorder recorder = new(App);
+
+        await Window.SetXamlContent(@"
+<Border>
+  <TextBlock Text=""Text"" />
+</Border>");
+
+        //Act
+        XamlTestException exception = await Assert.ThrowsExceptionAsync<XamlTestException>(() => Window.FindElement<TextBlock>("/Border.ChildFoo/TextBlock"));
+
+        //Assert
+        Assert.IsTrue(exception.Message.Contains("ChildFoo"));
+        recorder.Success();
+    }
+
+    [TestMethod]
+    public async Task OnFindElement_WhenPropertyNameInPropertyExpressionQueryDoesNotMatch_ItThrowsError()
+    {
+        //Arrange
+        await using TestRecorder recorder = new(App);
+
+        await Window.SetXamlContent(
+            """
+            <StackPanel>
+              <TextBlock Text="Text1" Tag="1"/>
+              <TextBlock Text="Text2" Tag="2"/>
+              <TextBlock Text="Text3" Tag="3"/>
+            </StackPanel>
+            """);
+
+        var stackPanel = await Window.GetElement<StackPanel>();
+
+        //Act
+        XamlTestException exception = await Assert.ThrowsExceptionAsync<XamlTestException>(() => stackPanel.FindElement(
+            ElementQuery.PropertyExpression<TextBlock>("BadProp", "2")));
+
+        //Assert
+        Assert.IsTrue(exception.Message.Contains("BadProp"));
+        recorder.Success();
+    }
+
+    [TestMethod]
+    public async Task OnFindElement_WhenPropertyValueInPropertyExpressionQueryDoesNotMatch_ItReturnsNull()
+    {
+        //Arrange
+        await using TestRecorder recorder = new(App);
+
+        await Window.SetXamlContent(
+            """
+            <StackPanel>
+              <TextBlock Text="Text1" Tag="1"/>
+              <TextBlock Text="Text2" Tag="2"/>
+              <TextBlock Text="Text3" Tag="3"/>
+            </StackPanel>
+            """);
+
+        var stackPanel = await Window.GetElement<StackPanel>();
+
+        //Act
+        IVisualElement<TextBlock>? element = await stackPanel.FindElement(
+            ElementQuery.PropertyExpression<TextBlock>(tb => tb.Tag, "4"));
+
+        //Assert
+        Assert.IsNull(element);
         recorder.Success();
     }
 }
