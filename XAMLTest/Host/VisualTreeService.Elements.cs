@@ -93,7 +93,14 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
             switch (GetNextQueryType(ref query, out string value))
             {
                 case QueryPartType.Name:
-                    result = EvaluateNameQuery(current, value);
+                    if (!TryEvaluateNameQuery(current, value, out result))
+                    {
+                        if (ignoreMissing)
+                        {
+                            return null;
+                        }
+                        throw new XamlTestException($"Failed to find child element with name '{value}'");
+                    }
                     break;
                 case QueryPartType.Property:
                     result = EvaluatePropertyQuery(current, value);
@@ -109,7 +116,14 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
                     }
                     break;
                 case QueryPartType.PropertyExpression:
-                    result = EvaluatePropertyExpressionQuery(current, value);
+                    if (!TryEvaluatePropertyExpressionQuery(current, value, out result))
+                    {
+                        if (ignoreMissing)
+                        {
+                            return null;
+                        }
+                        throw new XamlTestException($"Failed to find child element with property expression '{value}'");
+                    }
                     break;
             }
             current = result as DependencyObject;
@@ -171,9 +185,10 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
             return rv;
         }
 
-        static object? EvaluateNameQuery(DependencyObject root, string name)
+        static bool TryEvaluateNameQuery(DependencyObject root, string name, [NotNullWhen(true)] out object? found)
         {
-            return Descendants<FrameworkElement>(root).FirstOrDefault(x => x.Name == name);
+            found = Descendants<FrameworkElement>(root).FirstOrDefault(x => x.Name == name);
+            return found is not null;
         }
 
         static object? EvaluatePropertyQuery(DependencyObject root, string property)
@@ -214,26 +229,35 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
             return false;
         }
 
-        static object EvaluatePropertyExpressionQuery(DependencyObject root, string propertyExpression)
+        static bool TryEvaluatePropertyExpressionQuery(DependencyObject root, string propertyExpression, [NotNullWhen(true)] out object? found)
         {
             var parts = propertyExpression.Split('=');
             string property = parts[0].TrimEnd();
             string propertyValueString = parts[1].Trim('"');
 
+            bool propertyFound = false;
             foreach (DependencyObject child in Descendants<DependencyObject>(root))
             {
                 var properties = TypeDescriptor.GetProperties(child);
                 if (properties.Find(property, false) is PropertyDescriptor propertyDescriptor)
                 {
+                    propertyFound = true;
                     var value = propertyDescriptor.GetValue(child)?.ToString();
                     //TODO: More advanced comparison
                     if (string.Equals(value, propertyValueString))
                     {
-                        return child;
+                        found = child;
+                        return true;
                     }
                 }
             }
-            throw new XamlTestException($"Failed to find child element with property expression '{propertyExpression}'");
+            if (!propertyFound)
+            {
+                throw new XamlTestException($"Failed to find property '{property}' in property expression '{propertyExpression}' on any matching elements");
+            }
+
+            found = null;
+            return false;
         }
 
         static IEnumerable<string> GetTypeNames(DependencyObject child)

@@ -36,8 +36,26 @@ public interface IVisualElement : IEquatable<IVisualElement>
     /// <returns>The found element</returns>
     Task<IVisualElement<TElement>> GetElement<TElement>(string query);
 
+    /// <summary>
+    /// Find an element given a query. The query string is made up of several parts.
+    /// ~&lt;Name&gt; - Search for an element by Name. This is the default query behavior if no prefix is specified.
+    /// /&lt;Type Name&gt; - Search for an element by its given class name. This type name may be a base class name as well. Optionally this query part may also include a [&lt;<Index&gt;] suffix to retrieve objects are a particular index.
+    /// .&lt;Property Name&gt; - Search for an element as the property of another element. This must follow anoter query part.
+    /// [&lt;Property Query&gt;] - Search for an element with a property query. The property query should be in the form &lt;Property Name&gt;=&lt;Property Value&gt;
+    /// </summary>
+    /// <param name="query">The element query.</param>
+    /// <returns>The found element or null if it is not found</returns>
     Task<IVisualElement?> FindElement(string query);
 
+    /// <summary>
+    /// Find an element given a query. The query string is made up of several parts.
+    /// ~&lt;Name&gt; - Search for an element by Name. This is the default query behavior if no prefix is specified.
+    /// /&lt;Type Name&gt; - Search for an element by its given class name. This type name may be a base class name as well. Optionally this query part may also include a [&lt;<Index&gt;] suffix to retrieve objects are a particular index.
+    /// .&lt;Property Name&gt; - Search for an element as the property of another element. This must follow anoter query part.
+    /// [&lt;Property Query&gt;] - Search for an element with a property query. The property query should be in the form &lt;Property Name&gt;=&lt;Property Value&gt;
+    /// </summary>
+    /// <param name="query">The element query.</param>
+    /// <returns>The found element or null if not found</returns>
     Task<IVisualElement<TElement>?> FindElement<TElement>(string query);
 
     /// <summary>
