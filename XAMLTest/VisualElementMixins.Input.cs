@@ -80,7 +80,7 @@ public static partial class VisualElementMixins
         return await SendClick(element, down, up, position, xOffset, yOffset, clickTime, SingleClick);
     }
 
-        public static async Task<Point> SendDoubleClick(IVisualElement element,
+    public static async Task<Point> SendDoubleClick(IVisualElement element,
         MouseInput down,
         MouseInput up,
         Position position,
