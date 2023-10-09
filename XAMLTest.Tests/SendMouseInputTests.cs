@@ -13,6 +13,9 @@ public class SendMouseInputTests
 
     [NotNull]
     private static IVisualElement<MenuItem>? TopMenuItem { get; set; }
+
+    [NotNull] 
+    private static IVisualElement<Button>? Button { get; set; } 
     
     [ClassInitialize]
     public static async Task ClassInitialize(TestContext context)
@@ -38,10 +41,12 @@ public class SendMouseInputTests
             <MenuItem Header=""SubMenu"" x:Name=""SubMenu"" />
         </MenuItem>
     </Menu>
+    <Button Content=""Click Me"" Grid.Row=""1"" VerticalAlignment=""Center"" HorizontalAlignment=""Center""/>
 </Grid>
 ");
         Grid = await window.GetElement<Grid>("Grid");
         TopMenuItem = await window.GetElement<MenuItem>("TopLevel");
+        Button = await window.GetElement<Button>(); 
     }
 
     [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
@@ -78,6 +83,23 @@ public class SendMouseInputTests
 
         recorder.Success();
     }
+
+    [TestMethod] 
+    public async Task CanDoubleClickOnGrid() 
+    { 
+        await using var recorder = new TestRecorder(App); 
+ 
+        await using IEventRegistration registration = await Button.RegisterForEvent(nameof(Control.MouseDoubleClick)); 
+        await Button.LeftDoubleClick(); 
+ 
+        await Wait.For(async () => 
+        { 
+            var invocations = await registration.GetInvocations(); 
+            Assert.AreEqual(1, invocations.Count); 
+        }); 
+ 
+        recorder.Success(); 
+    } 
 
     [TestMethod]
     public async Task LeftClick_WithPositionOffset_OffsetsCursor()
