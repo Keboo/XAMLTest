@@ -10,6 +10,9 @@ namespace XamlTest;
 
 public static partial class VisualElementMixins
 {
+    private const int SingleClick = 1;
+    private const int DoubleClick = 2;
+
     public static async Task<Point> MoveCursorTo(this IVisualElement element,
         Position position = Position.Center,
         int xOffset = 0,
@@ -30,6 +33,20 @@ public static partial class VisualElementMixins
         TimeSpan? clickTime = null)
     {
         return await SendClick(element,
+            MouseInput.LeftDown(),
+            MouseInput.LeftUp(),
+            position,
+            xOffset,
+            yOffset,
+            clickTime);
+    }
+
+    public static async Task<Point> LeftDoubleClick(this IVisualElement element,
+        Position position = Position.Center,
+        int xOffset = 0, int yOffset = 0,
+        TimeSpan? clickTime = null)
+    {
+        return await SendDoubleClick(element,
             MouseInput.LeftDown(),
             MouseInput.LeftUp(),
             position,
@@ -60,18 +77,44 @@ public static partial class VisualElementMixins
         int yOffset,
         TimeSpan? clickTime)
     {
+        return await SendClick(element, down, up, position, xOffset, yOffset, clickTime, SingleClick);
+    }
+
+    public static async Task<Point> SendDoubleClick(IVisualElement element,
+        MouseInput down,
+        MouseInput up,
+        Position position,
+        int xOffset,
+        int yOffset,
+        TimeSpan? clickTime)
+    {
+        return await SendClick(element, down, up, position, xOffset, yOffset, clickTime, DoubleClick);
+    }
+
+    private static async Task<Point> SendClick(IVisualElement element,
+        MouseInput down,
+        MouseInput up,
+        Position position,
+        int xOffset,
+        int yOffset,
+        TimeSpan? clickTime,
+        int clickCount)
+    {
         List<MouseInput> inputs = new();
         inputs.Add(MouseInput.MoveToElement(position));
         if (xOffset != 0 || yOffset != 0)
         {
             inputs.Add(MouseInput.MoveRelative(xOffset, yOffset));
-        }
-        inputs.Add(down);
-        if (clickTime != null)
+        }     
+        for (int i = 0; i < clickCount; i++)
         {
-            inputs.Add(MouseInput.Delay(clickTime.Value));
+            inputs.Add(down);
+            if (clickTime != null)
+            {
+                inputs.Add(MouseInput.Delay(clickTime.Value));
+            }
+            inputs.Add(up);
         }
-        inputs.Add(up);
 
         return await element.SendInput(new MouseInput(inputs.ToArray()));
     }
