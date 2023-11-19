@@ -1,6 +1,4 @@
-﻿using System.Runtime.Serialization;
-
-namespace XamlTest;
+﻿namespace XamlTest;
 
 public class XamlTestException : Exception
 {
@@ -13,9 +11,5 @@ public class XamlTestException : Exception
 
     public XamlTestException(string? message, Exception? innerException) 
         : base(message, innerException)
-    { }
-
-    protected XamlTestException(SerializationInfo info, StreamingContext context) 
-        : base(info, context)
     { }
 }

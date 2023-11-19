@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using XamlTest.Event;
 
 namespace XamlTest.Host;
@@ -24,9 +25,14 @@ partial class VisualTreeService
                 return;
             }
 
-            if (element.GetType().GetEvent(request.EventName) is { } eventInfo)
+            Type elementType = element.GetType();
+            if (elementType.GetEvent(request.EventName) is { } eventInfo)
             {
                 EventRegistrar.Regsiter(reply.EventId, eventInfo, element);
+            }
+            else
+            {
+                reply.ErrorMessages.Add($"Could not find event '{request.EventName}' on {elementType.FullName}");
             }
         });
         return reply;

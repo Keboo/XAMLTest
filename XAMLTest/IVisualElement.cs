@@ -106,7 +106,7 @@ public interface IVisualElement : IEquatable<IVisualElement>
     /// <returns></returns>
     Task<IEventRegistration> RegisterForEvent(string name);
     /// <summary>
-    /// Un-regsiter an event that was previously registered. <see cref="RegisterForEvent(string)"/>
+    /// Un-register an event that was previously registered. <see cref="RegisterForEvent(string)"/>
     /// </summary>
     /// <param name="eventRegistration">The event registration to unregister.</param>
     /// <returns></returns>
