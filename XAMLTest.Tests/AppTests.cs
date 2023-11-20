@@ -147,4 +147,46 @@ public class AppTests
 
         Assert.IsTrue(tag?.ToString()?.Contains("--debug"));
     }
+
+    [TestMethod]
+    public async Task OnStartWithMinimizeOtherWindows_MinimizesWindows()
+    {
+        Process? notepadProcess = null;
+        try
+        {
+            notepadProcess = Process.Start("notepad.exe");
+            await Wait.For(() => 
+            {
+                notepadProcess.Refresh();
+                if (notepadProcess.HasExited)
+                {
+                    notepadProcess = Process.GetProcesses()
+                        .Where(x => string.Equals(x.ProcessName, "Notepad", StringComparison.InvariantCultureIgnoreCase))
+                        .FirstOrDefault();
+                }
+                return Task.FromResult(notepadProcess?.MainWindowHandle is { } handle && handle != IntPtr.Zero);
+            }, new Retry(10, TimeSpan.FromSeconds(10)));
+            IntPtr hWnd = notepadProcess.MainWindowHandle;
+            Assert.AreNotEqual(IntPtr.Zero, hWnd);
+
+            PInvoke.User32.WindowShowStyle windowState = PInvoke.User32.GetWindowPlacement(hWnd).showCmd;
+            Assert.AreNotEqual(PInvoke.User32.WindowShowStyle.SW_SHOWMINIMIZED, windowState);
+
+            await using var app = await App.StartRemote(new AppOptions<XAMLTest.TestApp.App>
+            {
+                LogMessage = TestContext.WriteLine,
+                MinimizeOtherWindows = true
+            });
+
+            IWindow? window = await app.GetMainWindow();
+            Assert.IsNotNull(window);
+
+            windowState = PInvoke.User32.GetWindowPlacement(hWnd).showCmd;
+            Assert.AreEqual(PInvoke.User32.WindowShowStyle.SW_SHOWMINIMIZED, windowState);
+        }
+        finally
+        {
+            notepadProcess?.Kill();
+        }
+    }
 }

@@ -2,7 +2,6 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
-  
   <ItemGroup>
     <PackageVersion Include="coverlet.collector" Version="6.0.0" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.2.2" />
@@ -10,8 +9,8 @@
     <PackageVersion Include="GrpcDotNetNamedPipes" Version="2.1.0" />
     <PackageVersion Include="MaterialDesignThemes" Version="4.9.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0" PrivateAssets="all" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.4.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.7.0" PrivateAssets="all" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.7.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
     <PackageVersion Include="Microsoft.VisualStudio.Debugger.InteropA" Version="17.5.33428.366" />
