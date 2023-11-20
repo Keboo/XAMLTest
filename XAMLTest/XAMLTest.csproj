@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFrameworks>net6.0-windows7;net7.0-windows7;net8.0-windows</TargetFrameworks>
+    <TargetFrameworks>net6.0-windows7;net7.0-windows7;net8.0-windows7</TargetFrameworks>
     <UseWPF>true</UseWPF>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>XamlTest</RootNamespace>
