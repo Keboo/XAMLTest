@@ -2,14 +2,14 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFrameworks>net6.0-windows;net7.0-windows</TargetFrameworks>
+    <TargetFrameworks>net6.0-windows;net7.0-windows;net8.0-windows7</TargetFrameworks>
     <UseWPF>true</UseWPF>
     <IsPackable>false</IsPackable>
     <DeterministicSourcePaths Condition="'$(EnableSourceLink)' == ''">false</DeterministicSourcePaths>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
+    <PackageReference Include="MaterialDesignThemes" />
   </ItemGroup>
 
 </Project>

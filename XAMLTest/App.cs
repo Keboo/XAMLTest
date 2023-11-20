@@ -33,6 +33,11 @@ public static class App
             throw new XamlTestException($"Could not find test app '{options.XamlTestPath}'");
         }
 
+        if (options.MinimizeOtherWindows)
+        {
+            MinimizeOtherWindows();
+        }
+
         ProcessStartInfo startInfo = new(options.XamlTestPath)
         {
             WorkingDirectory = Path.GetDirectoryName(options.XamlTestPath) + Path.DirectorySeparatorChar,
@@ -109,5 +114,21 @@ public static class App
             return app;
         }
         throw new XamlTestException("Failed to start remote app");
+    }
+
+    private static void MinimizeOtherWindows()
+    {
+        Process currentProcess = Process.GetCurrentProcess();
+        Process[] processes = Process.GetProcesses();
+
+        foreach (Process process in processes)
+        {
+            if (process.Id != currentProcess.Id && process.MainWindowHandle != IntPtr.Zero)
+            {
+                Windows.Win32.PInvoke.ShowWindow(
+                    new Windows.Win32.Foundation.HWND(process.MainWindowHandle), 
+                    Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_MINIMIZE);
+            }
+        }
     }
 }

@@ -4,6 +4,7 @@ public class AppOptions
 {
     private string? _xamlTestPath;
 
+    public bool MinimizeOtherWindows { get; set; }
     public string? ApplicationType { get; set; }
     public string? RemoteAppPath { get; set; }
     public string XamlTestPath
@@ -34,5 +35,13 @@ public class AppOptions
     public void WithRemoteApp<TApp>()
     {
         RemoteAppPath = typeof(TApp).Assembly.Location;
+    }
+}
+
+public class AppOptions<TApp> : AppOptions
+{
+    public AppOptions()
+    {
+        WithRemoteApp<TApp>();
     }
 }

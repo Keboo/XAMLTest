@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using System.Runtime.Serialization;
 using System.Windows.Controls;
 using XamlTest.Tests.TestControls;
 
@@ -188,7 +187,6 @@ public class ValidationTests
 
     private class ValidationErrorSerializer : ISerializer
     {
-
         private static char SeparatorChar = ';';
 
         public bool CanSerialize(Type type, ISerializer rootSerializer) => typeof(ValidationError).IsAssignableFrom(type);
@@ -204,17 +202,11 @@ public class ValidationTests
 
         public object? Deserialize(Type type, string value, ISerializer rootSerializer)
         {
-            // Create uninitialized version of ValidationError because I don't really care about the Binding at this time - and don't want to add, yet another, serializer for it :)
-            var error = (ValidationError)FormatterServices.GetSafeUninitializedObject(type);
-            if (string.IsNullOrWhiteSpace(value))
-                return null;
-
             var tokens = value.Split(SeparatorChar);
 
-            error.RuleInError = rootSerializer.Deserialize(typeof(NotEmptyValidationRule), tokens[0], rootSerializer) as ValidationRule;
-            error.ErrorContent = tokens[1];
-
-            return error;
+            var ruleInError = rootSerializer.Deserialize(typeof(NotEmptyValidationRule), tokens[0], rootSerializer) as ValidationRule;
+            var errorContent = tokens[1];
+            return new ValidationError(ruleInError, new object(), errorContent, null);
         }
     }
 
