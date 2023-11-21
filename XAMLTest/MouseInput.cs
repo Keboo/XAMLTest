@@ -1,12 +1,13 @@
-﻿using System;
-using System.Linq;
-using XamlTest.Host;
+﻿using XamlTest.Host;
 using XamlTest.Input;
 
 namespace XamlTest;
 
 public sealed class MouseInput : IInput
 {
+    public static TimeSpan GetDoubleClickTime
+        => TimeSpan.FromMilliseconds(Windows.Win32.PInvoke.GetDoubleClickTime());
+
     internal class MouseInputData : IInput
     {
         public MouseData.Types.MouseEvent Event { get; set; }
