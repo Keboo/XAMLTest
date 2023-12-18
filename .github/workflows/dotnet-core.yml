@@ -65,21 +65,21 @@ jobs:
 
     - name: Test Logs
       if: ${{ always() }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: Test Logs
         path: ${{ github.workspace }}\XAMLTest.Tests\bin\${{ env.configuration }}\**\*.log
 
     - name: Upload Crash Dumps
       if: ${{ always() }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: Crash Dumps
         path: ${{ github.workspace }}\XAMLTest.Tests\TestResults\**\*.dmp
 
     - name: Upload Screenshots
       if: ${{ always() }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: Test Images
         path: ${{ github.workspace }}\XAMLTest.Tests\bin\${{ env.configuration }}\**\Screenshots
@@ -89,7 +89,7 @@ jobs:
     
     - name: Upload Artifacts
       if: ${{ github.event_name != 'pull_request' }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: NuGet
         path: ${{ github.workspace }}\XAMLTest\bin\${{ env.configuration }}\XAMLTest.${{ env.nugetVersion }}*nupkg
