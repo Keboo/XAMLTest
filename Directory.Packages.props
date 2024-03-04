@@ -7,7 +7,7 @@
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageVersion Include="Grpc.Tools" Version="2.62.0" />
     <PackageVersion Include="GrpcDotNetNamedPipes" Version="3.0.0" />
-    <PackageVersion Include="MaterialDesignThemes" Version="4.9.0" />
+    <PackageVersion Include="MaterialDesignThemes" Version="5.0.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.7.0" PrivateAssets="all" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.7.0" />
