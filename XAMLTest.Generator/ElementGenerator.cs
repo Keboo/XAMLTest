@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TypeInfo = Microsoft.CodeAnalysis.TypeInfo;
 
@@ -249,7 +249,7 @@ public class SyntaxReceiver : ISyntaxContextReceiver
                 type is not null;
                 type = type.BaseType)
             {
-                List<Property> properties = new();
+                List<Property> properties = [];
 
                 if (Elements.Any(x => x.Type.FullName == $"{type}")) continue;
 
@@ -298,10 +298,22 @@ public class SyntaxReceiver : ISyntaxContextReceiver
                 }
                 if (properties.Any())
                 {
-                    var visualElementType = new VisualElementType(type.Name, $"{type}", type.IsSealed || type.IsValueType);
+                    string safeTypeName = GetSafeTypeName(type);
+                    var visualElementType = new VisualElementType(safeTypeName, $"{type}", type.IsSealed || type.IsValueType);
                     Elements.Add(new VisualElement(targetNamespace ?? "XamlTest", visualElementType, properties));
                 }
             }
+        }
+
+        static string GetSafeTypeName(ITypeSymbol typeSymbol)
+        {
+            string safeTypeName = typeSymbol.Name;
+
+            if (typeSymbol is INamedTypeSymbol { TypeArguments.Length: > 0 } genericSymbol)
+            {
+                safeTypeName += $"_{string.Join("_", genericSymbol.TypeArguments.Select(x => GetSafeTypeName(x)))}";
+            }
+            return safeTypeName;
         }
 
         static bool ShouldUseVisualElement(ITypeSymbol typeSymbol)
