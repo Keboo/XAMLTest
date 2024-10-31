@@ -1,6 +1,6 @@
-﻿using EnvDTE;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
+using EnvDTE;
 using DTEProcess = EnvDTE.Process;
 using Process = System.Diagnostics.Process;
 
@@ -16,6 +16,7 @@ public class VisualStudioAttacher
 
     public static string? GetSolutionForVisualStudio(Process visualStudioProcess)
     {
+        
         if (TryGetVsInstance(visualStudioProcess.Id, out _DTE? visualStudioInstance))
         {
             try
@@ -86,17 +87,15 @@ public class VisualStudioAttacher
     private static bool TryGetVsInstance(int processId, [NotNullWhen(true)] out _DTE? instance)
     {
         IntPtr numFetched = IntPtr.Zero;
-        IRunningObjectTable runningObjectTable;
-        IEnumMoniker monikerEnumerator;
         IMoniker[] monikers = new IMoniker[1];
 
-        GetRunningObjectTable(0, out runningObjectTable);
-        runningObjectTable.EnumRunning(out monikerEnumerator);
+        _ = GetRunningObjectTable(0, out IRunningObjectTable runningObjectTable);
+        runningObjectTable.EnumRunning(out IEnumMoniker monikerEnumerator);
         monikerEnumerator.Reset();
 
         while (monikerEnumerator.Next(1, monikers, numFetched) == 0)
         {
-            CreateBindCtx(0, out IBindCtx ctx);
+            _ = CreateBindCtx(0, out IBindCtx ctx);
 
             monikers[0].GetDisplayName(ctx, null, out string runningObjectName);
 
