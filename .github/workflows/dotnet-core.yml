@@ -59,8 +59,11 @@ jobs:
     - name: Minimize all windows
       run: (New-Object -ComObject "Shell.Application").minimizeall()
 
-    - name: Test
-      run: dotnet test --no-build --verbosity normal --configuration ${{ env.configuration }} --blame-crash --blame-crash-collect-always --blame-hang --blame-hang-timeout 5m
+    - name: Test net8.0
+      run: dotnet test --framework net8.0-windows --no-build --verbosity normal --configuration ${{ env.configuration }} --blame-crash --blame-crash-collect-always --blame-hang --blame-hang-timeout 5m
+
+    - name: Test net9.0
+      run: dotnet test --framework net9.0-windows --no-build --verbosity normal --configuration ${{ env.configuration }} --blame-crash --blame-crash-collect-always --blame-hang --blame-hang-timeout 5m
 
     - name: Test Logs
       if: ${{ always() }}
