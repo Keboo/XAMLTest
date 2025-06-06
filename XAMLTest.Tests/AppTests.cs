@@ -149,6 +149,7 @@ public class AppTests
     }
 
     [TestMethod]
+    [Ignore("This test only handle Win32 apps, not anything with CoreWindow")]
     public async Task OnStartWithMinimizeOtherWindows_MinimizesWindows()
     {
         Process? notepadProcess = null;
