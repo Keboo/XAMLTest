@@ -299,11 +299,12 @@ message EventInvocationsResult {
 
 message RemoteInvocationRequest {
   string elementId = 1;
-  string methodContainerType = 2;
-  string methodName = 3;
-  string assembly = 4;
-  repeated string parameters = 5;
-  repeated string methodGenericTypes = 6;
+  bool useAppAsElement = 2;
+  string methodContainerType = 3;
+  string methodName = 4;
+  string assembly = 5;
+  repeated string parameters = 6;
+  repeated string methodGenericTypes = 7;
 }
 
 message RemoteInvocationResult {

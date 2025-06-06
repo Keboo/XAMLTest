@@ -336,6 +336,9 @@ internal sealed class App : IApp
     public Task<IReadOnlyList<ISerializer>> GetSerializers()
         => Task.FromResult<IReadOnlyList<ISerializer>>(Context.Serializer.Serializers.AsReadOnly());
 
+    public Task<TReturn?> RemoteExecute<TReturn>(Delegate @delegate, object?[] parameters)
+        => Client.RemoteExecute<TReturn>(Context.Serializer, LogMessage, x => x.UseAppAsElement = true, @delegate, parameters);
+
     public async Task<IVersion> GetVersion()
     {
         LogMessage?.Invoke($"{nameof(GetVersion)}()");
@@ -357,6 +360,4 @@ internal sealed class App : IApp
             throw new XamlTestException($"Error communicating with host process", e);
         }
     }
-
-    public void AddXamlNamespace(string? prefix, string uri) => throw new NotImplementedException();
 }

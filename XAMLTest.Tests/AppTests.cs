@@ -196,4 +196,31 @@ public class AppTests
             notepadProcess?.Kill();
         }
     }
+
+    [TestMethod]
+    public async Task OnRemoteExecute_CanExecuteDelegate()
+    {
+        await using IApp app = await App.StartRemote(TestContext.WriteLine);
+        await app.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
+
+        await using var recorder = new TestRecorder(app);
+
+        static void ChangeCulture(Application _)
+        {
+            Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("da-DK");
+        }
+        await app.RemoteExecute<Application>(ChangeCulture);
+
+        IWindow window = await app.CreateWindowWithContent("");
+
+        await window.RemoteExecute(AssertCulture);
+
+        static void AssertCulture(Window window)
+        {
+            var expectedCulture = CultureInfo.GetCultureInfo("da-DK");
+            Assert.AreEqual(expectedCulture, CultureInfo.CurrentCulture);
+        }
+
+        recorder.Success();
+    }
 }

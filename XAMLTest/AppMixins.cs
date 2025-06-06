@@ -1,12 +1,8 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 
 namespace XamlTest;
 
-public static class AppMixins
+public static partial class AppMixins
 {
     public static async Task InitializeWithDefaults(
         this IApp app, 
