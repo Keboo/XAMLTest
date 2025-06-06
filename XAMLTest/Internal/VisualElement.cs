@@ -541,58 +541,9 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
 
     public IVisualElement<TElement> As<TElement>() where TElement : DependencyObject
         => Convert<IVisualElement<TElement>>();
-    
-    public async Task<TReturn?> RemoteExecute<TReturn>(Delegate @delegate, object?[] parameters)
-    {
-        if (@delegate.Target is not null)
-        {
-            throw new ArgumentException("Cannot execute a non-static delegate remotely");
-        }
-        if (@delegate.Method.DeclaringType is null)
-        {
-            throw new ArgumentException("Could not find containing type for delegate");
-        }
 
-        var request = new RemoteInvocationRequest()
-        {
-            ElementId = Id,
-            MethodName = @delegate.Method.Name,
-            MethodContainerType = @delegate.Method.DeclaringType!.AssemblyQualifiedName,
-            Assembly = @delegate.Method.DeclaringType.Assembly.FullName,
-        };
-        foreach (var parameter in parameters)
-        {
-            request.Parameters.Add(Serializer.Serialize(parameter?.GetType() ?? typeof(object), parameter));
-        }
-        if (@delegate.Method.IsGenericMethod)
-        {
-            foreach(var genericArguments in @delegate.Method.GetGenericArguments())
-            {
-                request.MethodGenericTypes.Add(genericArguments.AssemblyQualifiedName);
-            }
-        }
-        LogMessage?.Invoke($"{nameof(RemoteExecute)}({request})");
-        if (await Client.RemoteInvocationAsync(request) is { } reply)
-        {
-            if (reply.ErrorMessages.Any())
-            {
-                throw new XamlTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
-            }
-
-            if (reply.ValueType is null)
-            {
-                return default;
-            }
-
-            if (reply.Value is TReturn converted && typeof(TReturn) != typeof(string))
-            {
-                return converted;
-            }
-
-            return (TReturn)Serializer.Deserialize(typeof(TReturn), reply.Value ?? "")!;
-        }
-        return default;
-    }
+    public Task<TReturn?> RemoteExecute<TReturn>(Delegate @delegate, object?[] parameters) 
+        => Client.RemoteExecute<TReturn>(Serializer, LogMessage, x => x.ElementId = Id, @delegate, parameters);
 
     public async Task Highlight(HighlightConfig highlightConfig)
     {

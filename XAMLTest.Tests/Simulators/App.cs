@@ -47,4 +47,5 @@ public class App : IApp
 
     public Task RegisterSerializer<T>(int insertIndex = 0) where T : ISerializer, new() => throw new NotImplementedException();
     public void LogMessage(string message) => throw new NotImplementedException();
+    public Task<TReturn?> RemoteExecute<TReturn>(Delegate @delegate, object?[] parameters) => throw new NotImplementedException();
 }

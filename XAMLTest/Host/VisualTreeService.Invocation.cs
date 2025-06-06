@@ -11,7 +11,15 @@ partial class VisualTreeService
         {
             try
             {
-                DependencyObject? element = GetCachedElement<DependencyObject>(request.ElementId);
+                object? element = null;
+                if (request.UseAppAsElement)
+                {
+                    element = Application;
+                }
+                else
+                {
+                    element = GetCachedElement<DependencyObject>(request.ElementId);
+                }
                 if (element is null)
                 {
                     reply.ErrorMessages.Add("Failed to find element to execute remote code");

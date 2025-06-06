@@ -1,4 +1,4 @@
-﻿using System.Windows.Controls;
+using System.Windows.Controls;
 
 namespace XamlTest.Tests;
 
@@ -69,13 +69,8 @@ public class SendMouseInputTests
     public async Task CanClickThroughMenus()
     {
         await using var recorder = new TestRecorder(App);
-
-        if (!await TopMenuItem.GetIsSubmenuOpen())
-        {
-            await TopMenuItem.LeftClick();
-            await Task.Delay(200);
-        }
-
+        await TopMenuItem.LeftClick();
+        await Task.Delay(200);
         var nestedMenuItem = await TopMenuItem.GetElement<MenuItem>("SubMenu");
 
         await using IEventRegistration registration = await nestedMenuItem.RegisterForEvent(nameof(MenuItem.Click));
@@ -86,6 +81,7 @@ public class SendMouseInputTests
         //https://source.dot.net/#PresentationFramework/System/Windows/Controls/MenuItem.cs,1388
         await Wait.For(async () =>
         {
+            await nestedMenuItem.LeftClick(clickTime:TimeSpan.FromMilliseconds(200));
             var invocations = await registration.GetInvocations();
             Assert.IsTrue(invocations.Count > 0);
         });

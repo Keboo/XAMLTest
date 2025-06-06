@@ -90,8 +90,18 @@ public interface IVisualElement : IEquatable<IVisualElement>
     /// <param name="xaml">The XAML content to load</param>
     /// <returns>The root XAML element</returns>
     Task<IVisualElement<TElement>> SetXamlProperty<TElement>(string propertyName, XamlSegment xaml);
+    /// <summary>
+    /// Get a resource by its key.
+    /// </summary>
+    /// <param name="key">The resource key.</param>
+    /// <returns></returns>
     Task<IResource> GetResource(string key);
 
+    /// <summary>
+    /// Gets the effective background color of the element by flattening the background with its parent elements.
+    /// </summary>
+    /// <param name="toElement"></param>
+    /// <returns></returns>
     Task<Color> GetEffectiveBackground(IVisualElement? toElement);
     /// <summary>
     /// Gets the coordinates of the element in screen coordinates.
