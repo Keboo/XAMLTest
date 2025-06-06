@@ -20,7 +20,7 @@ public class AppTests
         Assert.AreEqual("Test App Window", await window!.GetTitle());
 
         recorder.Success();
-    }
+    } 
 
     [TestMethod]
     public async Task CanGenerateTypedElement_ForCustomControlInRemoteApp()
