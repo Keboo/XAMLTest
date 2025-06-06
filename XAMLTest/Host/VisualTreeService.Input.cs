@@ -30,7 +30,7 @@ partial class VisualTreeService
                 reply.ErrorMessages.Add($"Failed to find parent window.");
             }
 
-            if (Keyboard.Focus(element) != element)
+            if (Keyboard.Focus(element) is { } && !element.IsKeyboardFocused && !element.IsKeyboardFocusWithin)
             {
                 reply.ErrorMessages.Add($"Failed to move focus to element {element}");
             }

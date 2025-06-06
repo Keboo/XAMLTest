@@ -1,4 +1,4 @@
-﻿using System.Windows.Controls;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace XamlTest.Tests;
@@ -230,7 +230,7 @@ public class SendKeyboardInputTests
         static async Task AssertSelection(params IVisualElement<ListBoxItem>[] selectedItems)
         {
             IVisualElement<ListBoxItem>[] allListBoxItems =
-            {
+            [
                 ListBoxItem1,
                 ListBoxItem2,
                 ListBoxItem3,
@@ -240,7 +240,7 @@ public class SendKeyboardInputTests
                 ListBoxItem7,
                 ListBoxItem8,
                 ListBoxItem9
-            };
+            ];
 
             foreach (IVisualElement<ListBoxItem> listBoxItem in allListBoxItems)
             {
