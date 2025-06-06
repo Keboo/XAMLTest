@@ -1,18 +1,46 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Runtime.CompilerServices;
+using static PInvoke.User32;
 
 namespace XamlTest;
 
 public sealed class TestRecorder : IAsyncDisposable
 {
+    private record class InputStates
+    {
+        public bool IsLeftButtonDown { get; init; }
+        public bool IsRightButtonDown { get; init; }
+        public bool IsMiddleButtonDown { get; init; }
+
+        public bool IsShiftDown { get; init; }
+        public bool IsControlDown { get; init; }
+        public bool IsAltDown { get; init; }
+
+        public static InputStates Empty { get; } = new();
+
+        public static InputStates GetCurrentState()
+        {
+            return new InputStates
+            {
+                IsLeftButtonDown = GetCurrentState(VirtualKey.VK_LBUTTON),
+                IsRightButtonDown = GetCurrentState(VirtualKey.VK_RBUTTON),
+                IsMiddleButtonDown = GetCurrentState(VirtualKey.VK_MBUTTON),
+                IsShiftDown = GetCurrentState(VirtualKey.VK_SHIFT),
+                IsControlDown = GetCurrentState(VirtualKey.VK_CONTROL),
+                IsAltDown = GetCurrentState(VirtualKey.VK_MENU)
+            };
+        }
+
+        private static bool GetCurrentState(VirtualKey key)
+        {
+            var ctrl = GetAsyncKeyState((int)key);
+            return ((ushort)ctrl >> 15) == 1;
+        }
+    }
+
     public IApp App { get; }
     public string BaseFileName { get; }
+
+    private InputStates Inputs { get; } = InputStates.GetCurrentState();
 
     private bool IsDisposed { get; set; }
     public bool IsSuccess { get; private set; }
@@ -52,12 +80,42 @@ public sealed class TestRecorder : IAsyncDisposable
         {
             BaseFileName = BaseFileName.Replace($"{invalidChar}", "");
         }
+        if (Inputs != InputStates.Empty)
+        {
+            App.LogMessage($"WARNING: Test started with initial input states: {Inputs}");
+        }
     }
 
     /// <summary>
     /// Calling this method indicates that the test completed successfully and no additional recording is needed.
     /// </summary>
-    public void Success() => IsSuccess = true;
+    public void Success(bool skipInputStateCheck = false)
+    {
+        if (!skipInputStateCheck) 
+        {
+            var endingState = InputStates.GetCurrentState();
+            if (endingState != Inputs)
+            {
+                StringBuilder sb = new();
+                sb.AppendLine("Input states were not reset at the end of the test:");
+                if (endingState.IsLeftButtonDown != Inputs.IsLeftButtonDown)
+                    sb.AppendLine($"  Left button down: {endingState.IsLeftButtonDown} (was {Inputs.IsLeftButtonDown})");
+                if (endingState.IsRightButtonDown != Inputs.IsRightButtonDown)
+                    sb.AppendLine($"  Right button down: {endingState.IsRightButtonDown} (was {Inputs.IsRightButtonDown})");
+                if (endingState.IsMiddleButtonDown != Inputs.IsMiddleButtonDown)
+                    sb.AppendLine($"  Middle button down: {endingState.IsMiddleButtonDown} (was {Inputs.IsMiddleButtonDown})");
+                if (endingState.IsShiftDown != Inputs.IsShiftDown)
+                    sb.AppendLine($"  Shift key down: {endingState.IsShiftDown} (was {Inputs.IsShiftDown})");
+                if (endingState.IsControlDown != Inputs.IsControlDown)
+                    sb.AppendLine($"  Control key down: {endingState.IsControlDown} (was {Inputs.IsControlDown})");
+                if (endingState.IsAltDown != Inputs.IsAltDown)
+                    sb.AppendLine($"  Alt key down: {endingState.IsAltDown} (was {Inputs.IsAltDown})");
+                throw new XamlTestException(sb.ToString());
+            }
+            App.LogMessage("Input states matched starting state.");
+        }
+        IsSuccess = true;
+    }
 
     /// <summary>
     /// Enumerate all screenshots
@@ -67,7 +125,7 @@ public sealed class TestRecorder : IAsyncDisposable
     {
         if (!System.IO.Directory.Exists(Directory))
         {
-            return Enumerable.Empty<string>();
+            return [];
         }
         return System.IO.Directory.EnumerateFiles(Directory, "*.jpg", SearchOption.AllDirectories);
     }
