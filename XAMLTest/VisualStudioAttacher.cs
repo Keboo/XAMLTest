@@ -44,7 +44,16 @@ public class VisualStudioAttacher
                     .Parent
                     .LocalProcesses
                     .Cast<DTEProcess>()
-                    .FirstOrDefault(process => process.ProcessID == applicationProcess.Id);
+                    .FirstOrDefault(process => {
+                        try
+                        {
+                            return process.ProcessID == applicationProcess.Id;
+                        }
+                        catch(COMException)
+                        {
+                            return false;
+                        }
+                    });
 
                 if (processToAttachTo != null)
                 {

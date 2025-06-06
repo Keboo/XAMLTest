@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Reflection.Emit;
+﻿using System.Reflection.Emit;
 
 namespace XamlTest.Event;
 
@@ -9,7 +6,7 @@ internal static class EventRegistrar
 {
     private class EventDetails
     {
-        public List<object[]> Invocations { get; } = new();
+        public List<object[]> Invocations { get; } = [];
         public Delegate Delegate { get; }
         public EventInfo Event { get; }
         public object? Source { get; }
@@ -24,10 +21,10 @@ internal static class EventRegistrar
 
     private static object SyncObject { get; } = new();
 
-    private static Dictionary<string, EventDetails> RegisteredEvents { get; } = new();
+    private static Dictionary<string, EventDetails> RegisteredEvents { get; } = [];
 
-    private static Dictionary<string, List<object[]>> EventInvocations { get; } = new();
-    private static Dictionary<string, Delegate> EventDelegates { get; } = new();
+    private static Dictionary<string, List<object[]>> EventInvocations { get; } = [];
+    private static Dictionary<string, Delegate> EventDelegates { get; } = [];
 
     public static void AddInvocation(string eventId, object[] parameters)
     {
@@ -47,7 +44,7 @@ internal static class EventRegistrar
             if (RegisteredEvents.TryGetValue(eventId, out EventDetails? eventDetails))
             {
                 MethodInfo? removeMethod = eventDetails.Event.GetRemoveMethod();
-                removeMethod?.Invoke(eventDetails.Source, new object[] { eventDetails.Delegate });
+                removeMethod?.Invoke(eventDetails.Source, [eventDetails.Delegate]);
                 return removeMethod != null;
             }
         }
@@ -91,11 +88,11 @@ internal static class EventRegistrar
 
         ILGenerator ilgen = handler.GetILGenerator();
         MethodInfo addInvocationMethod = typeof(EventRegistrar)
-            .GetMethod(nameof(EventRegistrar.AddInvocation))
+            .GetMethod(nameof(AddInvocation))
             ?? throw new InvalidOperationException("Failed to find method");
         int foo = 0;
         string bar = "";
-        object[] array = new object[] { foo, bar };
+        object[] array = [foo, bar];
 
         ilgen.Emit(OpCodes.Ldstr, eventId);
         ilgen.Emit(OpCodes.Ldc_I4, delegateParameterTypes.Length);
@@ -118,7 +115,7 @@ internal static class EventRegistrar
         MethodInfo addHandler = eventInfo.GetAddMethod() ?? 
             throw new InvalidOperationException($"Could not find add method for event '{eventInfo.Name}'");
         Delegate dEmitted = handler.CreateDelegate(delegateType);
-        addHandler.Invoke(source, new object[] { dEmitted });
+        addHandler.Invoke(source, [dEmitted]);
 
         lock(RegisteredEvents)
         {
@@ -153,12 +150,9 @@ internal static class EventRegistrar
         }
 
         MethodInfo? invoke = delegateType.GetMethod(nameof(Action.Invoke));
-        if (invoke is null)
-        {
-            throw new MissingMethodException($"Could not find {nameof(Action.Invoke)} method on delegate {delegateType.FullName}");
-        }
-
-        return invoke.ReturnType;
+        return invoke is null
+            ? throw new MissingMethodException($"Could not find {nameof(Action.Invoke)} method on delegate {delegateType.FullName}")
+            : invoke.ReturnType;
     }
 
 }

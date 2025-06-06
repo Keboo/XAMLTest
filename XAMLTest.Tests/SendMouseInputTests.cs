@@ -14,14 +14,14 @@ public class SendMouseInputTests
     [NotNull]
     private static IVisualElement<MenuItem>? TopMenuItem { get; set; }
 
-    [NotNull] 
-    private static IVisualElement<Button>? Button { get; set; } 
-    
+    [NotNull]
+    private static IVisualElement<Button>? Button { get; set; }
+
     [ClassInitialize]
     public static async Task ClassInitialize(TestContext context)
     {
         App = await XamlTest.App.StartRemote(logMessage: context.WriteLine);
-
+        
         await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
 
         var window = await App.CreateWindowWithContent(
@@ -46,7 +46,7 @@ public class SendMouseInputTests
 ");
         Grid = await window.GetElement<Grid>("Grid");
         TopMenuItem = await window.GetElement<MenuItem>("TopLevel");
-        Button = await window.GetElement<Button>(); 
+        Button = await window.GetElement<Button>();
     }
 
     [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
@@ -69,41 +69,46 @@ public class SendMouseInputTests
     public async Task CanClickThroughMenus()
     {
         await using var recorder = new TestRecorder(App);
-        var nestedMenuItem = await Wait.For(async () =>
+
+        if (!await TopMenuItem.GetIsSubmenuOpen())
         {
             await TopMenuItem.LeftClick();
             await Task.Delay(200);
-            return await TopMenuItem.GetElement<MenuItem>("SubMenu");
-        });
+        }
+
+        var nestedMenuItem = await TopMenuItem.GetElement<MenuItem>("SubMenu");
 
         await using IEventRegistration registration = await nestedMenuItem.RegisterForEvent(nameof(MenuItem.Click));
 
+        await nestedMenuItem.LeftClick();
+
+        //NB: The click event on MenuItems is deferred until the next render, need a delay to pick it up.
+        //https://source.dot.net/#PresentationFramework/System/Windows/Controls/MenuItem.cs,1388
         await Wait.For(async () =>
         {
-            await nestedMenuItem.LeftClick(clickTime:TimeSpan.FromMilliseconds(200));
+            var invocations = await registration.GetInvocations();
+            Assert.IsTrue(invocations.Count > 0);
+        });
+
+        recorder.Success();
+    }
+
+    [TestMethod]
+    public async Task CanDoubleClickOnButton()
+    {
+        await using var recorder = new TestRecorder(App);
+
+        await using IEventRegistration registration = await Button.RegisterForEvent(nameof(Control.MouseDoubleClick));
+
+        await Wait.For(async () =>
+        {
+            await Button.LeftDoubleClick();
             var invocations = await registration.GetInvocations();
             Assert.IsTrue(invocations.Count > 1);
         });
 
         recorder.Success();
     }
-
-    [TestMethod] 
-    public async Task CanDoubleClickOnButton() 
-    { 
-        await using var recorder = new TestRecorder(App); 
- 
-        await using IEventRegistration registration = await Button.RegisterForEvent(nameof(Control.MouseDoubleClick)); 
- 
-        await Wait.For(async () => 
-        { 
-            await Button.LeftDoubleClick(); 
-            var invocations = await registration.GetInvocations(); 
-            Assert.IsTrue(invocations.Count > 1);
-        }); 
- 
-        recorder.Success(); 
-    } 
 
     [TestMethod]
     public async Task LeftClick_WithPositionOffset_OffsetsCursor()
@@ -144,7 +149,7 @@ public class SendMouseInputTests
         Point center = new(
             coordinates.Left + coordinates.Width / 2.0,
             coordinates.Top + coordinates.Height / 2.0);
-        
+
         Point cursorPosition = await Grid.MoveCursorTo(Position.Center);
         Vector distance = center - cursorPosition;
         Assert.IsTrue(distance.Length < tollerance);

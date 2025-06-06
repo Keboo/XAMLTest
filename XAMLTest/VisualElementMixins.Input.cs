@@ -13,8 +13,7 @@ public static partial class VisualElementMixins
         int xOffset = 0,
         int yOffset = 0)
     {
-        List<MouseInput> inputs = new();
-        inputs.Add(MouseInput.MoveToElement(position));
+        List<MouseInput> inputs = [MouseInput.MoveToElement(position)];
         if (xOffset != 0 || yOffset != 0)
         {
             inputs.Add(MouseInput.MoveRelative(xOffset, yOffset));
@@ -95,8 +94,7 @@ public static partial class VisualElementMixins
         TimeSpan? clickTime,
         int clickCount)
     {
-        List<MouseInput> inputs = new();
-        inputs.Add(MouseInput.MoveToElement(position));
+        List<MouseInput> inputs = [MouseInput.MoveToElement(position)];
         if (xOffset != 0 || yOffset != 0)
         {
             inputs.Add(MouseInput.MoveRelative(xOffset, yOffset));
@@ -111,7 +109,7 @@ public static partial class VisualElementMixins
             inputs.Add(up);
         }
 
-        return await element.SendInput(new MouseInput(inputs.ToArray()));
+        return await element.SendInput(new MouseInput([.. inputs]));
     }
 
     public static async Task SendKeyboardInput(this IVisualElement element, FormattableString input)
