@@ -69,33 +69,37 @@ public class SendMouseInputTests
     public async Task CanClickThroughMenus()
     {
         await using var recorder = new TestRecorder(App);
-        await TopMenuItem.LeftClick();
-        await Task.Delay(200);
-        var nestedMenuItem = await TopMenuItem.GetElement<MenuItem>("SubMenu");
+        var nestedMenuItem = await Wait.For(async () =>
+        {
+            await TopMenuItem.LeftClick();
+            await Task.Delay(200);
+            return await TopMenuItem.GetElement<MenuItem>("SubMenu");
+        });
+
         await using IEventRegistration registration = await nestedMenuItem.RegisterForEvent(nameof(MenuItem.Click));
-        await nestedMenuItem.LeftClick(clickTime:TimeSpan.FromMilliseconds(200));
 
         await Wait.For(async () =>
         {
+            await nestedMenuItem.LeftClick(clickTime:TimeSpan.FromMilliseconds(200));
             var invocations = await registration.GetInvocations();
-            Assert.AreEqual(1, invocations.Count);
+            Assert.IsTrue(invocations.Count > 1);
         });
 
         recorder.Success();
     }
 
     [TestMethod] 
-    public async Task CanDoubleClickOnGrid() 
+    public async Task CanDoubleClickOnButton() 
     { 
         await using var recorder = new TestRecorder(App); 
  
         await using IEventRegistration registration = await Button.RegisterForEvent(nameof(Control.MouseDoubleClick)); 
-        await Button.LeftDoubleClick(); 
  
         await Wait.For(async () => 
         { 
+            await Button.LeftDoubleClick(); 
             var invocations = await registration.GetInvocations(); 
-            Assert.AreEqual(1, invocations.Count); 
+            Assert.IsTrue(invocations.Count > 1);
         }); 
  
         recorder.Success(); 

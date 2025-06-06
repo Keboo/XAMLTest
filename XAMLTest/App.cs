@@ -43,7 +43,7 @@ public static class App
             WorkingDirectory = Path.GetDirectoryName(options.XamlTestPath) + Path.DirectorySeparatorChar,
             UseShellExecute = true
         };
-        startInfo.ArgumentList.Add($"{Process.GetCurrentProcess().Id}");
+        startInfo.ArgumentList.Add($"{Environment.ProcessId}");
         if (!string.IsNullOrWhiteSpace(options.RemoteAppPath))
         {
             startInfo.ArgumentList.Add("--application-path");
@@ -92,7 +92,7 @@ public static class App
             IVersion version;
             try
             {
-                version = await Wait.For(() => app.GetVersion());
+                version = await Wait.For(app.GetVersion);
             }
             catch(TimeoutException)
             {
