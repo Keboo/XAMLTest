@@ -260,7 +260,8 @@ public class SyntaxReceiver : ISyntaxContextReceiver
                         !property.IsStatic &&
                         !property.IsOverride &&
                         property.DeclaredAccessibility == Accessibility.Public &&
-                        !property.GetAttributes().Any(x => x.AttributeClass?.Name == "ObsoleteAttribute") &&
+                        !property.GetAttributes()
+                            .Any(x => x.AttributeClass?.Name == "ObsoleteAttribute" || x.AttributeClass?.Name == "ExperimentalAttribute") &&
                         !IgnoredTypes.Contains($"{property.Type}") &&
                         !IsDelegate(property.Type))
                     {
