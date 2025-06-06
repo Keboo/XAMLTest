@@ -118,68 +118,98 @@ public class SendKeyboardInputTests
     [TestMethod]
     public async Task SendInput_WithStringInput_SetsText()
     {
+        await using var recorder = new TestRecorder(App);
+
         await TextBox1.SendInput(new KeyboardInput("Some Text"));
 
         Assert.AreEqual("Some Text", await TextBox1.GetText());
+
+        recorder.Success();
     }
 
     [TestMethod]
     public async Task SendInput_WithFormattableStringInput_SetsText()
     {
+        await using var recorder = new TestRecorder(App);
+
         await TextBox1.SendKeyboardInput($"Some Text");
 
         Assert.AreEqual("Some Text", await TextBox1.GetText());
+
+        recorder.Success();
     }
 
     [TestMethod]
     public async Task SendInput_WithFormattableStringWithKeys_SetsText()
     {
+        await using var recorder = new TestRecorder(App);
+
         await TextBox1.SendKeyboardInput($"Some{Key.Space}Text");
 
         Assert.AreEqual("Some Text", await TextBox1.GetText());
+
+        recorder.Success();
     }
 
     [TestMethod]
     public async Task SendInput_WithTabKey_MovesFocusForward()
     {
+        await using var recorder = new TestRecorder(App);
+
         await TextBox1.MoveKeyboardFocus();
         await TextBox1.SendKeyboardInput($"{Key.Tab}");
 
         Assert.IsTrue(await TextBox2.GetIsKeyboardFocusWithin());
+
+        recorder.Success();
     }
 
     [TestMethod]
     public async Task SendInput_WithTabKeyAndShiftModifier_MovesFocusBackwards()
     {
+        await using var recorder = new TestRecorder(App);
+
         await TextBox2.MoveKeyboardFocus();
         await TextBox2.SendKeyboardInput($"{ModifierKeys.Shift}{Key.Tab}{ModifierKeys.None}");
 
         Assert.IsTrue(await TextBox1.GetIsKeyboardFocusWithin());
+
+        recorder.Success();
     }
 
     [TestMethod]
     public async Task SendInput_WithCopyPasteModifiers_CopyPasteViaClipboardWorks()
     {
+        await using var recorder = new TestRecorder(App);
+
         await TextBox1.MoveKeyboardFocus();
         await TextBox1.SendKeyboardInput($"test input");
         await TextBox1.SendKeyboardInput($"{ModifierKeys.Control}{Key.A}{Key.C}{ModifierKeys.None}{Key.Tab}");
         await TextBox2.SendKeyboardInput($"{ModifierKeys.Control}{Key.V}{ModifierKeys.None}");
 
         Assert.AreEqual("test input", await TextBox2.GetText());
+
+        recorder.Success();
     }
 
     [TestMethod]
     public async Task SendInput_WithTabKeyAndControlModifier_ChangesSelectedTab()
     {
+        await using var recorder = new TestRecorder(App);
+
         Assert.AreEqual(0, await TabControl.GetSelectedIndex());
         await TabControl.SendKeyboardInput($"{ModifierKeys.Control}{Key.Tab}{ModifierKeys.None}");
         Assert.AreEqual(1, await TabControl.GetSelectedIndex());
+
+        recorder.Success();
     }
 
     [TestMethod]
     public async Task SendInput_WithControlAndShiftModifiers_AllowsForMultiRangeSelectionInListBox()
     {
-        await AssertSelection(Array.Empty<IVisualElement<ListBoxItem>>());
+        await using var recorder = new TestRecorder(App);
+
+        await AssertSelection([]);
 
         // Select items 2 through 4
         await ListBoxItem2.LeftClick();
@@ -195,7 +225,9 @@ public class SendKeyboardInputTests
 
         await AssertSelection(ListBoxItem2, ListBoxItem3, ListBoxItem4, ListBoxItem7);
 
-        async Task AssertSelection(params IVisualElement<ListBoxItem>[] selectedItems)
+        recorder.Success();
+
+        static async Task AssertSelection(params IVisualElement<ListBoxItem>[] selectedItems)
         {
             IVisualElement<ListBoxItem>[] allListBoxItems =
             {

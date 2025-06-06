@@ -18,6 +18,8 @@ public class AppTests
         await using var recorder = new TestRecorder(app);
         IWindow? window = await app.GetMainWindow();
         Assert.AreEqual("Test App Window", await window!.GetTitle());
+
+        recorder.Success();
     }
 
     [TestMethod]
@@ -31,6 +33,8 @@ public class AppTests
         IVisualElement<ColorZone> colorZone = await window.GetElement<ColorZone>("/ColorZone");
 
         Assert.AreEqual(ColorZoneMode.PrimaryMid, await colorZone.GetMode());
+
+        recorder.Success();
     }
 
     [TestMethod]
@@ -48,6 +52,8 @@ public class AppTests
 </materialDesign:ColorZone>");
 
         Assert.AreEqual(ColorZoneMode.PrimaryLight, await colorZone.GetMode());
+
+        recorder.Success();
     }
 
     [TestMethod]
@@ -149,6 +155,7 @@ public class AppTests
     }
 
     [TestMethod]
+    [Ignore("This test only handle Win32 apps, not anything with CoreWindow")]
     public async Task OnStartWithMinimizeOtherWindows_MinimizesWindows()
     {
         Process? notepadProcess = null;

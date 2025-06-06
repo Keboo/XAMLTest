@@ -1,5 +1,6 @@
 ﻿namespace XamlTest;
 
+[DebuggerStepThrough]
 public static class Wait
 {
     public static async Task For(Func<Task<bool>> action, Retry? retry = null, string? message = null)

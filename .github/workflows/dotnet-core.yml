@@ -18,7 +18,7 @@ defaults:
 
 env:
   configuration: Release
-  baseVersion: 1.2.2
+  baseVersion: 1.3.0
   preRelease: true
 
 jobs:
@@ -45,9 +45,8 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: |
-          6.x
-          7.x
           8.x
+          9.x
       env:
         NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
         
@@ -60,8 +59,11 @@ jobs:
     - name: Minimize all windows
       run: (New-Object -ComObject "Shell.Application").minimizeall()
 
-    - name: Test
-      run: dotnet test --no-build --verbosity normal --configuration ${{ env.configuration }} --blame-crash --blame-crash-collect-always --blame-hang --blame-hang-timeout 5m
+    - name: Test net8.0
+      run: dotnet test --framework net8.0-windows --no-build --verbosity normal --configuration ${{ env.configuration }} --blame-crash --blame-crash-collect-always --blame-hang --blame-hang-timeout 5m
+
+    - name: Test net9.0
+      run: dotnet test --framework net9.0-windows --no-build --verbosity normal --configuration ${{ env.configuration }} --blame-crash --blame-crash-collect-always --blame-hang --blame-hang-timeout 5m
 
     - name: Test Logs
       if: ${{ always() }}
@@ -107,4 +109,4 @@ jobs:
       contents: write
 
     steps:
-      - uses: fastify/github-action-merge-dependabot@v3.11.0  
+      - uses: fastify/github-action-merge-dependabot@v3.11.0
