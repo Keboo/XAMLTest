@@ -1,13 +1,57 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Collections.Immutable;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
 using TypeInfo = Microsoft.CodeAnalysis.TypeInfo;
 
 namespace XAMLTest.UnitTestGenerator;
 
 [Generator]
-public class UnitTestGenerator : ISourceGenerator
+public class UnitTestGenerator : IIncrementalGenerator
 {
-    public void Execute(GeneratorExecutionContext context)
+    public void Initialize(IncrementalGeneratorInitializationContext context)
+    {
+        // Create a provider for GenerateTestsAttribute syntax nodes
+        var attributeProvider = context.SyntaxProvider
+            .CreateSyntaxProvider(
+                predicate: static (s, _) => IsSyntaxTargetForGeneration(s),
+                transform: static (ctx, _) => GetSemanticTargetForGeneration(ctx))
+            .Where(static m => m is not null);
+
+        // Combine with compilation to access type information
+        var compilationAndTypes = context.CompilationProvider.Combine(attributeProvider.Collect());
+        
+        context.RegisterSourceOutput(compilationAndTypes, static (spc, source) => Execute(source.Left, source.Right, spc));
+    }
+
+    private static bool IsSyntaxTargetForGeneration(SyntaxNode node)
+    {
+        return node is AttributeSyntax attrib 
+            && attrib.ArgumentList?.Arguments.Count >= 1;
+    }
+
+    private static TypeInfo? GetSemanticTargetForGeneration(GeneratorSyntaxContext context)
+    {
+        var attrib = (AttributeSyntax)context.Node;
+        
+        var typeInfo = context.SemanticModel.GetTypeInfo(attrib);
+        if (typeInfo.Type?.Name != "GenerateTestsAttribute")
+            return null;
+
+        if (attrib.ArgumentList?.Arguments.Count < 1)
+            return null;
+
+        var typeArgument = (TypeOfExpressionSyntax)attrib.ArgumentList!.Arguments[0].Expression;
+        var info = context.SemanticModel.GetTypeInfo(typeArgument.Type);
+        if (info.Type is null) 
+            return null;
+
+        return info;
+    }
+
+    private static void Execute(Compilation compilation, ImmutableArray<TypeInfo?> types, SourceProductionContext context)
     {
 #if DEBUG
         if (!Debugger.IsAttached)
@@ -15,8 +59,13 @@ public class UnitTestGenerator : ISourceGenerator
             //Debugger.Launch();
         }
 #endif
-        SyntaxReceiver rx = (SyntaxReceiver)context.SyntaxContextReceiver!;
-        foreach (TypeInfo targetType in rx.GeneratedTypes)
+        
+        if (types.IsDefaultOrEmpty)
+            return;
+
+        var validTypes = types.Where(x => x is not null).Cast<TypeInfo>().ToList();
+        
+        foreach (TypeInfo targetType in validTypes)
         {
             if (targetType.Type?.IsAbstract == true) continue;
 
@@ -24,7 +73,7 @@ public class UnitTestGenerator : ISourceGenerator
             const string suffix = "GeneratedExtensions";
             string targetTypeFullName = $"{targetType.Type}";
             string targetTypeName = targetType.Type!.Name;
-            var extensionClass = context.Compilation.GetTypeByMetadataName($"XamlTest.{targetTypeName}{suffix}");
+            var extensionClass = compilation.GetTypeByMetadataName($"XamlTest.{targetTypeName}{suffix}");
             if (extensionClass is null) continue;
 
             string variableTargetTypeName = 
@@ -119,8 +168,9 @@ namespace XamlTest.Tests.Generated
 
             context.AddSource($"{className}.cs", sb.ToString());
         }
+    }
 
-        static IEnumerable<(IMethodSymbol, IFieldSymbol)> GetTestMethods(INamedTypeSymbol extensionClass)
+    static IEnumerable<(IMethodSymbol, IFieldSymbol)> GetTestMethods(INamedTypeSymbol extensionClass)
         {
             for (INamedTypeSymbol? type = extensionClass;
                 type != null;
@@ -140,9 +190,9 @@ namespace XamlTest.Tests.Generated
                     yield return (getMethod, dependencyProperty);
                 }
             }
-        }
+    }
 
-        static string GetAssertion(string propertyName, string returnType, IFieldSymbol dependencyProperty)
+    static string GetAssertion(string propertyName, string returnType, IFieldSymbol dependencyProperty)
         {
             return propertyName switch
             {
@@ -153,31 +203,6 @@ namespace XamlTest.Tests.Generated
                     Assert.AreEqual(expected, actual);
                     """,
                 _ => $"Assert.AreEqual(default({returnType}), actual);",
-            };
-        }
-    }
-
-    public void Initialize(GeneratorInitializationContext context)
-    {
-        context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
-    }
-
-    public class SyntaxReceiver : ISyntaxContextReceiver
-    {
-        public List<TypeInfo> GeneratedTypes { get; } = new();
-
-        public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
-        {
-            if (context.Node is AttributeSyntax attrib
-                && attrib.ArgumentList?.Arguments.Count >= 1
-                && context.SemanticModel.GetTypeInfo(attrib).Type?.Name == "GenerateTestsAttribute")
-            {
-                TypeOfExpressionSyntax typeArgument = (TypeOfExpressionSyntax)attrib.ArgumentList.Arguments[0].Expression;
-                TypeInfo info = context.SemanticModel.GetTypeInfo(typeArgument.Type);
-                if (info.Type is null) return;
-
-                GeneratedTypes.Add(info);
-            }
-        }
+        };
     }
 }
