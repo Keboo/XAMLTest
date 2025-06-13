@@ -107,6 +107,57 @@ public class SendMouseInputTests
     }
 
     [TestMethod]
+    public async Task CanRightDoubleClickOnButton()
+    {
+        await using var recorder = new TestRecorder(App);
+
+        await using IEventRegistration registration = await Button.RegisterForEvent(nameof(Control.MouseDoubleClick));
+
+        await Wait.For(async () =>
+        {
+            await Button.RightDoubleClick();
+            var invocations = await registration.GetInvocations();
+            Assert.IsTrue(invocations.Count > 1);
+        });
+
+        recorder.Success();
+    }
+
+    [TestMethod]
+    public async Task CanMiddleClickOnButton()
+    {
+        await using var recorder = new TestRecorder(App);
+
+        await using IEventRegistration registration = await Button.RegisterForEvent(nameof(Control.MouseUp));
+
+        await Wait.For(async () =>
+        {
+            await Button.MiddleClick();
+            var invocations = await registration.GetInvocations();
+            Assert.IsTrue(invocations.Count > 0);
+        });
+
+        recorder.Success();
+    }
+
+    [TestMethod]
+    public async Task CanMiddleDoubleClickOnButton()
+    {
+        await using var recorder = new TestRecorder(App);
+
+        await using IEventRegistration registration = await Button.RegisterForEvent(nameof(Control.MouseDoubleClick));
+
+        await Wait.For(async () =>
+        {
+            await Button.MiddleDoubleClick();
+            var invocations = await registration.GetInvocations();
+            Assert.IsTrue(invocations.Count > 1);
+        });
+
+        recorder.Success();
+    }
+
+    [TestMethod]
     public async Task LeftClick_WithPositionOffset_OffsetsCursor()
     {
         Rect coordinates = await TopMenuItem.GetCoordinates();
