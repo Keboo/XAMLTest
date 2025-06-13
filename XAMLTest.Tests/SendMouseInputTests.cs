@@ -109,17 +109,20 @@ public class SendMouseInputTests
     [TestMethod]
     public async Task LeftClick_WithPositionOffset_OffsetsCursor()
     {
+        await using var recorder = new TestRecorder(App);
         Rect coordinates = await TopMenuItem.GetCoordinates();
         Point mousePosition = await TopMenuItem.LeftClick(Position.BottomLeft, 15, -5);
 
         Point expected = coordinates.BottomLeft + new Vector(15, -5);
-        Assert.IsTrue(Math.Abs(expected.X - mousePosition.X) <= 1);
-        Assert.IsTrue(Math.Abs(expected.Y - mousePosition.Y) <= 1);
+        Assert.IsTrue(Math.Abs(expected.X - mousePosition.X) <= 1, $"Distance {Math.Abs(expected.X - mousePosition.X)} is greater than tolerance");
+        Assert.IsTrue(Math.Abs(expected.Y - mousePosition.Y) <= 1, $"Distance {Math.Abs(expected.Y - mousePosition.Y)} is greater than tolerance");
+        recorder.Success();
     }
 
     [TestMethod]
     public async Task CanRightClickToShowContextMenu()
     {
+        await using var recorder = new TestRecorder(App);
         await Grid.RightClick();
         IVisualElement<ContextMenu>? contextMenu = await Grid.GetContextMenu();
         Assert.IsNotNull(contextMenu);
@@ -134,12 +137,14 @@ public class SendMouseInputTests
             var invocations = await registration.GetInvocations();
             Assert.AreEqual(1, invocations.Count);
         });
+        recorder.Success();
     }
 
     [TestMethod]
     public async Task CanMoveCursorPositions()
     {
-        const double tollerance = 1.0;
+        await using var recorder = new TestRecorder(App);
+        const double tolerance = 1.0;
 
         Rect coordinates = await Grid.GetCoordinates();
         Point center = new(
@@ -148,29 +153,32 @@ public class SendMouseInputTests
 
         Point cursorPosition = await Grid.MoveCursorTo(Position.Center);
         Vector distance = center - cursorPosition;
-        Assert.IsTrue(distance.Length < tollerance);
+        Assert.IsTrue(distance.Length < tolerance, $"Distance {distance.Length} is greater than tolerance");
 
         cursorPosition = await Grid.MoveCursorTo(Position.TopLeft);
         distance = coordinates.TopLeft - cursorPosition;
-        Assert.IsTrue(distance.Length < tollerance);
+        Assert.IsTrue(distance.Length < tolerance, $"Distance {distance.Length} is greater than tolerance");
 
         cursorPosition = await Grid.MoveCursorTo(Position.TopRight);
         distance = coordinates.TopRight - cursorPosition;
-        Assert.IsTrue(distance.Length < tollerance);
+        Assert.IsTrue(distance.Length < tolerance, $"Distance {distance.Length} is greater than tolerance");
 
         cursorPosition = await Grid.MoveCursorTo(Position.BottomRight);
         distance = coordinates.BottomRight - cursorPosition;
-        Assert.IsTrue(distance.Length < tollerance);
+        Assert.IsTrue(distance.Length < tolerance, $"Distance {distance.Length} is greater than tolerance");
 
         cursorPosition = await Grid.MoveCursorTo(Position.BottomLeft);
         distance = coordinates.BottomLeft - cursorPosition;
-        Assert.IsTrue(distance.Length < tollerance);
+        Assert.IsTrue(distance.Length < tolerance, $"Distance {distance.Length} is greater than tolerance");
+
+        recorder.Success();
     }
 
     [TestMethod]
     public async Task CanMoveCursorPositionToRelativePosition()
     {
-        const double tollerance = 1.0;
+        await using var recorder = new TestRecorder(App);
+        const double tolerance = 1.0;
 
         Rect coordinates = await Grid.GetCoordinates();
         Point center = new(
@@ -179,13 +187,15 @@ public class SendMouseInputTests
 
         Point cursorPosition = await Grid.MoveCursorTo(Position.Center, 10, 20);
         Vector distance = (center + new Vector(10, 20)) - cursorPosition;
-        Assert.IsTrue(distance.Length < tollerance);
+        Assert.IsTrue(distance.Length < tolerance, $"Distance {distance.Length} is greater than tolerance");
+        recorder.Success();
     }
 
     [TestMethod]
     public async Task CanMoveCursorPositionToAbsolutePosition()
     {
-        const double tollerance = 1.0;
+        await using var recorder = new TestRecorder(App);
+        const double tolerance = 1.0;
 
         Rect coordinates = await Grid.GetCoordinates();
         Point center = new(
@@ -194,6 +204,7 @@ public class SendMouseInputTests
 
         Point cursorPosition = await Grid.SendInput(MouseInput.MoveAbsolute((int)center.X, (int)center.Y));
         Vector distance = center - cursorPosition;
-        Assert.IsTrue(distance.Length < tollerance);
+        Assert.IsTrue(distance.Length < tolerance, $"Distance {distance.Length} is greater than tolerance");
+        recorder.Success();
     }
 }
