@@ -7,8 +7,17 @@ partial class VisualTreeService
     public override async Task<RemoteInvocationResult> RemoteInvocation(RemoteInvocationRequest request, ServerCallContext context)
     {
         RemoteInvocationResult reply = new();
+        CultureInfo current = null!, uiCulture = null!;
+        Application.Dispatcher.Invoke(() =>
+        {
+            current = Thread.CurrentThread.CurrentCulture;
+            uiCulture = Thread.CurrentThread.CurrentUICulture;
+        });
+
         await Application.Dispatcher.Invoke(async () =>
         {
+            Thread.CurrentThread.CurrentCulture = current;
+            Thread.CurrentThread.CurrentUICulture = uiCulture;
             try
             {
                 object? element = null;
@@ -98,9 +107,18 @@ partial class VisualTreeService
             {
                 reply.ErrorMessages.Add(e.ToString());
             }
+
+            current = Thread.CurrentThread.CurrentCulture;
+            uiCulture = Thread.CurrentThread.CurrentUICulture;
+        });
+
+        Application.Dispatcher.Invoke(() =>
+        {
+            Thread.CurrentThread.CurrentCulture = current;
+            Thread.CurrentThread.CurrentUICulture = uiCulture;
         });
         return reply;
     }
 
-    
+
 }
