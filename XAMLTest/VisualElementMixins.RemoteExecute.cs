@@ -59,6 +59,60 @@ public static partial class VisualElementMixins
         return element.RemoteExecute<TResult>(action, [param1, param2, param3, param4, param5, param6, param7, param8]);
     }
 
+    public static Task<TResult?> RemoteExecute<T, TResult>(this IVisualElement<T> element,
+        Func<T, Task<TResult>> action)
+    {
+        return element.RemoteExecute<TResult>(action, []);
+    }
+
+    public static Task<TResult?> RemoteExecute<T, T1, TResult>(this IVisualElement<T> element,
+        Func<T, T1, Task<TResult>> action, T1 param1)
+    {
+        return element.RemoteExecute<TResult>(action, [param1]);
+    }
+
+    public static Task<TResult?> RemoteExecute<T, T1, T2, TResult>(this IVisualElement<T> element,
+        Func<T, T1, T2, Task<TResult>> action, T1 param1, T2 param2)
+    {
+        return element.RemoteExecute<TResult>(action, [param1, param2]);
+    }
+
+    public static Task<TResult?> RemoteExecute<T, T1, T2, T3, TResult>(this IVisualElement<T> element,
+        Func<T, T1, T2, T3, Task<TResult>> action, T1 param1, T2 param2, T3 param3)
+    {
+        return element.RemoteExecute<TResult>(action, [param1, param2, param3]);
+    }
+
+    public static Task<TResult?> RemoteExecute<T, T1, T2, T3, T4, TResult>(this IVisualElement<T> element,
+        Func<T, T1, T2, T3, T4, Task<TResult>> action, T1 param1, T2 param2, T3 param3, T4 param4)
+    {
+        return element.RemoteExecute<TResult>(action, [param1, param2, param3, param4]);
+    }
+
+    public static Task<TResult?> RemoteExecute<T, T1, T2, T3, T4, T5, TResult>(this IVisualElement<T> element,
+        Func<T, T1, T2, T3, T4, T5, Task<TResult>> action, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5)
+    {
+        return element.RemoteExecute<TResult>(action, [param1, param2, param3, param4, param5]);
+    }
+
+    public static Task<TResult?> RemoteExecute<T, T1, T2, T3, T4, T5, T6, TResult>(this IVisualElement<T> element,
+        Func<T, T1, T2, T3, T4, T5, T6, Task<TResult>> action, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, T6 param6)
+    {
+        return element.RemoteExecute<TResult>(action, [param1, param2, param3, param4, param5, param6]);
+    }
+
+    public static Task<TResult?> RemoteExecute<T, T1, T2, T3, T4, T5, T6, T7, TResult>(this IVisualElement<T> element,
+        Func<T, T1, T2, T3, T4, T5, T6, T7, Task<TResult>> action, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, T6 param6, T7 param7)
+    {
+        return element.RemoteExecute<TResult>(action, [param1, param2, param3, param4, param5, param6, param7]);
+    }
+
+    public static Task<TResult?> RemoteExecute<T, T1, T2, T3, T4, T5, T6, T7, T8, TResult>(this IVisualElement<T> element,
+        Func<T, T1, T2, T3, T4, T5, T6, T7, T8, Task<TResult>> action, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, T6 param6, T7 param7, T8 param8)
+    {
+        return element.RemoteExecute<TResult>(action, [param1, param2, param3, param4, param5, param6, param7, param8]);
+    }
+
     public static Task RemoteExecute<T>(this IVisualElement<T> element, Action<T> action)
     {
         return element.RemoteExecute<object?>(action, []);
@@ -110,6 +164,60 @@ public static partial class VisualElementMixins
     public static Task RemoteExecute<T, T1, T2, T3, T4, T5, T6, T7, T8>(this IVisualElement<T> element,
         Action<T, T1, T2, T3, T4, T5, T6, T7, T8> action,
         T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, T6 param6, T7 param7, T8 param8)
+    {
+        return element.RemoteExecute<object?>(action, [param1, param2, param3, param4, param5, param6, param7, param8]);
+    }
+
+    public static Task RemoteExecute<T>(this IVisualElement<T> element,
+        Func<T, Task> action)
+    {
+        return element.RemoteExecute<object?>(action, []);
+    }
+
+    public static Task RemoteExecute<T, T1>(this IVisualElement<T> element,
+        Func<T, T1, Task> action, T1 param1)
+    {
+        return element.RemoteExecute<object?>(action, [param1]);
+    }
+
+    public static Task RemoteExecute<T, T1, T2>(this IVisualElement<T> element,
+        Func<T, T1, T2, Task> action, T1 param1, T2 param2)
+    {
+        return element.RemoteExecute<object?>(action, [param1, param2]);
+    }
+
+    public static Task RemoteExecute<T, T1, T2, T3>(this IVisualElement<T> element,
+        Func<T, T1, T2, T3, Task> action, T1 param1, T2 param2, T3 param3)
+    {
+        return element.RemoteExecute<object?>(action, [param1, param2, param3]);
+    }
+
+    public static Task RemoteExecute<T, T1, T2, T3, T4>(this IVisualElement<T> element,
+        Func<T, T1, T2, T3, T4, Task> action, T1 param1, T2 param2, T3 param3, T4 param4)
+    {
+        return element.RemoteExecute<object?>(action, [param1, param2, param3, param4]);
+    }
+
+    public static Task RemoteExecute<T, T1, T2, T3, T4, T5>(this IVisualElement<T> element,
+        Func<T, T1, T2, T3, T4, T5, Task> action, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5)
+    {
+        return element.RemoteExecute<object?>(action, [param1, param2, param3, param4, param5]);
+    }
+
+    public static Task RemoteExecute<T, T1, T2, T3, T4, T5, T6>(this IVisualElement<T> element,
+        Func<T, T1, T2, T3, T4, T5, T6, Task> action, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, T6 param6)
+    {
+        return element.RemoteExecute<object?>(action, [param1, param2, param3, param4, param5, param6]);
+    }
+
+    public static Task RemoteExecute<T, T1, T2, T3, T4, T5, T6, T7>(this IVisualElement<T> element,
+        Func<T, T1, T2, T3, T4, T5, T6, T7, Task> action, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, T6 param6, T7 param7)
+    {
+        return element.RemoteExecute<object?>(action, [param1, param2, param3, param4, param5, param6, param7]);
+    }
+
+    public static Task RemoteExecute<T, T1, T2, T3, T4, T5, T6, T7, T8>(this IVisualElement<T> element,
+        Func<T, T1, T2, T3, T4, T5, T6, T7, T8, Task> action, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, T6 param6, T7 param7, T8 param8)
     {
         return element.RemoteExecute<object?>(action, [param1, param2, param3, param4, param5, param6, param7, param8]);
     }

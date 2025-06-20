@@ -273,4 +273,67 @@ public class VisualElementTests
             window.Title = "Test Title";
         }
     }
+
+    [TestMethod]
+    public async Task OnRemoteExecute_WithReturnValue_CanExecuteRemoteCode()
+    {
+        // Arrange
+        await using TestRecorder recorder = new(App);
+
+        //Act
+        string? title = await Window.RemoteExecute(ChangeTitle);
+
+        //Assert
+        Assert.AreEqual("Test Title", await Window.GetTitle());
+        Assert.AreEqual("Test Title", title);
+        recorder.Success();
+
+        static string ChangeTitle(Window window)
+        {
+            window.Title = "Test Title";
+            return window.Title;
+        }
+    }
+
+    [TestMethod]
+    public async Task OnRemoteExecute_CanExecuteAsyncMethod()
+    {
+        // Arrange
+        await using TestRecorder recorder = new(App);
+
+        //Act
+        await Window.RemoteExecute(ChangeTitle);
+
+        //Assert
+        Assert.AreEqual("Test Title", await Window.GetTitle());
+        recorder.Success();
+
+        static async Task ChangeTitle(Window window)
+        {
+            await Task.Delay(10);
+            window.Title = "Test Title";
+        }
+    }
+
+    [TestMethod]
+    public async Task OnRemoteExecute_WithReturnValue_CanExecuteAsync()
+    {
+        // Arrange
+        await using TestRecorder recorder = new(App);
+
+        //Act
+        string? title = await Window.RemoteExecute(ChangeTitle);
+
+        //Assert
+        Assert.AreEqual("Test Title", await Window.GetTitle());
+        Assert.AreEqual("Test Title", title);
+        recorder.Success();
+
+        static async Task<string> ChangeTitle(Window window)
+        {
+            await Task.Delay(10);
+            window.Title = "Test Title";
+            return window.Title;
+        }
+    }
 }

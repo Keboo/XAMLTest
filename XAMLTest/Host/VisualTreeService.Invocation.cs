@@ -7,7 +7,7 @@ partial class VisualTreeService
     public override async Task<RemoteInvocationResult> RemoteInvocation(RemoteInvocationRequest request, ServerCallContext context)
     {
         RemoteInvocationResult reply = new();
-        await Application.Dispatcher.InvokeAsync(() =>
+        await Application.Dispatcher.Invoke(async () =>
         {
             try
             {
@@ -53,7 +53,26 @@ partial class VisualTreeService
                                 }
 
                                 object? response = method.Invoke(null, parameters);
-                                reply.ValueType = method.ReturnType.AssemblyQualifiedName;
+
+                                if (response is Task taskResponse)
+                                {
+                                    await taskResponse.ConfigureAwait(true);
+                                    Type taskType = method.ReturnType;
+                                    if (taskType.IsGenericType && taskType.GetGenericTypeDefinition() == typeof(Task<>))
+                                    {
+                                        response = taskType.GetProperty(nameof(Task<object>.Result))!.GetValue(taskResponse);
+                                        reply.ValueType = taskType.GetGenericArguments()[0].AssemblyQualifiedName;
+                                    }
+                                    else
+                                    {
+                                        reply.ValueType = typeof(void).AssemblyQualifiedName;
+                                    }
+                                }
+                                else
+                                {
+                                    reply.ValueType = method.ReturnType.AssemblyQualifiedName;
+                                }
+
                                 if (method.ReturnType != typeof(void))
                                 {
                                     reply.Value = Serializer.Serialize(method.ReturnType, response);
@@ -82,4 +101,6 @@ partial class VisualTreeService
         });
         return reply;
     }
+
+    
 }
