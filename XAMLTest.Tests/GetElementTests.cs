@@ -23,7 +23,7 @@ public class GetElementTests
         Window = await App.CreateWindowWithContent(@"");
     }
 
-    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    [ClassCleanup]
     public static async Task TestCleanup()
     {
         if (App is { } app)
@@ -243,7 +243,7 @@ public class GetElementTests
         //Assert
         Assert.IsNotNull(button);
 
-        Assert.IsTrue(await button.GetActualWidth() > 0);
+        Assert.IsGreaterThan(0, await button.GetActualWidth());
         Assert.IsTrue(await button.GetIsDefault());
         Assert.IsFalse(await button.GetIsPressed());
         recorder.Success();
@@ -265,7 +265,7 @@ public class GetElementTests
 
         //Assert
         Assert.IsNotNull(button);
-        Assert.IsTrue(await button.GetActualWidth() > 0);
+        Assert.IsGreaterThan(0, await button.GetActualWidth());
         recorder.Success();
     }
 
@@ -481,10 +481,10 @@ public class GetElementTests
 </Border>");
 
         //Act
-        XamlTestException exception = await Assert.ThrowsExceptionAsync<XamlTestException>(() => Window.FindElement<TextBlock>("/Border.ChildFoo/TextBlock"));
+        XamlTestException exception = await Assert.ThrowsExactlyAsync<XamlTestException>(() => Window.FindElement<TextBlock>("/Border.ChildFoo/TextBlock"));
 
         //Assert
-        Assert.IsTrue(exception.Message.Contains("ChildFoo"));
+        Assert.Contains("ChildFoo", exception.Message);
         recorder.Success();
     }
 
@@ -506,11 +506,11 @@ public class GetElementTests
         var stackPanel = await Window.GetElement<StackPanel>();
 
         //Act
-        XamlTestException exception = await Assert.ThrowsExceptionAsync<XamlTestException>(() => stackPanel.FindElement(
+        XamlTestException exception = await Assert.ThrowsExactlyAsync<XamlTestException>(() => stackPanel.FindElement(
             ElementQuery.PropertyExpression<TextBlock>("BadProp", "2")));
 
         //Assert
-        Assert.IsTrue(exception.Message.Contains("BadProp"));
+        Assert.Contains("BadProp", exception.Message);
         recorder.Success();
     }
 

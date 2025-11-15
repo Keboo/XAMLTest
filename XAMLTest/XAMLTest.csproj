@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFrameworks>net8.0-windows7;net9.0-windows7</TargetFrameworks>
+    <TargetFrameworks>net8.0-windows;net9.0-windows</TargetFrameworks>
     <UseWPF>true</UseWPF>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>XamlTest</RootNamespace>
@@ -45,10 +45,13 @@
   </ItemGroup>
 
   <Target Name="CopyOutputs" AfterTargets="AfterBuild">
+    <PropertyGroup>
+      <TestProjectDir>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '..', 'XAMLTest.Tests'))</TestProjectDir>
+    </PropertyGroup>
     <ItemGroup>
       <CopyItems Include="$(TargetDir)*" />
     </ItemGroup>
-    <Copy SourceFiles="@(CopyItems)" DestinationFolder="$(SolutionDir)XAMLTest.Tests\bin\$(Configuration)\$(TargetFramework)\" />
+    <Copy SourceFiles="@(CopyItems)" DestinationFolder="$(TestProjectDir)\bin\$(Configuration)\$(TargetFramework)\" />
   </Target>
 
   <ItemGroup>

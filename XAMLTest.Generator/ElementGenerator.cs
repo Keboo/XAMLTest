@@ -1,11 +1,12 @@
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TypeInfo = Microsoft.CodeAnalysis.TypeInfo;
 
 namespace XAMLTest.Generator;
 
-[Generator]
-public class ElementGenerator : ISourceGenerator
+[Generator(LanguageNames.CSharp)]
+public class ElementGenerator : IIncrementalGenerator
 {
     private static DiagnosticDescriptor DuplicateAttributesWarning { get; }
         = new(id: "XAMLTEST0001",
@@ -15,22 +16,46 @@ public class ElementGenerator : ISourceGenerator
               DiagnosticSeverity.Warning,
               isEnabledByDefault: true);
 
-    public void Execute(GeneratorExecutionContext context)
+    public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        SyntaxReceiver rx = (SyntaxReceiver)context.SyntaxContextReceiver!;
-        HashSet<string> ignoredTypes = new();
-        foreach (var duplicatedAttributes in rx.GeneratedTypes.GroupBy(x => x.Type.FullName).Where(g => g.Count() > 1))
+#if DEBUG
+        if (!System.Diagnostics.Debugger.IsAttached)
+        {
+            //Debugger.Launch();
+        }
+#endif 
+        // Find all attributes matching GenerateHelpersAttribute
+        IncrementalValuesProvider<VisualElement> visualElements = context.SyntaxProvider
+            .CreateSyntaxProvider(
+                predicate: static (node, _) => node is AttributeSyntax attrib 
+                    && attrib.ArgumentList?.Arguments.Count >= 1,
+                transform: static (ctx, _) => GetVisualElementFromAttribute(ctx))
+            .Where(static element => element is not null)
+            .SelectMany(static (elements, _) => elements!);
+
+        // Combine with compilation to check for duplicates
+        IncrementalValueProvider<(Compilation, ImmutableArray<VisualElement>)> compilationAndElements =
+            context.CompilationProvider.Combine(visualElements.Collect());
+
+        context.RegisterSourceOutput(compilationAndElements,
+            static (spc, source) => Execute(spc, source.Item1, source.Item2));
+    }
+
+    private static void Execute(SourceProductionContext context, Compilation compilation, ImmutableArray<VisualElement> elements)
+    {
+        HashSet<string> ignoredTypes = [];
+        foreach (var duplicatedAttributes in elements.GroupBy(x => x.Type.FullName).Where(g => g.Count() > 1))
         {
             context.ReportDiagnostic(Diagnostic.Create(DuplicateAttributesWarning, Location.None, duplicatedAttributes.Key));
             ignoredTypes.Add(duplicatedAttributes.Key);
             return;
         }
 
-        foreach (var type in rx.GeneratedTypes)
+        foreach (var type in elements)
         {
             if (ignoredTypes.Contains(type.Type.FullName)) continue;
 
-            if (context.Compilation.GetTypeByMetadataName($"{type.Namespace}.{type.Type.Name}GeneratedExtensions") is not null)
+            if (compilation.GetTypeByMetadataName($"{type.Namespace}.{type.Type.Name}GeneratedExtensions") is not null)
             {
                 continue;
             }
@@ -128,39 +153,171 @@ public class ElementGenerator : ISourceGenerator
         }
     }
 
-    public void Initialize(GeneratorInitializationContext context)
+    private static IEnumerable<VisualElement>? GetVisualElementFromAttribute(GeneratorSyntaxContext context)
     {
-#if DEBUG
-        if (!System.Diagnostics.Debugger.IsAttached)
+        if (context.Node is not AttributeSyntax attrib)
+            return null;
+
+        if (context.SemanticModel.GetTypeInfo(attrib).Type?.Name != "GenerateHelpersAttribute")
+            return null;
+
+        if (attrib.ArgumentList?.Arguments.Count < 1)
+            return null;
+
+        TypeOfExpressionSyntax typeArgument = (TypeOfExpressionSyntax)attrib.ArgumentList!.Arguments[0].Expression;
+        TypeInfo info = context.SemanticModel.GetTypeInfo(typeArgument.Type);
+        if (info.Type is null)
+            return null;
+
+        string? targetNamespace = null;
+        foreach (AttributeArgumentSyntax argumentExpression in attrib.ArgumentList.Arguments.Skip(1))
         {
-            //Debugger.Launch();
+            string? target = argumentExpression.NameEquals?.Name.Identifier.Value?.ToString();
+
+            switch (target)
+            {
+                case "Namespace":
+                    switch (argumentExpression.Expression)
+                    {
+                        case LiteralExpressionSyntax les:
+                            targetNamespace = les.Token.Value?.ToString();
+                            break;
+                        case MemberAccessExpressionSyntax maes:
+                            targetNamespace = context.SemanticModel.GetConstantValue(maes.Name).Value?.ToString();
+                            break;
+                    }
+                    break;
+            }
         }
-#endif 
-        context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
+
+        List<VisualElement> elements = new();
+
+        for (ITypeSymbol? type = info.Type;
+            type is not null;
+            type = type.BaseType)
+        {
+            List<Property> properties = [];
+
+            foreach (ISymbol member in type.GetMembers())
+            {
+                if (member is IPropertySymbol property &&
+                    property.CanBeReferencedByName &&
+                    !property.IsStatic &&
+                    !property.IsOverride &&
+                    property.DeclaredAccessibility == Accessibility.Public &&
+                    !property.GetAttributes()
+                        .Any(x => x.AttributeClass?.Name == "ObsoleteAttribute" || x.AttributeClass?.Name == "ExperimentalAttribute") &&
+                    !SyntaxReceiver.IgnoredTypes.Contains($"{property.Type}") &&
+                    !IsDelegate(property.Type))
+                {
+                    if (ShouldUseVisualElement(property.Type))
+                    {
+                        properties.Add(
+                            new Property(
+                                property.Name,
+                                $"XamlTest.IVisualElement<{property.Type}>?",
+                                property.GetMethod is not null,
+                                property.SetMethod is not null));
+                    }
+                    else
+                    {
+                        string propertyType = $"{property.Type}";
+                        if (SyntaxReceiver.TypeRemap.TryGetValue(propertyType, out string? remappedType))
+                        {
+                            propertyType = remappedType;
+                        }
+
+                        if (property.Type.IsReferenceType &&
+                            !propertyType.EndsWith("?"))
+                        {
+                            propertyType += "?";
+                        }
+
+                        properties.Add(
+                            new Property(
+                                property.Name,
+                                propertyType,
+                                property.GetMethod is not null,
+                                property.SetMethod is not null));
+                    }
+                }
+            }
+            if (properties.Any())
+            {
+                string safeTypeName = GetSafeTypeName(type);
+                var visualElementType = new VisualElementType(safeTypeName, $"{type}", type.IsSealed || type.IsValueType);
+                elements.Add(new VisualElement(targetNamespace ?? "XamlTest", visualElementType, properties));
+            }
+        }
+
+        return elements;
+
+        static string GetSafeTypeName(ITypeSymbol typeSymbol)
+        {
+            string safeTypeName = typeSymbol.Name;
+
+            if (typeSymbol is INamedTypeSymbol { TypeArguments.Length: > 0 } genericSymbol)
+            {
+                safeTypeName += $"_{string.Join("_", genericSymbol.TypeArguments.Select(x => GetSafeTypeName(x)))}";
+            }
+            return safeTypeName;
+        }
+
+        static bool ShouldUseVisualElement(ITypeSymbol typeSymbol)
+        {
+            for (ITypeSymbol? type = typeSymbol;
+                 type != null;
+                 type = type.BaseType)
+            {
+                switch ($"{type}")
+                {
+                    case "System.Windows.Media.Brush": return false;
+                    case "System.Windows.DependencyObject": return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    private static bool IsDelegate(ITypeSymbol typeSymbol)
+        => Is(typeSymbol, "System.Delegate");
+
+    private static bool Is(ITypeSymbol typeSymbol, string targetType)
+    {
+        for (ITypeSymbol? type = typeSymbol;
+            type != null;
+            type = type.BaseType)
+        {
+            if ($"{type}" == targetType)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }
 
-public record VisualElement(
+internal record VisualElement(
     string Namespace,
     VisualElementType Type,
     IReadOnlyList<Property> DependencyProperties)
 { }
 
-public record VisualElementType(string Name, string FullName, bool IsFinal)
+internal record VisualElementType(string Name, string FullName, bool IsFinal)
 { }
 
-public record Property(string Name, string TypeFullName, bool CanRead, bool CanWrite)
+internal record Property(string Name, string TypeFullName, bool CanRead, bool CanWrite)
 { }
 
-public class SyntaxReceiver : ISyntaxContextReceiver
+internal static class SyntaxReceiver
 {
-    private static Dictionary<string, string> TypeRemap { get; } = new()
+    public static Dictionary<string, string> TypeRemap { get; } = new()
     {
         { "System.Windows.Controls.ColumnDefinitionCollection", "System.Collections.Generic.IList<System.Windows.Controls.ColumnDefinition>" },
         { "System.Windows.Controls.RowDefinitionCollection", "System.Collections.Generic.IList<System.Windows.Controls.RowDefinition>" }
     };
 
-    private static HashSet<string> IgnoredTypes { get; } = new()
+    public static HashSet<string> IgnoredTypes { get; } = new()
     {
         "System.Windows.TriggerCollection",
         "System.Windows.Media.CacheMode",
@@ -211,143 +368,4 @@ public class SyntaxReceiver : ISyntaxContextReceiver
         "System.Collections.ObjectModel.Collection<System.Windows.Controls.ToolBar>",
         "System.Windows.WindowCollection"
     };
-    private List<VisualElement> Elements { get; } = new();
-    public IReadOnlyList<VisualElement> GeneratedTypes => Elements;
-
-    public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
-    {
-        if (context.Node is AttributeSyntax attrib
-            && attrib.ArgumentList?.Arguments.Count >= 1
-            && context.SemanticModel.GetTypeInfo(attrib).Type?.Name == "GenerateHelpersAttribute")
-        {
-            TypeOfExpressionSyntax typeArgument = (TypeOfExpressionSyntax)attrib.ArgumentList.Arguments[0].Expression;
-            TypeInfo info = context.SemanticModel.GetTypeInfo(typeArgument.Type);
-            if (info.Type is null) return;
-            
-            string? targetNamespace = null;
-            foreach (AttributeArgumentSyntax argumentExpression in attrib.ArgumentList.Arguments.Skip(1))
-            {
-                string? target = argumentExpression.NameEquals?.Name.Identifier.Value?.ToString();
-
-                switch (target)
-                {
-                    case "Namespace":
-                        switch (argumentExpression.Expression)
-                        {
-                            case LiteralExpressionSyntax les:
-                                targetNamespace = les.Token.Value?.ToString();
-                                break;
-                            case MemberAccessExpressionSyntax maes:
-                                targetNamespace = context.SemanticModel.GetConstantValue(maes.Name).Value?.ToString();
-                                break;
-                        }
-                        break;
-                }
-            }
-
-            for (ITypeSymbol? type = info.Type;
-                type is not null;
-                type = type.BaseType)
-            {
-                List<Property> properties = [];
-
-                if (Elements.Any(x => x.Type.FullName == $"{type}")) continue;
-
-                foreach (ISymbol member in type.GetMembers())
-                {
-                    if (member is IPropertySymbol property &&
-                        property.CanBeReferencedByName &&
-                        !property.IsStatic &&
-                        !property.IsOverride &&
-                        property.DeclaredAccessibility == Accessibility.Public &&
-                        !property.GetAttributes()
-                            .Any(x => x.AttributeClass?.Name == "ObsoleteAttribute" || x.AttributeClass?.Name == "ExperimentalAttribute") &&
-                        !IgnoredTypes.Contains($"{property.Type}") &&
-                        !IsDelegate(property.Type))
-                    {
-                        if (ShouldUseVisualElement(property.Type))
-                        {
-                            properties.Add(
-                                new Property(
-                                    property.Name,
-                                    $"XamlTest.IVisualElement<{property.Type}>?",
-                                    property.GetMethod is not null,
-                                    property.SetMethod is not null));
-                        }
-                        else
-                        {
-                            string propertyType = $"{property.Type}";
-                            if (TypeRemap.TryGetValue(propertyType, out string? remappedType))
-                            {
-                                propertyType = remappedType;
-                            }
-
-                            if (property.Type.IsReferenceType &&
-                                !propertyType.EndsWith("?"))
-                            {
-                                propertyType += "?";
-                            }
-
-                            properties.Add(
-                                new Property(
-                                    property.Name,
-                                    propertyType,
-                                    property.GetMethod is not null,
-                                    property.SetMethod is not null));
-                        }
-                    }
-                }
-                if (properties.Any())
-                {
-                    string safeTypeName = GetSafeTypeName(type);
-                    var visualElementType = new VisualElementType(safeTypeName, $"{type}", type.IsSealed || type.IsValueType);
-                    Elements.Add(new VisualElement(targetNamespace ?? "XamlTest", visualElementType, properties));
-                }
-            }
-        }
-
-        static string GetSafeTypeName(ITypeSymbol typeSymbol)
-        {
-            string safeTypeName = typeSymbol.Name;
-
-            if (typeSymbol is INamedTypeSymbol { TypeArguments.Length: > 0 } genericSymbol)
-            {
-                safeTypeName += $"_{string.Join("_", genericSymbol.TypeArguments.Select(x => GetSafeTypeName(x)))}";
-            }
-            return safeTypeName;
-        }
-
-        static bool ShouldUseVisualElement(ITypeSymbol typeSymbol)
-        {
-            for (ITypeSymbol? type = typeSymbol;
-                 type != null;
-                 type = type.BaseType)
-            {
-                switch($"{type}")
-                {
-                    case "System.Windows.Media.Brush": return false;
-                    case "System.Windows.DependencyObject": return true;
-                }
-            }
-            return false;
-        }
-    }
-
-    private static bool IsDelegate(ITypeSymbol typeSymbol)
-        => Is(typeSymbol, "System.Delegate");
-
-    private static bool Is(ITypeSymbol typeSymbol, string targetType)
-    {
-        for (ITypeSymbol? type = typeSymbol;
-            type != null;
-            type = type.BaseType)
-        {
-            if ($"{type}" == targetType)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
 }

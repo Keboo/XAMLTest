@@ -34,7 +34,7 @@ public class GetResourceTests
         Grid = await Window.GetElement<Grid>("MyGrid");
     }
 
-    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    [ClassCleanup]
     public static async Task TestCleanup()
     {
         if (App is { } app)
@@ -45,10 +45,9 @@ public class GetResourceTests
     }
 
     [TestMethod]
-    [ExpectedException(typeof(XamlTestException))]
     public async Task OnAppGetResource_ThrowsExceptionWhenNotFound()
     {
-        await App.GetResource("NotFound");
+        await Assert.ThrowsExactlyAsync<XamlTestException>(async () => await App.GetResource("NotFound"));
     }
 
     [TestMethod]
@@ -72,10 +71,9 @@ public class GetResourceTests
     }
 
     [TestMethod]
-    [ExpectedException(typeof(XamlTestException))]
     public async Task OnVisualElementGetResource_ThrowsExceptionWhenNotFound()
     {
-        await Grid.GetResource("NotFound");
+        await Assert.ThrowsExactlyAsync<XamlTestException>(async () => await Grid.GetResource("NotFound"));
     }
 
     [TestMethod]

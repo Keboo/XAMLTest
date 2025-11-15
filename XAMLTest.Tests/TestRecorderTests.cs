@@ -95,7 +95,7 @@ public class TestRecorderTests
                    Path.GetFileName(x).StartsWith(nameof(TestRecorder_WithCtorSuffix_AppendsToAllFileNames)))
             .ToList();
 
-        Assert.AreEqual(2, files.Count);
+        Assert.HasCount(2, files);
         var file1Name = Path.GetFileName(files[0]);
         var file2Name = Path.GetFileName(files[1]);
         Assert.AreEqual($"{nameof(TestRecorder_WithCtorSuffix_AppendsToAllFileNames)}CtorSuffixOtherSuffix1{GetLineNumber(-11)}-1.jpg", file1Name);

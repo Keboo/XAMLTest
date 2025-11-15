@@ -1,13 +1,14 @@
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TypeInfo = Microsoft.CodeAnalysis.TypeInfo;
 
 namespace XAMLTest.UnitTestGenerator;
 
-[Generator]
-public class UnitTestGenerator : ISourceGenerator
+[Generator(LanguageNames.CSharp)]
+public class UnitTestGenerator : IIncrementalGenerator
 {
-    public void Execute(GeneratorExecutionContext context)
+    public void Initialize(IncrementalGeneratorInitializationContext context)
     {
 #if DEBUG
         if (!Debugger.IsAttached)
@@ -15,8 +16,25 @@ public class UnitTestGenerator : ISourceGenerator
             //Debugger.Launch();
         }
 #endif
-        SyntaxReceiver rx = (SyntaxReceiver)context.SyntaxContextReceiver!;
-        foreach (TypeInfo targetType in rx.GeneratedTypes)
+        // Find all attributes matching GenerateTestsAttribute
+        IncrementalValuesProvider<TypeInfo> targetTypes = context.SyntaxProvider
+            .CreateSyntaxProvider(
+                predicate: static (node, _) => node is AttributeSyntax attrib 
+                    && attrib.ArgumentList?.Arguments.Count >= 1,
+                transform: static (ctx, _) => GetTypeFromAttribute(ctx))
+            .Where(static typeInfo => typeInfo.Type is not null);
+
+        // Combine with compilation to check extension classes
+        IncrementalValueProvider<(Compilation, ImmutableArray<TypeInfo>)> compilationAndTypes =
+            context.CompilationProvider.Combine(targetTypes.Collect());
+
+        context.RegisterSourceOutput(compilationAndTypes,
+            static (spc, source) => Execute(spc, source.Item1, source.Item2));
+    }
+
+    private static void Execute(SourceProductionContext context, Compilation compilation, ImmutableArray<TypeInfo> targetTypes)
+    {
+        foreach (TypeInfo targetType in targetTypes)
         {
             if (targetType.Type?.IsAbstract == true) continue;
 
@@ -24,7 +42,7 @@ public class UnitTestGenerator : ISourceGenerator
             const string suffix = "GeneratedExtensions";
             string targetTypeFullName = $"{targetType.Type}";
             string targetTypeName = targetType.Type!.Name;
-            var extensionClass = context.Compilation.GetTypeByMetadataName($"XamlTest.{targetTypeName}{suffix}");
+            var extensionClass = compilation.GetTypeByMetadataName($"XamlTest.{targetTypeName}{suffix}");
             if (extensionClass is null) continue;
 
             string variableTargetTypeName = 
@@ -73,7 +91,7 @@ namespace XamlTest.Tests.Generated
             Window = await App.CreateWindowWithContent(content);
         }}
 
-        [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+        [ClassCleanup]
         public static async Task TestCleanup()
         {{
             if (App is {{ }} app)
@@ -101,9 +119,7 @@ namespace XamlTest.Tests.Generated
             var actual = await {variableTargetTypeName}.{getMethod.Name}();
 
             //Assert
-            /*
             {GetAssertion(getMethod.Name.Substring(3), methodReturnType, dependencyProperty)}
-            */
 
             recorder.Success();
         }}
@@ -157,27 +173,20 @@ namespace XamlTest.Tests.Generated
         }
     }
 
-    public void Initialize(GeneratorInitializationContext context)
+    private static TypeInfo GetTypeFromAttribute(GeneratorSyntaxContext context)
     {
-        context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
-    }
+        if (context.Node is not AttributeSyntax attrib)
+            return default;
 
-    public class SyntaxReceiver : ISyntaxContextReceiver
-    {
-        public List<TypeInfo> GeneratedTypes { get; } = new();
+        if (context.SemanticModel.GetTypeInfo(attrib).Type?.Name != "GenerateTestsAttribute")
+            return default;
 
-        public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
-        {
-            if (context.Node is AttributeSyntax attrib
-                && attrib.ArgumentList?.Arguments.Count >= 1
-                && context.SemanticModel.GetTypeInfo(attrib).Type?.Name == "GenerateTestsAttribute")
-            {
-                TypeOfExpressionSyntax typeArgument = (TypeOfExpressionSyntax)attrib.ArgumentList.Arguments[0].Expression;
-                TypeInfo info = context.SemanticModel.GetTypeInfo(typeArgument.Type);
-                if (info.Type is null) return;
+        if (attrib.ArgumentList?.Arguments.Count < 1)
+            return default;
 
-                GeneratedTypes.Add(info);
-            }
-        }
+        TypeOfExpressionSyntax typeArgument = (TypeOfExpressionSyntax)attrib.ArgumentList!.Arguments[0].Expression;
+        TypeInfo info = context.SemanticModel.GetTypeInfo(typeArgument.Type);
+        
+        return info;
     }
 }
