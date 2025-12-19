@@ -20,21 +20,6 @@ internal sealed class App(
 
     public IList<XmlNamespace> DefaultXmlNamespaces => Context.DefaultNamespaces;
 
-    public int ProcessId
-    {
-        get
-        {
-            try
-            {
-                return Process.Id;
-            }
-            catch (InvalidOperationException)
-            {
-                return -1;
-            }
-        }
-    }
-
     public void Dispose()
     {
         ShutdownRequest request = new()
