@@ -19,8 +19,6 @@ public class App : IApp
 
     public IList<XmlNamespace> DefaultXmlNamespaces => throw new NotImplementedException();
 
-    public int ProcessId { get; }
-
     public ValueTask DisposeAsync() => Completed;
 
     public Task<IWindow?> GetMainWindow()
