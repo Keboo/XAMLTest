@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.1.32104.313
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11312.210 d18.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XAMLTest", "XAMLTest\XAMLTest.csproj", "{B4E881C8-2384-4515-8124-5D06949E754F}"
 EndProject
@@ -29,6 +29,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{F874
 		.github\workflows\dotnet-core.yml = .github\workflows\dotnet-core.yml
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XAMLTest.Mcp", "XAMLTest.Mcp\XAMLTest.Mcp.csproj", "{B66403E5-C57E-3591-22AC-C2C72C528A46}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,10 @@ Global
 		{B320FF6B-1691-4BFB-821E-2DD89817AD98}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B320FF6B-1691-4BFB-821E-2DD89817AD98}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B320FF6B-1691-4BFB-821E-2DD89817AD98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B66403E5-C57E-3591-22AC-C2C72C528A46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B66403E5-C57E-3591-22AC-C2C72C528A46}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B66403E5-C57E-3591-22AC-C2C72C528A46}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B66403E5-C57E-3591-22AC-C2C72C528A46}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

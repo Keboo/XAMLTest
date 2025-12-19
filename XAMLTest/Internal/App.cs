@@ -1,4 +1,4 @@
-﻿using Grpc.Core;
+using Grpc.Core;
 using XamlTest.Host;
 
 namespace XamlTest.Internal;
@@ -19,6 +19,21 @@ internal sealed class App(
     private AppContext Context { get; } = new();
 
     public IList<XmlNamespace> DefaultXmlNamespaces => Context.DefaultNamespaces;
+
+    public int ProcessId
+    {
+        get
+        {
+            try
+            {
+                return Process.Id;
+            }
+            catch (InvalidOperationException)
+            {
+                return -1;
+            }
+        }
+    }
 
     public void Dispose()
     {
@@ -75,7 +90,7 @@ internal sealed class App(
         }
         catch (OperationCanceledException)
         { }
-        catch(RpcException rpcException) when (rpcException.StatusCode == StatusCode.Unavailable)
+        catch (RpcException rpcException) when (rpcException.StatusCode == StatusCode.Unavailable)
         { }
         finally
         {
