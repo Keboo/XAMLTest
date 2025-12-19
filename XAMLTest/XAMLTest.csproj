@@ -44,7 +44,7 @@
     <EmbeddedFiles Include="$([System.IO.Path]::Combine('$(IntermediateOutputPath)','Host\XamlTestSpec*$(DefaultLanguageSourceExtension)'))" />
   </ItemGroup>
 
-  <Target Name="CopyOutputs" AfterTargets="AfterBuild">
+  <Target Name="CopyOutputs" AfterTargets="AfterBuild" Condition="'$(SolutionDir)' != '' AND '$(SolutionDir)' != '*Undefined*'">
     <ItemGroup>
       <CopyItems Include="$(TargetDir)*" />
     </ItemGroup>

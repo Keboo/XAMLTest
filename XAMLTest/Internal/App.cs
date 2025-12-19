@@ -8,7 +8,7 @@ internal sealed class App : IApp
     public App(
         Process process,
         Protocol.ProtocolClient client,
-        AppOptions appOptions, 
+        AppOptions appOptions,
         SemaphoreSlim singletonProcessLock)
     {
         Process = process ?? throw new ArgumentNullException(nameof(process));
@@ -29,6 +29,21 @@ internal sealed class App : IApp
     private AppContext Context { get; } = new();
 
     public IList<XmlNamespace> DefaultXmlNamespaces => Context.DefaultNamespaces;
+
+    public int ProcessId
+    {
+        get
+        {
+            try
+            {
+                return Process.Id;
+            }
+            catch (InvalidOperationException)
+            {
+                return -1;
+            }
+        }
+    }
 
     public void Dispose()
     {
@@ -85,7 +100,7 @@ internal sealed class App : IApp
         }
         catch (OperationCanceledException)
         { }
-        catch(RpcException rpcException) when (rpcException.StatusCode == StatusCode.Unavailable)
+        catch (RpcException rpcException) when (rpcException.StatusCode == StatusCode.Unavailable)
         { }
         finally
         {
