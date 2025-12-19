@@ -6,6 +6,11 @@
 public interface IApp : IAsyncDisposable, IDisposable
 {
     /// <summary>
+    /// The ID of the process that the application is running in.
+    /// </summary>
+    int ProcessId { get; }
+
+    /// <summary>
     /// Initializes the application with the specified App.xaml content and referenced assemblies.
     /// </summary>
     /// <param name="applicationResourceXaml">The XAML content for App.xaml.</param>
