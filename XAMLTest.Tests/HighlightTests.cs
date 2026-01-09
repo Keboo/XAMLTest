@@ -23,7 +23,7 @@ public class HighlightTests
         Window = await App.CreateWindowWithContent(@"");
     }
 
-    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    [ClassCleanup(Microsoft.VisualStudio.TestTools.UnitTesting.InheritanceBehavior.BeforeEachDerivedClass)]
     public static async Task TestCleanup()
     {
         if (App is { } app)
@@ -105,7 +105,7 @@ public class HighlightTests
         await grid.Highlight();
         await grid.ClearHighlight();
 
-        var ex = await Assert.ThrowsExceptionAsync<XamlTestException>(() => grid.GetElement<Adorner>("/SelectionAdorner"));
+        var ex = await Assert.ThrowsAsync<XamlTestException>(() => grid.GetElement<Adorner>("/SelectionAdorner"));
 
         Assert.IsTrue(ex.Message.Contains("Failed to find child element of type 'SelectionAdorner'"));
     }

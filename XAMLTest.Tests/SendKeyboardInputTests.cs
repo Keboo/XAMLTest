@@ -90,7 +90,7 @@ public class SendKeyboardInputTests
         ListBoxItem9 = await ListBox.GetElement<ListBoxItem>("ListBoxItem9");
     }
 
-    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    [ClassCleanup(Microsoft.VisualStudio.TestTools.UnitTesting.InheritanceBehavior.BeforeEachDerivedClass)]
     public static async Task TestCleanup()
     {
         if (App is { } app)

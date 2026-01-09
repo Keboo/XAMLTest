@@ -27,7 +27,7 @@ public class PositionTests
         PositionTextElement = await UserControl.GetElement<TextBlock>("ClickLocation");
     }
 
-    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    [ClassCleanup(Microsoft.VisualStudio.TestTools.UnitTesting.InheritanceBehavior.BeforeEachDerivedClass)]
     public static async Task TestCleanup()
     {
         if (App is { } app)

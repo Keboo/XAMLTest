@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFrameworks>net8.0-windows;net9.0-windows</TargetFrameworks>
+    <TargetFrameworks>net10.0-windows;net9.0-windows</TargetFrameworks>
     <UseWPF>true</UseWPF>
     <IsPackable>false</IsPackable>
     <DeterministicSourcePaths Condition="'$(EnableSourceLink)' == ''">false</DeterministicSourcePaths>
