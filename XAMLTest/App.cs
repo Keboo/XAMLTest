@@ -74,7 +74,6 @@ public static class App
             logMessage($"Starting XAML Test: {startInfo.FileName} {args}");
         }
 
-        await SingletonAppLock.WaitAsync();
         if (Process.Start(startInfo) is Process process)
         {
             NamedPipeChannel channel = new(".", Server.PipePrefix + process.Id, new NamedPipeChannelOptions
@@ -87,7 +86,7 @@ public static class App
                 await VisualStudioAttacher.AttachVisualStudioToProcess(process);
             }
 
-            var app = new Internal.App(process, client, options, SingletonAppLock);
+            var app = new Internal.App(process, client, options);
 
             IVersion version;
             try
