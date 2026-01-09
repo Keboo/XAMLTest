@@ -21,7 +21,7 @@ public class GetEffectiveBackgroundTests
         Window = await App.CreateWindowWithContent(@"");
     }
 
-    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    [ClassCleanup(Microsoft.VisualStudio.TestTools.UnitTesting.InheritanceBehavior.BeforeEachDerivedClass)]
     public static async Task TestCleanup()
     {
         if (App is { } app)

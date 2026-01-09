@@ -21,7 +21,7 @@ public class GetCoordinatesTests
         Window = await App.CreateWindowWithContent(@"<Border />");
     }
 
-    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    [ClassCleanup(Microsoft.VisualStudio.TestTools.UnitTesting.InheritanceBehavior.BeforeEachDerivedClass)]
     public static async Task ClassCleanup()
     {
         if (App is { } app)

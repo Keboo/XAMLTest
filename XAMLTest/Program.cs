@@ -22,8 +22,8 @@ internal class Program
 
         Option<bool> debug = new("--debug");
         Option<FileInfo> logFile = new("--log-file");
-        RootCommand command = new()
-        {
+        RootCommand command =
+        [
             clientPid,
             appPath,
             appType,
@@ -34,7 +34,7 @@ internal class Program
 
             debug,
             logFile
-        };
+        ];
 
         var parseResult = command.Parse(args);
         if (parseResult.Errors.Count > 0)
@@ -46,15 +46,15 @@ internal class Program
             return -1;
         }
 
-        int pidValue = parseResult.GetValueForArgument(clientPid);
-        string? appPathValue = parseResult.GetValueForOption(appPath);
-        string? appTypeValue = parseResult.GetValueForOption(appType);
-        bool waitForDebugger = parseResult.GetValueForOption(debug);
-        FileInfo? logFileInfo = parseResult.GetValueForOption(logFile);
+        int pidValue = parseResult.GetValue(clientPid);
+        string? appPathValue = parseResult.GetValue(appPath);
+        string? appTypeValue = parseResult.GetValue(appType);
+        bool waitForDebugger = parseResult.GetValue(debug);
+        FileInfo? logFileInfo = parseResult.GetValue(logFile);
 
-        string? remoteMethodName = parseResult.GetValueForOption(remoteMethod);
-        string? remoteContainerTypeValue = parseResult.GetValueForOption(remoteContainerType);
-        string? remoteAssemblyValue = parseResult.GetValueForOption(remoteAssembly);
+        string? remoteMethodName = parseResult.GetValue(remoteMethod);
+        string? remoteContainerTypeValue = parseResult.GetValue(remoteContainerType);
+        string? remoteAssemblyValue = parseResult.GetValue(remoteAssembly);
 
         try
         {

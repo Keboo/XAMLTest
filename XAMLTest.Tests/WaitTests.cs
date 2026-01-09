@@ -16,7 +16,7 @@ public class WaitTests
     [TestMethod]
     public async Task ShouldTimeout()
     {
-        await Assert.ThrowsExceptionAsync<TimeoutException>(async () => await Wait.For(Timeout));
+        await Assert.ThrowsAsync<TimeoutException>(async () => await Wait.For(Timeout));
     }
 
     [TestMethod]
@@ -29,7 +29,7 @@ public class WaitTests
     public async Task ShouldTimeoutWithMessage()
     {
         var timeoutMessage = "We're expecting a timeout";
-        var ex = await Assert.ThrowsExceptionAsync<TimeoutException>(async () => await Wait.For(Timeout, message: timeoutMessage));
+        var ex = await Assert.ThrowsAsync<TimeoutException>(async () => await Wait.For(Timeout, message: timeoutMessage));
         Assert.IsTrue(ex.Message.StartsWith(timeoutMessage), $"Expected exception message to start with: '{timeoutMessage}'");
        
     }

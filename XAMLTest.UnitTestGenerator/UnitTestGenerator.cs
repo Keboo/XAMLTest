@@ -73,7 +73,7 @@ namespace XamlTest.Tests.Generated
             Window = await App.CreateWindowWithContent(content);
         }}
 
-        [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+        [ClassCleanup(Microsoft.VisualStudio.TestTools.UnitTesting.InheritanceBehavior.BeforeEachDerivedClass)]
         public static async Task TestCleanup()
         {{
             if (App is {{ }} app)

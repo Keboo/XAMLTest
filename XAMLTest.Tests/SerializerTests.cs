@@ -21,7 +21,7 @@ public class SerializerTests
         Window = await App.CreateWindowWithContent("", title: "Test Window Title");
     }
 
-    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    [ClassCleanup(Microsoft.VisualStudio.TestTools.UnitTesting.InheritanceBehavior.BeforeEachDerivedClass)]
     public static void TestCleanup()
     {
         App.Dispose();

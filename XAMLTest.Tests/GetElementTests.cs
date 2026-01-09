@@ -23,7 +23,7 @@ public class GetElementTests
         Window = await App.CreateWindowWithContent(@"");
     }
 
-    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    [ClassCleanup(Microsoft.VisualStudio.TestTools.UnitTesting.InheritanceBehavior.BeforeEachDerivedClass)]
     public static async Task TestCleanup()
     {
         if (App is { } app)
@@ -481,7 +481,7 @@ public class GetElementTests
 </Border>");
 
         //Act
-        XamlTestException exception = await Assert.ThrowsExceptionAsync<XamlTestException>(() => Window.FindElement<TextBlock>("/Border.ChildFoo/TextBlock"));
+        XamlTestException exception = await Assert.ThrowsAsync<XamlTestException>(() => Window.FindElement<TextBlock>("/Border.ChildFoo/TextBlock"));
 
         //Assert
         Assert.IsTrue(exception.Message.Contains("ChildFoo"));
@@ -506,7 +506,7 @@ public class GetElementTests
         var stackPanel = await Window.GetElement<StackPanel>();
 
         //Act
-        XamlTestException exception = await Assert.ThrowsExceptionAsync<XamlTestException>(() => stackPanel.FindElement(
+        XamlTestException exception = await Assert.ThrowsAsync<XamlTestException>(() => stackPanel.FindElement(
             ElementQuery.PropertyExpression<TextBlock>("BadProp", "2")));
 
         //Assert
