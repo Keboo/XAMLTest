@@ -3,25 +3,15 @@ using XamlTest.Host;
 
 namespace XamlTest.Internal;
 
-internal sealed class App : IApp
+internal sealed class App(
+    Process process,
+    Protocol.ProtocolClient client,
+    AppOptions appOptions) : IApp
 {
-    public App(
-        Process process,
-        Protocol.ProtocolClient client,
-        AppOptions appOptions, 
-        SemaphoreSlim singletonProcessLock)
-    {
-        Process = process ?? throw new ArgumentNullException(nameof(process));
-        Client = client ?? throw new ArgumentNullException(nameof(client));
-        AppOptions = appOptions ?? throw new ArgumentNullException(nameof(appOptions));
-        SingletonProcessLock = singletonProcessLock ?? throw new ArgumentNullException(nameof(singletonProcessLock));
-    }
+    public Process Process { get; } = process ?? throw new ArgumentNullException(nameof(process));
 
-    public Process Process { get; }
-
-    private Protocol.ProtocolClient Client { get; }
-    private AppOptions AppOptions { get; }
-    public SemaphoreSlim SingletonProcessLock { get; }
+    private Protocol.ProtocolClient Client { get; } = client ?? throw new ArgumentNullException(nameof(client));
+    private AppOptions AppOptions { get; } = appOptions ?? throw new ArgumentNullException(nameof(appOptions));
 
     void IApp.LogMessage(string message) => LogMessage?.Invoke(message);
 
@@ -166,7 +156,6 @@ internal sealed class App : IApp
             process.Kill();
             process.WaitForExit(1_000);
         }
-        SingletonProcessLock.Release();
     }
 
     public async Task Initialize(string applicationResourceXaml, params string[] assemblies)
