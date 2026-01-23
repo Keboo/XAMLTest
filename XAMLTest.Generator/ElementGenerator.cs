@@ -1,5 +1,4 @@
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Immutable;
 
@@ -84,12 +83,6 @@ public class ElementGenerator : IIncrementalGenerator
 #endif 
 
         IncrementalValuesProvider<(IReadOnlyList<VisualElement> visualElementsProvider, ImmutableArray<Diagnostic> diagnostics)> visualElementsProvider = context.SyntaxProvider.ForAttributeWithMetadataName("XamlTest.GenerateHelpersAttribute", IsGenerateHelpersAttribute, GetVisualElements);
-
-        //context.SyntaxProvider.CreateSyntaxProvider
-        //(
-        //    predicate: static (node, token) => IsGenerateHelpersAttribute(node, token),
-        //    transform: static (context, token) => GetVisualElements(context, token)
-        //);
 
         // Collect all results from all attribute invocations to deduplicate across entire compilation
         IncrementalValueProvider<ImmutableArray<(IReadOnlyList<VisualElement> visualElements, ImmutableArray<Diagnostic> diagnostics)>> collectedProvider = visualElementsProvider.Collect();
