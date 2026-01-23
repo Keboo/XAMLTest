@@ -11,7 +11,7 @@ public class ColorMixinsTests
         float ratio = Colors.Black.ContrastRatio(Colors.White);
 
         //Actual value should be 21, allowing for floating point rounding errors
-        Assert.IsTrue(ratio >= 20.9);
+        Assert.IsGreaterThanOrEqualTo(20.9, ratio);
     }
 
     [TestMethod]

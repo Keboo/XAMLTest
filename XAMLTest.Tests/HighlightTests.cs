@@ -107,6 +107,6 @@ public class HighlightTests
 
         var ex = await Assert.ThrowsAsync<XamlTestException>(() => grid.GetElement<Adorner>("/SelectionAdorner"));
 
-        Assert.IsTrue(ex.Message.Contains("Failed to find child element of type 'SelectionAdorner'"));
+        Assert.Contains("Failed to find child element of type 'SelectionAdorner'", ex.Message);
     }
 }

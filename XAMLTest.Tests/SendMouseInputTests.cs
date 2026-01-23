@@ -83,7 +83,7 @@ public class SendMouseInputTests
         {
             await nestedMenuItem.LeftClick(clickTime:TimeSpan.FromMilliseconds(200));
             var invocations = await registration.GetInvocations();
-            Assert.IsTrue(invocations.Count > 0);
+            Assert.IsNotEmpty(invocations);
         });
 
         recorder.Success();
@@ -100,7 +100,7 @@ public class SendMouseInputTests
         {
             await Button.LeftDoubleClick();
             var invocations = await registration.GetInvocations();
-            Assert.IsTrue(invocations.Count > 1);
+            Assert.IsGreaterThan(1, invocations.Count);
         });
 
         recorder.Success();
@@ -114,8 +114,8 @@ public class SendMouseInputTests
         Point mousePosition = await TopMenuItem.LeftClick(Position.BottomLeft, 15, -5);
 
         Point expected = coordinates.BottomLeft + new Vector(15, -5);
-        Assert.IsTrue(Math.Abs(expected.X - mousePosition.X) <= 1, $"Distance {Math.Abs(expected.X - mousePosition.X)} is greater than tolerance");
-        Assert.IsTrue(Math.Abs(expected.Y - mousePosition.Y) <= 1, $"Distance {Math.Abs(expected.Y - mousePosition.Y)} is greater than tolerance");
+        Assert.IsLessThanOrEqualTo(1, Math.Abs(expected.X - mousePosition.X), $"Distance {Math.Abs(expected.X - mousePosition.X)} is greater than tolerance");
+        Assert.IsLessThanOrEqualTo(1, Math.Abs(expected.Y - mousePosition.Y), $"Distance {Math.Abs(expected.Y - mousePosition.Y)} is greater than tolerance");
         recorder.Success();
     }
 
@@ -135,7 +135,7 @@ public class SendMouseInputTests
         await Wait.For(async () =>
         {
             var invocations = await registration.GetInvocations();
-            Assert.AreEqual(1, invocations.Count);
+            Assert.HasCount(1, invocations);
         });
         recorder.Success();
     }
@@ -153,23 +153,23 @@ public class SendMouseInputTests
 
         Point cursorPosition = await Grid.MoveCursorTo(Position.Center);
         Vector distance = center - cursorPosition;
-        Assert.IsTrue(distance.Length < tolerance, $"Distance {distance.Length} is greater than tolerance");
+        Assert.IsLessThan(tolerance, distance.Length, $"Distance {distance.Length} is greater than tolerance");
 
         cursorPosition = await Grid.MoveCursorTo(Position.TopLeft);
         distance = coordinates.TopLeft - cursorPosition;
-        Assert.IsTrue(distance.Length < tolerance, $"Distance {distance.Length} is greater than tolerance");
+        Assert.IsLessThan(tolerance, distance.Length, $"Distance {distance.Length} is greater than tolerance");
 
         cursorPosition = await Grid.MoveCursorTo(Position.TopRight);
         distance = coordinates.TopRight - cursorPosition;
-        Assert.IsTrue(distance.Length < tolerance, $"Distance {distance.Length} is greater than tolerance");
+        Assert.IsLessThan(tolerance, distance.Length, $"Distance {distance.Length} is greater than tolerance");
 
         cursorPosition = await Grid.MoveCursorTo(Position.BottomRight);
         distance = coordinates.BottomRight - cursorPosition;
-        Assert.IsTrue(distance.Length < tolerance, $"Distance {distance.Length} is greater than tolerance");
+        Assert.IsLessThan(tolerance, distance.Length, $"Distance {distance.Length} is greater than tolerance");
 
         cursorPosition = await Grid.MoveCursorTo(Position.BottomLeft);
         distance = coordinates.BottomLeft - cursorPosition;
-        Assert.IsTrue(distance.Length < tolerance, $"Distance {distance.Length} is greater than tolerance");
+        Assert.IsLessThan(tolerance, distance.Length, $"Distance {distance.Length} is greater than tolerance");
 
         recorder.Success();
     }
@@ -187,7 +187,7 @@ public class SendMouseInputTests
 
         Point cursorPosition = await Grid.MoveCursorTo(Position.Center, 10, 20);
         Vector distance = (center + new Vector(10, 20)) - cursorPosition;
-        Assert.IsTrue(distance.Length < tolerance, $"Distance {distance.Length} is greater than tolerance");
+        Assert.IsLessThan(tolerance, distance.Length, $"Distance {distance.Length} is greater than tolerance");
         recorder.Success();
     }
 
@@ -204,7 +204,7 @@ public class SendMouseInputTests
 
         Point cursorPosition = await Grid.SendInput(MouseInput.MoveAbsolute((int)center.X, (int)center.Y));
         Vector distance = center - cursorPosition;
-        Assert.IsTrue(distance.Length < tolerance, $"Distance {distance.Length} is greater than tolerance");
+        Assert.IsLessThan(tolerance, distance.Length, $"Distance {distance.Length} is greater than tolerance");
         recorder.Success();
     }
 }

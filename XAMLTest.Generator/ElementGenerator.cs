@@ -1,11 +1,12 @@
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using TypeInfo = Microsoft.CodeAnalysis.TypeInfo;
+using System.Collections.Immutable;
 
 namespace XAMLTest.Generator;
 
-[Generator]
-public class ElementGenerator : ISourceGenerator
+[Generator(LanguageNames.CSharp)]
+public class ElementGenerator : IIncrementalGenerator
 {
     private static DiagnosticDescriptor DuplicateAttributesWarning { get; }
         = new(id: "XAMLTEST0001",
@@ -15,153 +16,14 @@ public class ElementGenerator : ISourceGenerator
               DiagnosticSeverity.Warning,
               isEnabledByDefault: true);
 
-    public void Execute(GeneratorExecutionContext context)
-    {
-        SyntaxReceiver rx = (SyntaxReceiver)context.SyntaxContextReceiver!;
-        HashSet<string> ignoredTypes = new();
-        foreach (var duplicatedAttributes in rx.GeneratedTypes.GroupBy(x => x.Type.FullName).Where(g => g.Count() > 1))
-        {
-            context.ReportDiagnostic(Diagnostic.Create(DuplicateAttributesWarning, Location.None, duplicatedAttributes.Key));
-            ignoredTypes.Add(duplicatedAttributes.Key);
-            return;
-        }
-
-        foreach (var type in rx.GeneratedTypes)
-        {
-            if (ignoredTypes.Contains(type.Type.FullName)) continue;
-
-            if (context.Compilation.GetTypeByMetadataName($"{type.Namespace}.{type.Type.Name}GeneratedExtensions") is not null)
-            {
-                continue;
-            }
-
-            StringBuilder builder = new();
-            builder.AppendLine("#nullable enable");
-            builder.AppendLine($"namespace {type.Namespace}");
-            builder.AppendLine("{");
-            builder.AppendLine($"    public static partial class {type.Type.Name}GeneratedExtensions");
-            builder.AppendLine("    {");
-            foreach (var property in type.DependencyProperties)
-            {
-                builder.AppendLine();
-                if (property.CanRead)
-                {
-                    builder
-                        .Append("        ");
-
-                    if (type.Type.IsFinal)
-                    {
-                        builder.AppendLine($"public static async System.Threading.Tasks.Task<{property.TypeFullName}> Get{property.Name}(this IVisualElement<{type.Type.FullName}> element)");
-                    }
-                    else
-                    {
-                        builder.AppendLine($"public static async System.Threading.Tasks.Task<{property.TypeFullName}> Get{property.Name}<T>(this IVisualElement<T> element) where T : {type.Type.FullName}");
-                    }
-                    builder.Append("            ")
-                        .AppendLine($"=> await element.GetProperty<{property.TypeFullName}>(nameof({type.Type.FullName}.{property.Name}));");
-
-                    if (property.TypeFullName.StartsWith("System.Windows.Media.SolidColorBrush") ||
-                        property.TypeFullName.StartsWith("System.Windows.Media.Brush"))
-                    {
-                        builder
-                        .Append("        ");
-                        if (type.Type.IsFinal)
-                        {
-                            builder.AppendLine($"public static async System.Threading.Tasks.Task<System.Windows.Media.Color?> Get{property.Name}Color(this IVisualElement<{type.Type.FullName}> element)");
-                        }
-                        else
-                        {
-                            builder.AppendLine($"public static async System.Threading.Tasks.Task<System.Windows.Media.Color?> Get{property.Name}Color<T>(this IVisualElement<T> element) where T : {type.Type.FullName}");
-                        }
-                        builder
-                        .Append("            ")
-                        .AppendLine($"=> await element.GetProperty<System.Windows.Media.Color?>(nameof({type.Type.FullName}.{property.Name}));");
-                    }
-                }
-                if (property.CanWrite)
-                {
-                    builder
-                        .Append("        ");
-
-                    if (type.Type.IsFinal)
-                    {
-                        builder.AppendLine($"public static async System.Threading.Tasks.Task<{property.TypeFullName}> Set{property.Name}(this IVisualElement<{type.Type.FullName}> element, {property.TypeFullName} value)");
-                    }
-                    else
-                    {
-                        builder.AppendLine($"public static async System.Threading.Tasks.Task<{property.TypeFullName}> Set{property.Name}<T>(this IVisualElement<T> element, {property.TypeFullName} value) where T : {type.Type.FullName}");
-                    }
-                    builder
-                        .Append("            ")
-                        .AppendLine($"=> await element.SetProperty(nameof({type.Type.FullName}.{property.Name}), value);");
-
-                    if (property.TypeFullName.StartsWith("System.Windows.Media.SolidColorBrush") ||
-                        property.TypeFullName.StartsWith("System.Windows.Media.Brush"))
-                    {
-                        builder
-                        .Append("        ");
-                        if (type.Type.IsFinal)
-                        {
-                            builder.AppendLine($"public static async System.Threading.Tasks.Task<System.Windows.Media.Color?> Set{property.Name}Color(this IVisualElement<{type.Type.FullName}> element, System.Windows.Media.Color value)");
-                        }
-                        else
-                        {
-                            builder.AppendLine($"public static async System.Threading.Tasks.Task<System.Windows.Media.Color?> Set{property.Name}Color<T>(this IVisualElement<T> element, System.Windows.Media.Color value) where T : {type.Type.FullName}");
-                        }
-                        builder
-                        .AppendLine("        {")
-                        .Append("            ")
-                        .AppendLine($"System.Windows.Media.SolidColorBrush? brush = await element.SetProperty(nameof({type.Type.FullName}.{property.Name}), new System.Windows.Media.SolidColorBrush(value));")
-                        .Append("            ")
-                        .AppendLine("return brush?.Color ?? default;")
-                        .AppendLine("        }");
-                    }
-
-                }
-            }
-            builder.AppendLine("    }");
-            builder.AppendLine("}");
-
-            string fileName = $"XamlTest{type.Type.Name}GeneratedExtensions.g.cs";
-            //System.IO.File.WriteAllText(@"D:\Dev\XAMLTest\XAMLTest\obj\" + fileName, builder.ToString());
-            context.AddSource(fileName, builder.ToString());
-        }
-    }
-
-    public void Initialize(GeneratorInitializationContext context)
-    {
-#if DEBUG
-        if (!System.Diagnostics.Debugger.IsAttached)
-        {
-            //Debugger.Launch();
-        }
-#endif 
-        context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
-    }
-}
-
-public record VisualElement(
-    string Namespace,
-    VisualElementType Type,
-    IReadOnlyList<Property> DependencyProperties)
-{ }
-
-public record VisualElementType(string Name, string FullName, bool IsFinal)
-{ }
-
-public record Property(string Name, string TypeFullName, bool CanRead, bool CanWrite)
-{ }
-
-public class SyntaxReceiver : ISyntaxContextReceiver
-{
     private static Dictionary<string, string> TypeRemap { get; } = new()
     {
         { "System.Windows.Controls.ColumnDefinitionCollection", "System.Collections.Generic.IList<System.Windows.Controls.ColumnDefinition>" },
         { "System.Windows.Controls.RowDefinitionCollection", "System.Collections.Generic.IList<System.Windows.Controls.RowDefinition>" }
     };
 
-    private static HashSet<string> IgnoredTypes { get; } = new()
-    {
+    private static HashSet<string> IgnoredTypes { get; } =
+    [
         "System.Windows.TriggerCollection",
         "System.Windows.Media.CacheMode",
         "System.Windows.Input.CommandBindingCollection",
@@ -210,131 +72,296 @@ public class SyntaxReceiver : ISyntaxContextReceiver
         "System.Windows.IInputElement",
         "System.Collections.ObjectModel.Collection<System.Windows.Controls.ToolBar>",
         "System.Windows.WindowCollection"
-    };
-    private List<VisualElement> Elements { get; } = new();
-    public IReadOnlyList<VisualElement> GeneratedTypes => Elements;
+    ];
 
-    public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
+    public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        if (context.Node is AttributeSyntax attrib
-            && attrib.ArgumentList?.Arguments.Count >= 1
-            && context.SemanticModel.GetTypeInfo(attrib).Type?.Name == "GenerateHelpersAttribute")
+#if DEBUG
+        if (!System.Diagnostics.Debugger.IsAttached)
         {
-            TypeOfExpressionSyntax typeArgument = (TypeOfExpressionSyntax)attrib.ArgumentList.Arguments[0].Expression;
-            TypeInfo info = context.SemanticModel.GetTypeInfo(typeArgument.Type);
-            if (info.Type is null) return;
-            
-            string? targetNamespace = null;
-            foreach (AttributeArgumentSyntax argumentExpression in attrib.ArgumentList.Arguments.Skip(1))
-            {
-                string? target = argumentExpression.NameEquals?.Name.Identifier.Value?.ToString();
+            //Debugger.Launch();
+        }
+#endif 
 
-                switch (target)
-                {
-                    case "Namespace":
-                        switch (argumentExpression.Expression)
-                        {
-                            case LiteralExpressionSyntax les:
-                                targetNamespace = les.Token.Value?.ToString();
-                                break;
-                            case MemberAccessExpressionSyntax maes:
-                                targetNamespace = context.SemanticModel.GetConstantValue(maes.Name).Value?.ToString();
-                                break;
-                        }
-                        break;
-                }
+        IncrementalValuesProvider<(IReadOnlyList<VisualElement> visualElementsProvider, ImmutableArray<Diagnostic> diagnostics)> visualElementsProvider = context.SyntaxProvider.ForAttributeWithMetadataName("XamlTest.GenerateHelpersAttribute", IsGenerateHelpersAttribute, GetVisualElements);
+
+        //context.SyntaxProvider.CreateSyntaxProvider
+        //(
+        //    predicate: static (node, token) => IsGenerateHelpersAttribute(node, token),
+        //    transform: static (context, token) => GetVisualElements(context, token)
+        //);
+
+        // Collect all results from all attribute invocations to deduplicate across entire compilation
+        IncrementalValueProvider<ImmutableArray<(IReadOnlyList<VisualElement> visualElements, ImmutableArray<Diagnostic> diagnostics)>> collectedProvider = visualElementsProvider.Collect();
+
+        // Only generate source if enabled and DependencyInjection is referenced
+        context.RegisterSourceOutput(collectedProvider, static (context, providers) =>
+        {
+            foreach (var diagnostic in providers.SelectMany(x => x.diagnostics).Distinct())
+            {
+                context.ReportDiagnostic(diagnostic);
             }
 
-            for (ITypeSymbol? type = info.Type;
-                type is not null;
-                type = type.BaseType)
+            foreach (var visualElement in providers
+                .SelectMany(x => x.visualElements)
+                .GroupBy(x => x.Type)
+                .Select(x => x.First()))
             {
-                List<Property> properties = [];
+                string elementClass = GetElementContent(visualElement);
+                string fileName = $"XamlTest{visualElement.Type.Name}GeneratedExtensions.g.cs";
+                //System.IO.File.WriteAllText(@"D:\Dev\XAMLTest\XAMLTest\obj\" + fileName, elementClass);
+                context.AddSource(fileName, elementClass);
+            }
+        });
+    }
 
-                if (Elements.Any(x => x.Type.FullName == $"{type}")) continue;
+    private static bool IsGenerateHelpersAttribute(SyntaxNode node, CancellationToken token)
+    {
+        //NB: GenerateHelpersAttribute is only available at the assembly level
+        return node is CompilationUnitSyntax compilation &&
+                compilation.AttributeLists
+                .SelectMany(x => x.Attributes)
+                .Any(x => x.Name.ToFullString() == "GenerateHelpers");
+    }
 
-                foreach (ISymbol member in type.GetMembers())
+    private static (IReadOnlyList<VisualElement> visualElements, ImmutableArray<Diagnostic> diagnostics) GetVisualElements(GeneratorAttributeSyntaxContext context, CancellationToken token)
+    {
+        List<VisualElement> elements = [];
+
+        foreach (AttributeData attribute in context.Attributes)
+        {
+            if (attribute.AttributeClass?.Name != "GenerateHelpersAttribute")
+            {
+                continue;
+            }
+
+            if (attribute.ConstructorArguments[0].Kind != TypedConstantKind.Type)
+            {
+                //TODO Diagnostic
+            }
+
+            if (attribute.ConstructorArguments is { Length: 1 } &&
+                attribute.ConstructorArguments[0].Value is INamedTypeSymbol typeConstant)
+            {
+                //TypeOfExpressionSyntax typeArgument = (TypeOfExpressionSyntax)attrib.ArgumentList.Arguments[0].Expression;
+                //TypeInfo info = context.SemanticModel.GetTypeInfo(typeArgument.Type);
+                //if (info.Type is null) return;
+
+                string? targetNamespace = null;
+                foreach ((string argumentName, TypedConstant argumentType) in attribute.NamedArguments)
                 {
-                    if (member is IPropertySymbol property &&
-                        property.CanBeReferencedByName &&
-                        !property.IsStatic &&
-                        !property.IsOverride &&
-                        property.DeclaredAccessibility == Accessibility.Public &&
-                        !property.GetAttributes()
-                            .Any(x => x.AttributeClass?.Name == "ObsoleteAttribute" || x.AttributeClass?.Name == "ExperimentalAttribute") &&
-                        !IgnoredTypes.Contains($"{property.Type}") &&
-                        !IsDelegate(property.Type))
+                    switch (argumentName)
                     {
-                        if (ShouldUseVisualElement(property.Type))
-                        {
-                            properties.Add(
-                                new Property(
-                                    property.Name,
-                                    $"XamlTest.IVisualElement<{property.Type}>?",
-                                    property.GetMethod is not null,
-                                    property.SetMethod is not null));
-                        }
-                        else
-                        {
-                            string propertyType = $"{property.Type}";
-                            if (TypeRemap.TryGetValue(propertyType, out string? remappedType))
-                            {
-                                propertyType = remappedType;
-                            }
-
-                            if (property.Type.IsReferenceType &&
-                                !propertyType.EndsWith("?"))
-                            {
-                                propertyType += "?";
-                            }
-
-                            properties.Add(
-                                new Property(
-                                    property.Name,
-                                    propertyType,
-                                    property.GetMethod is not null,
-                                    property.SetMethod is not null));
-                        }
+                        case "Namespace":
+                            targetNamespace = argumentType.Value?.ToString();
+                            //switch (argumentExpression.Expression)
+                            //{
+                            //    case LiteralExpressionSyntax les:
+                            //        targetNamespace = les.Token.Value?.ToString();
+                            //        break;
+                            //    case MemberAccessExpressionSyntax maes:
+                            //        targetNamespace = context.SemanticModel.GetConstantValue(maes.Name).Value?.ToString();
+                            //        break;
+                            //}
+                            break;
                     }
                 }
-                if (properties.Any())
+
+                string @namespace = targetNamespace ?? "XamlTest";
+
+                for (ITypeSymbol? type = typeConstant.OriginalDefinition;
+                    type is not null;
+                    type = type.BaseType)
                 {
+                    string fullName = $"{type}";
+                    if (IgnoredTypes.Contains(fullName)) continue;
+
                     string safeTypeName = GetSafeTypeName(type);
-                    var visualElementType = new VisualElementType(safeTypeName, $"{type}", type.IsSealed || type.IsValueType);
-                    Elements.Add(new VisualElement(targetNamespace ?? "XamlTest", visualElementType, properties));
+
+                    if (context.SemanticModel.Compilation.GetTypeByMetadataName($"{@namespace}.{GetClassName(safeTypeName)}") is not null) continue;
+
+                    List<Property> properties = [];
+
+                    if (elements.Any(x => x.Type.FullName == fullName)) continue;
+
+                    foreach (ISymbol member in type.GetMembers())
+                    {
+                        if (member is IPropertySymbol property &&
+                            property.CanBeReferencedByName &&
+                            !property.IsStatic &&
+                            !property.IsOverride &&
+                            property.DeclaredAccessibility == Accessibility.Public &&
+                            !property.GetAttributes()
+                                .Any(x => x.AttributeClass?.Name == "ObsoleteAttribute" || x.AttributeClass?.Name == "ExperimentalAttribute") &&
+                            !IgnoredTypes.Contains($"{property.Type}") &&
+                            !IsDelegate(property.Type))
+                        {
+                            if (ShouldUseVisualElement(property.Type))
+                            {
+                                properties.Add(
+                                    new Property(
+                                        property.Name,
+                                        $"XamlTest.IVisualElement<{property.Type}>?",
+                                        property.GetMethod is not null,
+                                        property.SetMethod is not null));
+                            }
+                            else
+                            {
+                                string propertyType = $"{property.Type}";
+                                if (TypeRemap.TryGetValue(propertyType, out string? remappedType))
+                                {
+                                    propertyType = remappedType;
+                                }
+
+                                if (property.Type.IsReferenceType &&
+                                    !propertyType.EndsWith("?"))
+                                {
+                                    propertyType += "?";
+                                }
+
+                                properties.Add(
+                                    new Property(
+                                        property.Name,
+                                        propertyType,
+                                        property.GetMethod is not null,
+                                        property.SetMethod is not null));
+                            }
+                        }
+                    }
+                    if (properties.Any())
+                    {
+                        var visualElementType = new VisualElementType(safeTypeName, fullName, type.IsSealed || type.IsValueType);
+                        elements.Add(new VisualElement(@namespace, visualElementType, properties));
+                    }
                 }
             }
         }
+        return (elements, ImmutableArray<Diagnostic>.Empty);
+    }
 
-        static string GetSafeTypeName(ITypeSymbol typeSymbol)
+    private static string GetElementContent(VisualElement visualElement)
+    {
+        StringBuilder builder = new();
+        builder.AppendLine("#nullable enable");
+        builder.AppendLine($"namespace {visualElement.Namespace}");
+        builder.AppendLine("{");
+        builder.AppendLine($"    public static partial class {GetClassName(visualElement.Type.Name)}");
+        builder.AppendLine("    {");
+        foreach (var property in visualElement.DependencyProperties)
         {
-            string safeTypeName = typeSymbol.Name;
-
-            if (typeSymbol is INamedTypeSymbol { TypeArguments.Length: > 0 } genericSymbol)
+            builder.AppendLine();
+            if (property.CanRead)
             {
-                safeTypeName += $"_{string.Join("_", genericSymbol.TypeArguments.Select(x => GetSafeTypeName(x)))}";
-            }
-            return safeTypeName;
-        }
+                builder
+                    .Append("        ");
 
-        static bool ShouldUseVisualElement(ITypeSymbol typeSymbol)
-        {
-            for (ITypeSymbol? type = typeSymbol;
-                 type != null;
-                 type = type.BaseType)
-            {
-                switch($"{type}")
+                if (visualElement.Type.IsFinal)
                 {
-                    case "System.Windows.Media.Brush": return false;
-                    case "System.Windows.DependencyObject": return true;
+                    builder.AppendLine($"public static async System.Threading.Tasks.Task<{property.TypeFullName}> Get{property.Name}(this IVisualElement<{visualElement.Type.FullName}> element)");
+                }
+                else
+                {
+                    builder.AppendLine($"public static async System.Threading.Tasks.Task<{property.TypeFullName}> Get{property.Name}<T>(this IVisualElement<T> element) where T : {visualElement.Type.FullName}");
+                }
+                builder.Append("            ")
+                    .AppendLine($"=> await element.GetProperty<{property.TypeFullName}>(nameof({visualElement.Type.FullName}.{property.Name}));");
+
+                if (property.TypeFullName.StartsWith("System.Windows.Media.SolidColorBrush") ||
+                    property.TypeFullName.StartsWith("System.Windows.Media.Brush"))
+                {
+                    builder
+                    .Append("        ");
+                    if (visualElement.Type.IsFinal)
+                    {
+                        builder.AppendLine($"public static async System.Threading.Tasks.Task<System.Windows.Media.Color?> Get{property.Name}Color(this IVisualElement<{visualElement.Type.FullName}> element)");
+                    }
+                    else
+                    {
+                        builder.AppendLine($"public static async System.Threading.Tasks.Task<System.Windows.Media.Color?> Get{property.Name}Color<T>(this IVisualElement<T> element) where T : {visualElement.Type.FullName}");
+                    }
+                    builder
+                    .Append("            ")
+                    .AppendLine($"=> await element.GetProperty<System.Windows.Media.Color?>(nameof({visualElement.Type.FullName}.{property.Name}));");
                 }
             }
-            return false;
+            if (property.CanWrite)
+            {
+                builder
+                    .Append("        ");
+
+                if (visualElement.Type.IsFinal)
+                {
+                    builder.AppendLine($"public static async System.Threading.Tasks.Task<{property.TypeFullName}> Set{property.Name}(this IVisualElement<{visualElement.Type.FullName}> element, {property.TypeFullName} value)");
+                }
+                else
+                {
+                    builder.AppendLine($"public static async System.Threading.Tasks.Task<{property.TypeFullName}> Set{property.Name}<T>(this IVisualElement<T> element, {property.TypeFullName} value) where T : {visualElement.Type.FullName}");
+                }
+                builder
+                    .Append("            ")
+                    .AppendLine($"=> await element.SetProperty(nameof({visualElement.Type.FullName}.{property.Name}), value);");
+
+                if (property.TypeFullName.StartsWith("System.Windows.Media.SolidColorBrush") ||
+                    property.TypeFullName.StartsWith("System.Windows.Media.Brush"))
+                {
+                    builder
+                    .Append("        ");
+                    if (visualElement.Type.IsFinal)
+                    {
+                        builder.AppendLine($"public static async System.Threading.Tasks.Task<System.Windows.Media.Color?> Set{property.Name}Color(this IVisualElement<{visualElement.Type.FullName}> element, System.Windows.Media.Color value)");
+                    }
+                    else
+                    {
+                        builder.AppendLine($"public static async System.Threading.Tasks.Task<System.Windows.Media.Color?> Set{property.Name}Color<T>(this IVisualElement<T> element, System.Windows.Media.Color value) where T : {visualElement.Type.FullName}");
+                    }
+                    builder
+                    .AppendLine("        {")
+                    .Append("            ")
+                    .AppendLine($"System.Windows.Media.SolidColorBrush? brush = await element.SetProperty(nameof({visualElement.Type.FullName}.{property.Name}), new System.Windows.Media.SolidColorBrush(value));")
+                    .Append("            ")
+                    .AppendLine("return brush?.Color ?? default;")
+                    .AppendLine("        }");
+                }
+
+            }
         }
+        builder.AppendLine("    }");
+        builder.AppendLine("}");
+
+        return builder.ToString();
+    }
+
+    private static string GetClassName(string typeName) 
+        => $"{typeName}GeneratedExtensions";
+
+    private static string GetSafeTypeName(ITypeSymbol typeSymbol)
+    {
+        string safeTypeName = typeSymbol.Name;
+
+        if (typeSymbol is INamedTypeSymbol { TypeArguments.Length: > 0 } genericSymbol)
+        {
+            safeTypeName += $"_{string.Join("_", genericSymbol.TypeArguments.Select(x => GetSafeTypeName(x)))}";
+        }
+        return safeTypeName;
+    }
+
+    private static bool ShouldUseVisualElement(ITypeSymbol typeSymbol)
+    {
+        for (ITypeSymbol? type = typeSymbol;
+             type != null;
+             type = type.BaseType)
+        {
+            switch ($"{type}")
+            {
+                case "System.Windows.Media.Brush": return false;
+                case "System.Windows.DependencyObject": return true;
+            }
+        }
+        return false;
     }
 
     private static bool IsDelegate(ITypeSymbol typeSymbol)
-        => Is(typeSymbol, "System.Delegate");
+       => Is(typeSymbol, "System.Delegate");
 
     private static bool Is(ITypeSymbol typeSymbol, string targetType)
     {
@@ -349,5 +376,4 @@ public class SyntaxReceiver : ISyntaxContextReceiver
         }
         return false;
     }
-
 }

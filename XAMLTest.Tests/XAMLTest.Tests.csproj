@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net10.0-windows;net9.0-windows</TargetFrameworks>
+    <TargetFrameworks>net10.0-windows</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <UseWPF>true</UseWPF>
     <RootNamespace>XamlTest.Tests</RootNamespace>
@@ -17,7 +17,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <ProjectReference Include="..\XAMLTest.UnitTestGenerator\XAMLTest.UnitTestGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <!--<ProjectReference Include="..\XAMLTest.UnitTestGenerator\XAMLTest.UnitTestGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />-->
     <ProjectReference Include="..\XAMLTest.Generator\XAMLTest.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 

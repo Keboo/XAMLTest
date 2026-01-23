@@ -1,7 +1,6 @@
-﻿using System;
-using XamlTest;
+﻿using XamlTest;
 
-[assembly: GenerateHelpers(typeof(System.Windows.Window))]
+[assembly: GenerateHelpers(typeof(System.Windows.Window)), GenerateHelpers(typeof(System.Windows.Window))]
 [assembly: GenerateHelpers(typeof(System.Windows.Controls.AccessText))]
 [assembly: GenerateHelpers(typeof(System.Windows.Controls.Border))]
 [assembly: GenerateHelpers(typeof(System.Windows.Controls.Button))]
@@ -122,14 +121,9 @@ using XamlTest;
 namespace XamlTest;
 
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-public class GenerateHelpersAttribute : Attribute
+public class GenerateHelpersAttribute(Type controlType) : Attribute
 {
-    public Type ControlType { get; set; }
+    public Type ControlType { get; set; } = controlType;
 
     public string? Namespace { get; set; }
-
-    public GenerateHelpersAttribute(Type controlType)
-    {
-        ControlType = controlType;
-    }
 }
