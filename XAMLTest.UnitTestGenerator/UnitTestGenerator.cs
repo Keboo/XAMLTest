@@ -1,174 +1,50 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Immutable;
-using TypeInfo = Microsoft.CodeAnalysis.TypeInfo;
 
 namespace XAMLTest.UnitTestGenerator;
 
 [Generator(LanguageNames.CSharp)]
-public partial class UnitTestGenerator : IIncrementalGenerator
+public class UnitTestGenerator : IIncrementalGenerator
 {
-    public void Execute(GeneratorExecutionContext context)
-    {
-#if DEBUG
-        if (!Debugger.IsAttached)
-        {
-            //Debugger.Launch();
-        }
-#endif
-        SyntaxReceiver rx = (SyntaxReceiver)context.SyntaxContextReceiver!;
-        foreach (TypeInfo targetType in rx.GeneratedTypes)
-        {
-            if (targetType.Type?.IsAbstract == true) continue;
-
-            StringBuilder sb = new();
-            const string suffix = "GeneratedExtensions";
-            string targetTypeFullName = $"{targetType.Type}";
-            string targetTypeName = targetType.Type!.Name;
-            var extensionClass = context.Compilation.GetTypeByMetadataName($"XamlTest.{targetTypeName}{suffix}");
-            if (extensionClass is null) continue;
-
-            string variableTargetTypeName =
-                char.ToLowerInvariant(targetType.Type.Name[0])
-                + targetType.Type.Name.Substring(1);
-
-            string className = $"{targetType.Type.Name}{suffix}Tests";
-
-            sb.AppendLine($$"""
-                using Microsoft.VisualStudio.TestTools.UnitTesting;
-                using System.Diagnostics.CodeAnalysis;
-                using System.Reflection;
-                using System.Threading.Tasks;
-                using System;
-
-                namespace XamlTest.Tests.Generated
-                {
-                    [TestClass]
-                    public partial class {{className}}
-                    {
-                        [NotNull]
-                        private static IApp? App { get; set; }
-
-                        [NotNull]
-                        private static IWindow? Window { get; set; }
-
-                        private static Func<string, string> GetWindowContent { get; set; } = x => x;
-
-                        private static Func<string, Task<IVisualElement<{{targetTypeFullName}}>>> GetElement { get; set; }
-                            = x => Window.GetElement<{{targetTypeFullName}}>(x);
-
-                        static partial void OnClassInitialize();
-
-                        [ClassInitialize]
-                        public static async Task ClassInitialize(TestContext context)
-                        {
-                            OnClassInitialize();
-                            App = await XamlTest.App.StartRemote(logMessage: msg => context.WriteLine(msg));
-
-                            await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
-
-                            string content = @$"<{{targetTypeName}} x:Name=""Test{{targetTypeName}}""/>";
-
-                            content = GetWindowContent(content);
-
-                            Window = await App.CreateWindowWithContent(content);
-                        }
-
-                        [ClassCleanup(Microsoft.VisualStudio.TestTools.UnitTesting.InheritanceBehavior.BeforeEachDerivedClass)]
-                        public static async Task TestCleanup()
-                        {
-                            if (App is { } app)
-                            {
-                                await app.DisposeAsync();
-                                App = null;
-                            }
-                        }
-
-
-                """);
-
-            foreach ((IMethodSymbol getMethod, IFieldSymbol dependencyProperty) in GetTestMethods(extensionClass))
-            {
-                string methodReturnType = ((INamedTypeSymbol)getMethod.ReturnType).TypeArguments[0].ToString();
-
-                sb.AppendLine($$"""
-
-                            [TestMethod]
-                            public async Task CanInvoke_{{getMethod.Name}}_ReturnsValue()
-                            {
-                                // Arrange
-                                await using TestRecorder recorder = new(App);
-
-                                //Act
-                                IVisualElement<{{targetTypeFullName}}> {{variableTargetTypeName}} = await GetElement("Test{{targetTypeName}}");
-                                var actual = await {{variableTargetTypeName}}.{{getMethod.Name}}();
-
-                                //Assert
-                                /*
-                                {{GetAssertion(getMethod.Name.Substring(3), methodReturnType, dependencyProperty)}}
-                                */
-
-                                recorder.Success();
-                            }
-
-                    """);
-            }
-
-
-            sb.AppendLine($$"""
-
-                    }
-                }
-                """);
-
-            //System.IO.File.WriteAllText($@"D:\Dev\XAMLTest\XAMLTest.UnitTestGenerator\obj\{className}.cs", sb.ToString());
-
-            context.AddSource($"{className}.cs", sb.ToString());
-        }
-
-        static IEnumerable<(IMethodSymbol, IFieldSymbol)> GetTestMethods(INamedTypeSymbol extensionClass)
-        {
-            for (INamedTypeSymbol? type = extensionClass;
-                type != null;
-                type = type.BaseType)
-            {
-                if (type.IsAbstract) continue;
-                foreach (IMethodSymbol getMethod in type.GetMembers()
-                    .OfType<IMethodSymbol>()
-                    .Where(x => x.Name.StartsWith("Get") && x.IsStatic))
-                {
-                    IFieldSymbol dependencyProperty =
-                        type.GetMembers()
-                            .OfType<IFieldSymbol>()
-                            .FirstOrDefault(x => x.Name == getMethod.Name.Substring(3) + "Property");
-                    yield return (getMethod, dependencyProperty);
-                }
-            }
-        }
-
-        static string GetAssertion(string propertyName, string returnType, IFieldSymbol dependencyProperty)
-        {
-            return propertyName switch
-            {
-                "ActualHeight" or "ActualWidth" => "Assert.IsTrue(actual > 0);",
-                "Width" or "Height" => "Assert.IsTrue(double.IsNaN(actual) || actual >= 0);",
-                _ when dependencyProperty is not null => $"""
-                    object expected = {dependencyProperty.ContainingNamespace}.{dependencyProperty.ContainingType.Name}.{dependencyProperty.Name}.DefaultMetadata.DefaultValue;
-                    Assert.AreEqual(expected, actual);
-                    """,
-                _ => $"Assert.AreEqual(default({returnType}), actual);",
-            };
-        }
-    }
-
-    public void Initialize(GeneratorInitializationContext context)
-    {
-    }
-
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        IncrementalValuesProvider<(IReadOnlyList<TypeInfo> visualElementsProvider, ImmutableArray<Diagnostic> diagnostics)> visualElementsProvider = context.SyntaxProvider.ForAttributeWithMetadataName("XamlTest.GenerateHelpersAttribute", IsGenerateHelpersAttribute, GetVisualElements);
+#if DEBUG
+        if (!System.Diagnostics.Debugger.IsAttached)
+        {
+            //System.Diagnostics.Debugger.Launch();
+        }
+#endif
 
+        IncrementalValuesProvider<(IReadOnlyList<TestClass> testClasses, ImmutableArray<Diagnostic> diagnostics)> testClassProvider = 
+            context.SyntaxProvider.ForAttributeWithMetadataName(
+                "XamlTest.GenerateHelpersAttribute", 
+                IsGenerateHelpersAttribute, 
+                GetTestClasses);
+
+        // Collect all results from all attribute invocations to deduplicate across entire compilation
+        IncrementalValueProvider<ImmutableArray<(IReadOnlyList<TestClass> testClasses, ImmutableArray<Diagnostic> diagnostics)>> collectedProvider = 
+            testClassProvider.Collect();
+
+        // Generate source for each test class
+        context.RegisterSourceOutput(collectedProvider, static (context, providers) =>
+        {
+            foreach (var diagnostic in providers.SelectMany(x => x.diagnostics).Distinct())
+            {
+                context.ReportDiagnostic(diagnostic);
+            }
+
+            foreach (var testClass in providers
+                .SelectMany(x => x.testClasses)
+                .GroupBy(x => x.TargetType.FullName)
+                .Select(x => x.First()))
+            {
+                string testClassContent = GetTestClassContent(testClass);
+                string fileName = $"{testClass.ClassName}.g.cs";
+                //System.IO.File.WriteAllText(@"D:\Dev\XAMLTest\XAMLTest.UnitTestGenerator\obj\" + fileName, testClassContent);
+                context.AddSource(fileName, testClassContent);
+            }
+        });
     }
 
     private static bool IsGenerateHelpersAttribute(SyntaxNode node, CancellationToken token)
@@ -180,9 +56,11 @@ public partial class UnitTestGenerator : IIncrementalGenerator
                 .Any(x => x.Name.ToFullString() == "GenerateHelpers");
     }
 
-    private static (IReadOnlyList<TypeInfo> generatedElements, ImmutableArray<Diagnostic> diagnostics) GetVisualElements(GeneratorAttributeSyntaxContext context, CancellationToken token)
+    private static (IReadOnlyList<TestClass> testClasses, ImmutableArray<Diagnostic> diagnostics) GetTestClasses(
+        GeneratorAttributeSyntaxContext context, 
+        CancellationToken token)
     {
-        List<GeneratedElement> elements = [];
+        List<TestClass> testClasses = [];
 
         foreach (AttributeData attribute in context.Attributes)
         {
@@ -194,88 +72,193 @@ public partial class UnitTestGenerator : IIncrementalGenerator
             if (attribute.ConstructorArguments[0].Kind != TypedConstantKind.Type)
             {
                 //TODO Diagnostic
+                continue;
             }
-
-
 
             if (attribute.ConstructorArguments is { Length: 1 } &&
                 attribute.ConstructorArguments[0].Value is INamedTypeSymbol typeConstant)
             {
-                //if (context.SemanticModel.Compilation.GetTypeByMetadataName($"{typeConstant}") is { } TypeInfo info)
-                //{ 
-                //}
-                
-                if (info.Type is null) return;
-
                 string @namespace = "XamlTest";
 
                 for (ITypeSymbol? type = typeConstant.OriginalDefinition;
                     type is not null;
                     type = type.BaseType)
                 {
+                    if (type.IsAbstract) continue;
+
                     string fullName = $"{type}";
-                  
                     string safeTypeName = GetSafeTypeName(type);
+                    string extensionClassName = $"{safeTypeName}GeneratedExtensions";
 
-                    if (context.SemanticModel.Compilation.GetTypeByMetadataName($"{@namespace}.{GetClassName(safeTypeName)}") is not null) continue;
+                    // Check if the extension class exists
+                    var extensionClass = context.SemanticModel.Compilation.GetTypeByMetadataName($"{@namespace}.{extensionClassName}");
+                    if (extensionClass is null) continue;
 
-                    List<Property> properties = [];
+                    // Check if we already have this test class
+                    if (testClasses.Any(x => x.TargetType.FullName == fullName)) continue;
 
-                    if (elements.Any(x => x.Type.FullName == fullName)) continue;
-
-                    foreach (ISymbol member in type.GetMembers())
+                    // Get all test methods from the extension class
+                    List<TestMethod> testMethods = [];
+                    foreach ((IMethodSymbol getMethod, IFieldSymbol dependencyProperty) in GetTestMethods(extensionClass))
                     {
-                        if (member is IPropertySymbol property &&
-                            property.CanBeReferencedByName &&
-                            !property.IsStatic &&
-                            !property.IsOverride &&
-                            property.DeclaredAccessibility == Accessibility.Public &&
-                            !property.GetAttributes()
-                                .Any(x => x.AttributeClass?.Name == "ObsoleteAttribute" || x.AttributeClass?.Name == "ExperimentalAttribute") &&
-                            !IgnoredTypes.Contains($"{property.Type}") &&
-                            !IsDelegate(property.Type))
-                        {
-                            if (ShouldUseVisualElement(property.Type))
-                            {
-                                properties.Add(
-                                    new Property(
-                                        property.Name,
-                                        $"XamlTest.IVisualElement<{property.Type}>?",
-                                        property.GetMethod is not null,
-                                        property.SetMethod is not null));
-                            }
-                            else
-                            {
-                                string propertyType = $"{property.Type}";
-                                if (TypeRemap.TryGetValue(propertyType, out string? remappedType))
-                                {
-                                    propertyType = remappedType;
-                                }
+                        string methodReturnType = getMethod.ReturnType is INamedTypeSymbol returnTypeSymbol && returnTypeSymbol.IsGenericType
+                            ? returnTypeSymbol.TypeArguments[0].ToString()
+                            : getMethod.ReturnType.ToString();
 
-                                if (property.Type.IsReferenceType &&
-                                    !propertyType.EndsWith("?"))
-                                {
-                                    propertyType += "?";
-                                }
+                        string propertyName = getMethod.Name.StartsWith("Get") ? getMethod.Name.Substring(3) : getMethod.Name;
+                        string assertion = GetAssertion(propertyName, methodReturnType, dependencyProperty);
 
-                                properties.Add(
-                                    new Property(
-                                        property.Name,
-                                        propertyType,
-                                        property.GetMethod is not null,
-                                        property.SetMethod is not null));
-                            }
-                        }
+                        testMethods.Add(new TestMethod(
+                            getMethod.Name,
+                            propertyName,
+                            methodReturnType,
+                            assertion));
                     }
-                    if (properties.Any())
+
+                    if (testMethods.Any())
                     {
-                        var visualElementType = new VisualElementType(safeTypeName, fullName, type.IsSealed || type.IsValueType);
-                        elements.Add(new VisualElement(@namespace, visualElementType, properties));
+                        string variableTargetTypeName =
+                            char.ToLowerInvariant(type.Name[0])
+                            + type.Name.Substring(1);
+
+                        var targetType = new TargetType(type.Name, fullName);
+                        string className = $"{type.Name}GeneratedExtensionsTests";
+
+                        testClasses.Add(new TestClass(
+                            className,
+                            targetType,
+                            variableTargetTypeName,
+                            testMethods));
                     }
                 }
             }
         }
-        return (elements, ImmutableArray<Diagnostic>.Empty);
+        return (testClasses, ImmutableArray<Diagnostic>.Empty);
+    }
+
+    private static string GetTestClassContent(TestClass testClass)
+    {
+        StringBuilder sb = new();
+
+        sb.AppendLine($$"""
+            #nullable enable
+            using Microsoft.VisualStudio.TestTools.UnitTesting;
+            using System.Diagnostics.CodeAnalysis;
+            using System.Reflection;
+            using System.Threading.Tasks;
+            using System;
+
+            namespace XamlTest.Tests.Generated
+            {
+                [TestClass]
+                public partial class {{testClass.ClassName}}
+                {
+                    [NotNull]
+                    private static IApp? App { get; set; }
+
+                    [NotNull]
+                    private static IWindow? Window { get; set; }
+
+                    private static Func<string, string> GetWindowContent { get; set; } = x => x;
+
+                    private static Func<string, Task<IVisualElement<{{testClass.TargetType.FullName}}>>> GetElement { get; set; }
+                        = x => Window.GetElement<{{testClass.TargetType.FullName}}>(x);
+
+                    static partial void OnClassInitialize();
+
+                    [ClassInitialize]
+                    public static async Task ClassInitialize(TestContext context)
+                    {
+                        OnClassInitialize();
+                        App = await XamlTest.App.StartRemote(logMessage: msg => context.WriteLine(msg));
+
+                        await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
+
+                        string content = @$"<{{testClass.TargetType.Name}} x:Name=""Test{{testClass.TargetType.Name}}""/>";
+
+                        content = GetWindowContent(content);
+
+                        Window = await App.CreateWindowWithContent(content);
+                    }
+
+                    [ClassCleanup(Microsoft.VisualStudio.TestTools.UnitTesting.InheritanceBehavior.BeforeEachDerivedClass)]
+                    public static async Task TestCleanup()
+                    {
+                        if (App is { } app)
+                        {
+                            await app.DisposeAsync();
+                            App = null;
+                        }
+                    }
+
+            """);
+
+        foreach (var testMethod in testClass.TestMethods)
+        {
+            sb.AppendLine($$"""
+
+                        [TestMethod]
+                        public async Task CanInvoke_{{testMethod.MethodName}}_ReturnsValue()
+                        {
+                            // Arrange
+                            await using TestRecorder recorder = new(App);
+
+                            //Act
+                            IVisualElement<{{testClass.TargetType.FullName}}> {{testClass.VariableName}} = await GetElement("Test{{testClass.TargetType.Name}}");
+                            var actual = await {{testClass.VariableName}}.{{testMethod.MethodName}}();
+
+                            //Assert
+                            /*
+                            {{testMethod.Assertion}}
+                            */
+
+                            recorder.Success();
+                        }
+
+                """);
+        }
+
+        sb.AppendLine($$"""
+
+                }
+            }
+            """);
+
+        return sb.ToString();
+    }
+
+    private static IEnumerable<(IMethodSymbol, IFieldSymbol)> GetTestMethods(INamedTypeSymbol extensionClass)
+    {
+        for (INamedTypeSymbol? type = extensionClass;
+            type != null;
+            type = type.BaseType)
+        {
+            if (type.IsAbstract) continue;
+            foreach (IMethodSymbol getMethod in type.GetMembers()
+                .OfType<IMethodSymbol>()
+                .Where(x => x.Name.StartsWith("Get") && x.IsStatic))
+            {
+                IFieldSymbol dependencyProperty =
+                    type.GetMembers()
+                        .OfType<IFieldSymbol>()
+                        .FirstOrDefault(x => x.Name == getMethod.Name.Substring(3) + "Property");
+                yield return (getMethod, dependencyProperty);
+            }
+        }
+    }
+
+    private static string GetAssertion(string propertyName, string returnType, IFieldSymbol dependencyProperty)
+    {
+        return propertyName switch
+        {
+            "ActualHeight" or "ActualWidth" => "Assert.IsTrue(actual > 0);",
+            "Width" or "Height" => "Assert.IsTrue(double.IsNaN(actual) || actual >= 0);",
+            _ when dependencyProperty is not null => $"""
+                object expected = {dependencyProperty.ContainingNamespace}.{dependencyProperty.ContainingType.Name}.{dependencyProperty.Name}.DefaultMetadata.DefaultValue;
+                Assert.AreEqual(expected, actual);
+                """,
+            _ => $"Assert.AreEqual(default({returnType}), actual);",
+        };
     }
 
     private static string GetSafeTypeName(ITypeSymbol typeSymbol)
@@ -290,6 +273,19 @@ public partial class UnitTestGenerator : IIncrementalGenerator
     }
 }
 
+// Record classes for storing test generation data
+public record class TestClass(
+    string ClassName,
+    TargetType TargetType,
+    string VariableName,
+    IReadOnlyList<TestMethod> TestMethods);
 
+public record class TargetType(
+    string Name,
+    string FullName);
 
-public record class GeneratedElement(string Name, string TypeName);
+public record class TestMethod(
+    string MethodName,
+    string PropertyName,
+    string ReturnType,
+    string Assertion);
