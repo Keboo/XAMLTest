@@ -6,6 +6,14 @@ namespace XAMLTest.UnitTestGenerator;
 [Generator(LanguageNames.CSharp)]
 public class UnitTestGenerator : IIncrementalGenerator
 {
+    private static readonly DiagnosticDescriptor InvalidAttributeArgumentRule = new(
+        id: "XAMLTEST001",
+        title: "Invalid GenerateHelpersAttribute argument",
+        messageFormat: "The GenerateHelpersAttribute constructor argument must be a Type",
+        category: "XAMLTest.UnitTestGenerator",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
 #if DEBUG
@@ -45,11 +53,12 @@ public class UnitTestGenerator : IIncrementalGenerator
         CancellationToken token)
     {
         List<TestClass> testClasses = [];
+        List<Diagnostic> diagnostics = [];
 
         // Check current assembly attributes
         foreach (AttributeData attribute in compilation.Assembly.GetAttributes())
         {
-            ProcessGenerateHelpersAttribute(attribute, compilation, testClasses);
+            ProcessGenerateHelpersAttribute(attribute, compilation, testClasses, diagnostics);
         }
 
         // Check referenced assemblies for GenerateHelpersAttribute
@@ -59,18 +68,19 @@ public class UnitTestGenerator : IIncrementalGenerator
             {
                 foreach (AttributeData attribute in assemblySymbol.GetAttributes())
                 {
-                    ProcessGenerateHelpersAttribute(attribute, compilation, testClasses);
+                    ProcessGenerateHelpersAttribute(attribute, compilation, testClasses, diagnostics);
                 }
             }
         }
 
-        return (testClasses, ImmutableArray<Diagnostic>.Empty);
+        return (testClasses, diagnostics.ToImmutableArray());
     }
 
     private static void ProcessGenerateHelpersAttribute(
         AttributeData attribute,
         Compilation compilation,
-        List<TestClass> testClasses)
+        List<TestClass> testClasses,
+        List<Diagnostic> diagnostics)
     {
         if (attribute.AttributeClass?.Name != "GenerateHelpersAttribute")
         {
@@ -79,7 +89,10 @@ public class UnitTestGenerator : IIncrementalGenerator
 
         if (attribute.ConstructorArguments[0].Kind != TypedConstantKind.Type)
         {
-            //TODO Diagnostic
+            var diagnostic = Diagnostic.Create(
+                InvalidAttributeArgumentRule,
+                attribute.ApplicationSyntaxReference?.GetSyntax()?.GetLocation() ?? Location.None);
+            diagnostics.Add(diagnostic);
             return;
         }
 

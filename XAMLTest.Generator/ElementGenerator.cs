@@ -15,6 +15,14 @@ public class ElementGenerator : IIncrementalGenerator
               DiagnosticSeverity.Warning,
               isEnabledByDefault: true);
 
+    private static DiagnosticDescriptor InvalidAttributeArgumentError { get; }
+        = new(id: "XAMLTEST0002",
+              title: "Invalid GenerateHelpersAttribute argument",
+              messageFormat: "GenerateHelpersAttribute requires a Type argument as its first parameter.",
+              category: "XAMLTest",
+              DiagnosticSeverity.Error,
+              isEnabledByDefault: true);
+
     private static Dictionary<string, string> TypeRemap { get; } = new()
     {
         { "System.Windows.Controls.ColumnDefinitionCollection", "System.Collections.Generic.IList<System.Windows.Controls.ColumnDefinition>" },
@@ -95,8 +103,23 @@ public class ElementGenerator : IIncrementalGenerator
                 context.ReportDiagnostic(diagnostic);
             }
 
-            foreach (var visualElement in providers
-                .SelectMany(x => x.visualElements)
+            // Check for duplicate types across all providers and report diagnostics
+            var allElements = providers.SelectMany(x => x.visualElements).ToList();
+            var duplicateGroups = allElements
+                .GroupBy(x => x.Type.FullName)
+                .Where(g => g.Count() > 1)
+                .ToList();
+
+            foreach (var duplicateGroup in duplicateGroups)
+            {
+                var diagnostic = Diagnostic.Create(
+                    DuplicateAttributesWarning,
+                    Location.None,
+                    duplicateGroup.Key);
+                context.ReportDiagnostic(diagnostic);
+            }
+
+            foreach (var visualElement in allElements
                 .GroupBy(x => x.Type)
                 .Select(x => x.First()))
             {
@@ -120,6 +143,7 @@ public class ElementGenerator : IIncrementalGenerator
     private static (IReadOnlyList<VisualElement> visualElements, ImmutableArray<Diagnostic> diagnostics) GetVisualElements(GeneratorAttributeSyntaxContext context, CancellationToken token)
     {
         List<VisualElement> elements = [];
+        List<Diagnostic> diagnostics = [];
 
         foreach (AttributeData attribute in context.Attributes)
         {
@@ -130,16 +154,15 @@ public class ElementGenerator : IIncrementalGenerator
 
             if (attribute.ConstructorArguments[0].Kind != TypedConstantKind.Type)
             {
-                //TODO Diagnostic
+                diagnostics.Add(Diagnostic.Create(
+                    InvalidAttributeArgumentError,
+                    attribute.ApplicationSyntaxReference?.GetSyntax(token).GetLocation() ?? Location.None));
+                continue;
             }
 
             if (attribute.ConstructorArguments is { Length: 1 } &&
                 attribute.ConstructorArguments[0].Value is INamedTypeSymbol typeConstant)
             {
-                //TypeOfExpressionSyntax typeArgument = (TypeOfExpressionSyntax)attrib.ArgumentList.Arguments[0].Expression;
-                //TypeInfo info = context.SemanticModel.GetTypeInfo(typeArgument.Type);
-                //if (info.Type is null) return;
-
                 string? targetNamespace = null;
                 foreach ((string argumentName, TypedConstant argumentType) in attribute.NamedArguments)
                 {
@@ -147,15 +170,6 @@ public class ElementGenerator : IIncrementalGenerator
                     {
                         case "Namespace":
                             targetNamespace = argumentType.Value?.ToString();
-                            //switch (argumentExpression.Expression)
-                            //{
-                            //    case LiteralExpressionSyntax les:
-                            //        targetNamespace = les.Token.Value?.ToString();
-                            //        break;
-                            //    case MemberAccessExpressionSyntax maes:
-                            //        targetNamespace = context.SemanticModel.GetConstantValue(maes.Name).Value?.ToString();
-                            //        break;
-                            //}
                             break;
                     }
                 }
@@ -229,7 +243,7 @@ public class ElementGenerator : IIncrementalGenerator
                 }
             }
         }
-        return (elements, ImmutableArray<Diagnostic>.Empty);
+        return (elements, diagnostics.ToImmutableArray());
     }
 
     private static string GetElementContent(VisualElement visualElement)
