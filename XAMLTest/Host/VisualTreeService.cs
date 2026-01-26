@@ -15,21 +15,18 @@ using Window = System.Windows.Window;
 
 namespace XamlTest.Host;
 
-internal partial class VisualTreeService : Protocol.ProtocolBase
+internal partial class VisualTreeService(Application application) : Protocol.ProtocolBase
 {
     private static Guid Initialized { get; } = Guid.NewGuid();
 
-    private List<Assembly> LoadedAssemblies { get; } = new List<Assembly>
-    {
+    private List<Assembly> LoadedAssemblies { get; } =
+    [
         Assembly.GetExecutingAssembly()
-    };
+    ];
 
-    private Application Application { get; }
+    private Application Application { get; } = application ?? throw new ArgumentNullException(nameof(application));
 
     private Serializer Serializer { get; } = new Serializer();
-
-    public VisualTreeService(Application application)
-        => Application = application ?? throw new ArgumentNullException(nameof(application));
 
     public override async Task<GetWindowsResult> GetWindows(GetWindowsQuery request, ServerCallContext context)
     {
@@ -437,7 +434,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
                 AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
                 AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
 
-                foreach (string? assembly in (IEnumerable<string?>)request.AssembliesToLoad ?? Array.Empty<string?>())
+                foreach (string? assembly in (IEnumerable<string?>)request.AssembliesToLoad ?? [])
                 {
                     try
                     {
@@ -683,7 +680,7 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
     }
 
     private static T LoadXaml<T>(string xaml) where T : class
-        => LoadXaml<T>(xaml, Enumerable.Empty<XamlNamespace>());
+        => LoadXaml<T>(xaml, []);
 
     private static T LoadXaml<T>(string xaml, IEnumerable<XamlNamespace> namespaces) where T : class
     {

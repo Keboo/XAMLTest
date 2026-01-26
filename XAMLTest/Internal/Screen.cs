@@ -89,7 +89,7 @@ internal class Screen
             }
         }
 
-        public static readonly HandleRef NullHandleRef = new HandleRef(null, IntPtr.Zero);
+        public static readonly HandleRef NullHandleRef = new(null, IntPtr.Zero);
 
         public const int SM_CMONITORS = 80;
     }
@@ -102,7 +102,7 @@ internal class Screen
     /// </summary>
     private Rect _workingArea = Rect.Empty;
 
-    private static readonly object _syncLock = new object();//used to lock this class before sync'ing to SystemEvents
+    private static readonly object _syncLock = new();//used to lock this class before sync'ing to SystemEvents
 
     private static int _desktopChangedCount = -1;//static counter of desktop size changes
 
@@ -121,7 +121,7 @@ internal class Screen
 
     private Screen(IntPtr monitor)
     {
-        if (!_multiMonitorSupport || monitor == (IntPtr)PRIMARY_MONITOR)
+        if (!_multiMonitorSupport || monitor == PRIMARY_MONITOR)
         {
             // Single monitor system
             Bounds = new Rect(SystemParameters.VirtualScreenLeft, SystemParameters.VirtualScreenTop,
@@ -134,7 +134,7 @@ internal class Screen
             // MultiMonitor System
             // We call the 'A' version of GetMonitorInfoA() because
             // the 'W' version just never fills out the struct properly on Win2K.
-            NativeMethods.MONITORINFOEX info = new NativeMethods.MONITORINFOEX();
+            NativeMethods.MONITORINFOEX info = new();
             NativeMethods.GetMonitorInfo(new HandleRef(null, monitor), info);
             Bounds = new Rect(info.rcMonitor.left, info.rcMonitor.top, info.rcMonitor.right - info.rcMonitor.left, info.rcMonitor.bottom - info.rcMonitor.top);
             Primary = (info.dwFlags & MONITORINFOF_PRIMARY) != 0;
@@ -157,7 +157,7 @@ internal class Screen
             {
                 if (_multiMonitorSupport)
                 {
-                    MonitorEnumCallback closure = new MonitorEnumCallback();
+                    MonitorEnumCallback closure = new();
                     NativeMethods.MonitorEnumProc proc = closure.Callback;
                     NativeMethods.EnumDisplayMonitors(NativeMethods.NullHandleRef, null, proc, IntPtr.Zero);
 
@@ -169,18 +169,18 @@ internal class Screen
                     }
                     else
                     {
-                        _screens = new[] { new Screen((IntPtr)PRIMARY_MONITOR) };
+                        _screens = [new Screen(PRIMARY_MONITOR)];
                     }
                 }
                 else
                 {
                     if (PrimaryScreen is { } pScreen)
                     {
-                        _screens = new Screen[] { pScreen };
+                        _screens = [pScreen];
                     }
                     else
                     {
-                        _screens = Array.Empty<Screen>();
+                        _screens = [];
                     }
                 }
 
@@ -254,7 +254,7 @@ internal class Screen
                     // MultiMonitor System
                     // We call the 'A' version of GetMonitorInfoA() because
                     // the 'W' version just never fills out the struct properly on Win2K.
-                    NativeMethods.MONITORINFOEX info = new NativeMethods.MONITORINFOEX();
+                    NativeMethods.MONITORINFOEX info = new();
                     NativeMethods.GetMonitorInfo(new HandleRef(null, _hmonitor), info);
                     _workingArea = new Rect(info.rcWork.left, info.rcWork.top, info.rcWork.right - info.rcWork.left, info.rcWork.bottom - info.rcWork.top);
                 }
@@ -308,10 +308,10 @@ internal class Screen
     {
         if (_multiMonitorSupport)
         {
-            NativeMethods.POINTSTRUCT pt = new NativeMethods.POINTSTRUCT((int)point.X, (int)point.Y);
+            NativeMethods.POINTSTRUCT pt = new((int)point.X, (int)point.Y);
             return new Screen(NativeMethods.MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST));
         }
-        return new Screen((IntPtr)PRIMARY_MONITOR);
+        return new Screen(PRIMARY_MONITOR);
     }
 
     /// <summary>
@@ -321,10 +321,10 @@ internal class Screen
     {
         if (_multiMonitorSupport)
         {
-            NativeMethods.RECT rc = new NativeMethods.RECT(rect);
+            NativeMethods.RECT rc = new(rect);
             return new Screen(NativeMethods.MonitorFromRect(ref rc, MONITOR_DEFAULTTONEAREST));
         }
-        return new Screen((IntPtr)PRIMARY_MONITOR);
+        return new Screen(PRIMARY_MONITOR);
     }
 
     ///<summary>
@@ -405,7 +405,7 @@ internal class Screen
 
     private class MonitorEnumCallback
     {
-        public List<Screen> Screens { get; } = new List<Screen>();
+        public List<Screen> Screens { get; } = [];
 
         public virtual bool Callback(IntPtr monitor, IntPtr hdc, IntPtr lprcMonitor, IntPtr lparam)
         {

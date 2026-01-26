@@ -50,10 +50,10 @@ public class SerializerTests
         int secureStringSerializerIndex = serializers.FindIndex(x => x is SecureStringSerializer);
         int defaultSerializerIndex = serializers.FindIndex(x => x is DefaultSerializer);
 
-        Assert.IsTrue(brushSerializerIndex < charSerializerIndex);
-        Assert.IsTrue(charSerializerIndex < gridSerializerIndex);
-        Assert.IsTrue(gridSerializerIndex < secureStringSerializerIndex);
-        Assert.IsTrue(secureStringSerializerIndex < defaultSerializerIndex);
+        Assert.IsLessThan(charSerializerIndex, brushSerializerIndex);
+        Assert.IsLessThan(gridSerializerIndex, charSerializerIndex);
+        Assert.IsLessThan(secureStringSerializerIndex, gridSerializerIndex);
+        Assert.IsLessThan(defaultSerializerIndex, secureStringSerializerIndex);
         Assert.AreEqual(serializers.Count - 1, defaultSerializerIndex);
     }
 
@@ -66,7 +66,7 @@ public class SerializerTests
 
         var serializers = await App.GetSerializers();
 
-        Assert.AreEqual(initialSerializersCount + 1, serializers.Count);
+        Assert.HasCount(initialSerializersCount + 1, serializers);
         Assert.IsInstanceOfType(serializers[1], typeof(CustomSerializer));
     }
 

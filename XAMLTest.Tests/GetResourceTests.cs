@@ -47,7 +47,7 @@ public class GetResourceTests
     [TestMethod]
     public async Task OnAppGetResource_ThrowsExceptionWhenNotFound()
     {
-        Assert.ThrowsAsync<XamlTestException>(async () =>
+        await Assert.ThrowsAsync<XamlTestException>(async () =>
         {
             await App.GetResource("NotFound");
         });
@@ -76,7 +76,7 @@ public class GetResourceTests
     [TestMethod]
     public async Task OnVisualElementGetResource_ThrowsExceptionWhenNotFound()
     {
-        Assert.ThrowsAsync<XamlTestException>(async () =>
+        await Assert.ThrowsAsync<XamlTestException>(async () =>
         {
             await Grid.GetResource("NotFound");
         });

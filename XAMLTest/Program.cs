@@ -197,7 +197,7 @@ internal class Program
             var ctorInfo = appType.GetConstructors().Single();
             var ctorParameters = ctorInfo.GetParameters();
 
-            object?[] parameters = Array.Empty<object?>();
+            object?[] parameters = [];
             if (ctorParameters.Length > 0)
             {
                 parameters = new object?[ctorParameters.Length];
@@ -218,7 +218,7 @@ internal class Program
         if (application.GetType().GetMethod("InitializeComponent", flags) is { } initMethod)
         {
             Logger.Log("Invoking InitializeComponent");
-            initMethod.Invoke(application, Array.Empty<object>());
+            initMethod.Invoke(application, []);
         }
         else
         {

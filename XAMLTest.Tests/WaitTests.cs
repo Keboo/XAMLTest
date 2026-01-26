@@ -30,7 +30,6 @@ public class WaitTests
     {
         var timeoutMessage = "We're expecting a timeout";
         var ex = await Assert.ThrowsAsync<TimeoutException>(async () => await Wait.For(Timeout, message: timeoutMessage));
-        Assert.IsTrue(ex.Message.StartsWith(timeoutMessage), $"Expected exception message to start with: '{timeoutMessage}'");
-       
+        Assert.StartsWith(timeoutMessage, ex.Message, $"Expected exception message to start with: '{timeoutMessage}'");
     }
 }

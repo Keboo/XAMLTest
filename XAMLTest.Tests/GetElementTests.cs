@@ -243,7 +243,7 @@ public class GetElementTests
         //Assert
         Assert.IsNotNull(button);
 
-        Assert.IsTrue(await button.GetActualWidth() > 0);
+        Assert.IsGreaterThan(0, await button.GetActualWidth());
         Assert.IsTrue(await button.GetIsDefault());
         Assert.IsFalse(await button.GetIsPressed());
         recorder.Success();
@@ -265,7 +265,7 @@ public class GetElementTests
 
         //Assert
         Assert.IsNotNull(button);
-        Assert.IsTrue(await button.GetActualWidth() > 0);
+        Assert.IsGreaterThan(0, await button.GetActualWidth());
         recorder.Success();
     }
 
@@ -484,7 +484,7 @@ public class GetElementTests
         XamlTestException exception = await Assert.ThrowsAsync<XamlTestException>(() => Window.FindElement<TextBlock>("/Border.ChildFoo/TextBlock"));
 
         //Assert
-        Assert.IsTrue(exception.Message.Contains("ChildFoo"));
+        Assert.Contains("ChildFoo", exception.Message);
         recorder.Success();
     }
 
@@ -510,7 +510,7 @@ public class GetElementTests
             ElementQuery.PropertyExpression<TextBlock>("BadProp", "2")));
 
         //Assert
-        Assert.IsTrue(exception.Message.Contains("BadProp"));
+        Assert.Contains("BadProp", exception.Message);
         recorder.Success();
     }
 
