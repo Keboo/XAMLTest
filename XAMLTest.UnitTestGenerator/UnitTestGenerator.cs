@@ -1,5 +1,4 @@
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Immutable;
 
 namespace XAMLTest.UnitTestGenerator;
@@ -16,28 +15,22 @@ public class UnitTestGenerator : IIncrementalGenerator
         }
 #endif
 
-        IncrementalValuesProvider<(IReadOnlyList<TestClass> testClasses, ImmutableArray<Diagnostic> diagnostics)> testClassProvider = 
-            context.SyntaxProvider.ForAttributeWithMetadataName(
-                "XamlTest.GenerateHelpersAttribute", 
-                IsGenerateHelpersAttribute, 
-                GetTestClasses);
-
-        // Collect all results from all attribute invocations to deduplicate across entire compilation
-        IncrementalValueProvider<ImmutableArray<(IReadOnlyList<TestClass> testClasses, ImmutableArray<Diagnostic> diagnostics)>> collectedProvider = 
-            testClassProvider.Collect();
+        // Use CompilationProvider to access referenced assemblies
+        IncrementalValueProvider<(IReadOnlyList<TestClass> testClasses, ImmutableArray<Diagnostic> diagnostics)> testClassProvider = 
+            context.CompilationProvider.Select(static (compilation, cancellationToken) =>
+            {
+                return GetTestClassesFromCompilation(compilation, cancellationToken);
+            });
 
         // Generate source for each test class
-        context.RegisterSourceOutput(collectedProvider, static (context, providers) =>
+        context.RegisterSourceOutput(testClassProvider, static (context, result) =>
         {
-            foreach (var diagnostic in providers.SelectMany(x => x.diagnostics).Distinct())
+            foreach (var diagnostic in result.diagnostics)
             {
                 context.ReportDiagnostic(diagnostic);
             }
 
-            foreach (var testClass in providers
-                .SelectMany(x => x.testClasses)
-                .GroupBy(x => x.TargetType.FullName)
-                .Select(x => x.First()))
+            foreach (var testClass in result.testClasses)
             {
                 string testClassContent = GetTestClassContent(testClass);
                 string fileName = $"{testClass.ClassName}.g.cs";
@@ -47,93 +40,106 @@ public class UnitTestGenerator : IIncrementalGenerator
         });
     }
 
-    private static bool IsGenerateHelpersAttribute(SyntaxNode node, CancellationToken token)
-    {
-        //NB: GenerateHelpersAttribute is only available at the assembly level
-        return node is CompilationUnitSyntax compilation &&
-                compilation.AttributeLists
-                .SelectMany(x => x.Attributes)
-                .Any(x => x.Name.ToFullString() == "GenerateHelpers");
-    }
-
-    private static (IReadOnlyList<TestClass> testClasses, ImmutableArray<Diagnostic> diagnostics) GetTestClasses(
-        GeneratorAttributeSyntaxContext context, 
+    private static (IReadOnlyList<TestClass> testClasses, ImmutableArray<Diagnostic> diagnostics) GetTestClassesFromCompilation(
+        Compilation compilation,
         CancellationToken token)
     {
         List<TestClass> testClasses = [];
 
-        foreach (AttributeData attribute in context.Attributes)
+        // Check current assembly attributes
+        foreach (AttributeData attribute in compilation.Assembly.GetAttributes())
         {
-            if (attribute.AttributeClass?.Name != "GenerateHelpersAttribute")
-            {
-                continue;
-            }
+            ProcessGenerateHelpersAttribute(attribute, compilation, testClasses);
+        }
 
-            if (attribute.ConstructorArguments[0].Kind != TypedConstantKind.Type)
+        // Check referenced assemblies for GenerateHelpersAttribute
+        foreach (var reference in compilation.References)
+        {
+            if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assemblySymbol)
             {
-                //TODO Diagnostic
-                continue;
-            }
-
-            if (attribute.ConstructorArguments is { Length: 1 } &&
-                attribute.ConstructorArguments[0].Value is INamedTypeSymbol typeConstant)
-            {
-                string @namespace = "XamlTest";
-
-                for (ITypeSymbol? type = typeConstant.OriginalDefinition;
-                    type is not null;
-                    type = type.BaseType)
+                foreach (AttributeData attribute in assemblySymbol.GetAttributes())
                 {
-                    if (type.IsAbstract) continue;
-
-                    string fullName = $"{type}";
-                    string safeTypeName = GetSafeTypeName(type);
-                    string extensionClassName = $"{safeTypeName}GeneratedExtensions";
-
-                    // Check if the extension class exists
-                    var extensionClass = context.SemanticModel.Compilation.GetTypeByMetadataName($"{@namespace}.{extensionClassName}");
-                    if (extensionClass is null) continue;
-
-                    // Check if we already have this test class
-                    if (testClasses.Any(x => x.TargetType.FullName == fullName)) continue;
-
-                    // Get all test methods from the extension class
-                    List<TestMethod> testMethods = [];
-                    foreach ((IMethodSymbol getMethod, IFieldSymbol dependencyProperty) in GetTestMethods(extensionClass))
-                    {
-                        string methodReturnType = getMethod.ReturnType is INamedTypeSymbol returnTypeSymbol && returnTypeSymbol.IsGenericType
-                            ? returnTypeSymbol.TypeArguments[0].ToString()
-                            : getMethod.ReturnType.ToString();
-
-                        string propertyName = getMethod.Name.StartsWith("Get") ? getMethod.Name.Substring(3) : getMethod.Name;
-                        string assertion = GetAssertion(propertyName, methodReturnType, dependencyProperty);
-
-                        testMethods.Add(new TestMethod(
-                            getMethod.Name,
-                            propertyName,
-                            methodReturnType,
-                            assertion));
-                    }
-
-                    if (testMethods.Any())
-                    {
-                        string variableTargetTypeName =
-                            char.ToLowerInvariant(type.Name[0])
-                            + type.Name.Substring(1);
-
-                        var targetType = new TargetType(type.Name, fullName);
-                        string className = $"{type.Name}GeneratedExtensionsTests";
-
-                        testClasses.Add(new TestClass(
-                            className,
-                            targetType,
-                            variableTargetTypeName,
-                            testMethods));
-                    }
+                    ProcessGenerateHelpersAttribute(attribute, compilation, testClasses);
                 }
             }
         }
+
         return (testClasses, ImmutableArray<Diagnostic>.Empty);
+    }
+
+    private static void ProcessGenerateHelpersAttribute(
+        AttributeData attribute,
+        Compilation compilation,
+        List<TestClass> testClasses)
+    {
+        if (attribute.AttributeClass?.Name != "GenerateHelpersAttribute")
+        {
+            return;
+        }
+
+        if (attribute.ConstructorArguments[0].Kind != TypedConstantKind.Type)
+        {
+            //TODO Diagnostic
+            return;
+        }
+
+        if (attribute.ConstructorArguments is { Length: 1 } &&
+            attribute.ConstructorArguments[0].Value is INamedTypeSymbol typeConstant)
+        {
+            string @namespace = "XamlTest";
+
+            for (ITypeSymbol? type = typeConstant.OriginalDefinition;
+                type is not null;
+                type = type.BaseType)
+            {
+                if (type.IsAbstract) continue;
+
+                string fullName = $"{type}";
+                string safeTypeName = GetSafeTypeName(type);
+                string extensionClassName = $"{safeTypeName}GeneratedExtensions";
+
+                // Check if the extension class exists
+                var extensionClass = compilation.GetTypeByMetadataName($"{@namespace}.{extensionClassName}");
+                if (extensionClass is null) continue;
+
+                // Check if we already have this test class
+                if (testClasses.Any(x => x.TargetType.FullName == fullName)) continue;
+
+                // Get all test methods from the extension class
+                List<TestMethod> testMethods = [];
+                foreach ((IMethodSymbol getMethod, IFieldSymbol dependencyProperty) in GetTestMethods(extensionClass))
+                {
+                    string methodReturnType = getMethod.ReturnType is INamedTypeSymbol returnTypeSymbol && returnTypeSymbol.IsGenericType
+                        ? returnTypeSymbol.TypeArguments[0].ToString()
+                        : getMethod.ReturnType.ToString();
+
+                    string propertyName = getMethod.Name.StartsWith("Get") ? getMethod.Name.Substring(3) : getMethod.Name;
+                    string assertion = GetAssertion(propertyName, methodReturnType, dependencyProperty);
+
+                    testMethods.Add(new TestMethod(
+                        getMethod.Name,
+                        propertyName,
+                        methodReturnType,
+                        assertion));
+                }
+
+                if (testMethods.Any())
+                {
+                    string variableTargetTypeName =
+                        char.ToLowerInvariant(type.Name[0])
+                        + type.Name.Substring(1);
+
+                    var targetType = new TargetType(type.Name, fullName);
+                    string className = $"{type.Name}GeneratedExtensionsTests";
+
+                    testClasses.Add(new TestClass(
+                        className,
+                        targetType,
+                        variableTargetTypeName,
+                        testMethods));
+                }
+            }
+        }
     }
 
     private static string GetTestClassContent(TestClass testClass)
