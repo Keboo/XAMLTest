@@ -11,6 +11,10 @@
     <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
   </PropertyGroup>
 
+  <ItemGroup Label="NuGet">
+    <None Include="..\Images\Icon.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Grpc.Tools">
       <PrivateAssets>all</PrivateAssets>
