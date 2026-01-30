@@ -34,6 +34,25 @@ public class GetElementTests
     }
 
     [TestMethod]
+    public async Task GetParent_Works()
+    {
+        await Window.SetXamlContent(
+            """
+            <ListBox MinWidth="200">
+              <ListBoxItem Content="Item1" />
+              <ListBoxItem Content="Item2" />
+              <ListBoxItem Content="Item3" />
+              <ListBoxItem Content="Item4" />
+            </ListBox>
+            """);
+
+        //Act
+        IVisualElement<ListBoxItem> element = await Window.GetElement<ListBoxItem>();
+
+        IVisualElement<DependencyObject>? parent = await element.GetParent();
+    }
+
+    [TestMethod]
     public async Task OnGetElement_ItRetrievesItemsByType()
     {
         //Arrange

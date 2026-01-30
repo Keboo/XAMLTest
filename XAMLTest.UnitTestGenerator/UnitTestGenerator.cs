@@ -137,6 +137,7 @@ public class UnitTestGenerator : IIncrementalGenerator
                         variableTargetTypeName,
                         testMethods));
                 }
+                break;
             }
         }
     }

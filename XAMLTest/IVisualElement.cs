@@ -15,6 +15,14 @@ public interface IVisualElement : IEquatable<IVisualElement>
     /// <typeparam name="TElement"></typeparam>
     /// <returns></returns>
     IVisualElement<TElement> As<TElement>() where TElement : DependencyObject;
+
+    /// <summary>
+    /// Convert the element to a typed element.
+    /// </summary>
+    /// <param name="visualElementType">The type to convert to. This must be a derived type of <see cref="DependencyObject"/>.</param>
+    /// <returns></returns>
+    IVisualElement As(Type visualElementType);
+
     /// <summary>
     /// Find an element given a query. The query string is made up of several parts.
     /// ~&lt;Name&gt; - Search for an element by Name. This is the default query behavior if no prefix is specified.

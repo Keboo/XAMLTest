@@ -329,7 +329,6 @@ internal partial class VisualTreeService(Application application) : Protocol.Pro
         reply.PropertyType = propertyType.AssemblyQualifiedName;
         Type valueType = value?.GetType() ?? propertyType;
         reply.ValueType = valueType.AssemblyQualifiedName;
-
         if (propertyType == typeof(DependencyObject) ||
             propertyType.IsSubclassOf(typeof(DependencyObject)))
         {

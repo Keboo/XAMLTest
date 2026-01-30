@@ -1,22 +1,12 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+﻿namespace XamlTest.Internal;
 
-namespace XamlTest.Internal;
-
-internal abstract class BaseValue : IValue
+internal abstract class BaseValue(string? valueType, object? value, AppContext context) : IValue
 {
-    protected AppContext Context { get; }
+    protected AppContext Context { get; } = context ?? throw new ArgumentNullException(nameof(context));
     protected Serializer Serializer => Context.Serializer;
 
-    public object? Value { get; }
-    public string? ValueType { get; }
-
-    protected BaseValue(string? valueType, object? value, AppContext context)
-    {
-        ValueType = valueType;
-        Value = value;
-        Context = context ?? throw new ArgumentNullException(nameof(context));
-    }
+    public object? Value { get; } = value;
+    public string? ValueType { get; } = valueType;
 
     [return: MaybeNull]
     public virtual T GetAs<T>()

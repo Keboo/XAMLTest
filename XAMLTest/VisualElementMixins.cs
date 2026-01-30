@@ -1,9 +1,4 @@
-﻿using System;
-using System.Globalization;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Media;
-using XamlTest.Host;
+﻿using System.Windows.Media;
 using XamlTest.Internal;
 
 namespace XamlTest;
