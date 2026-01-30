@@ -22,23 +22,22 @@ public class UnitTestGenerator : IIncrementalGenerator
             //System.Diagnostics.Debugger.Launch();
         }
 #endif
-
         // Use CompilationProvider to access referenced assemblies
-        IncrementalValueProvider<(IReadOnlyList<TestClass> testClasses, ImmutableArray<Diagnostic> diagnostics)> testClassProvider = 
+        IncrementalValueProvider<(IReadOnlyList<TestClass> TestClasses, ImmutableArray<Diagnostic> Diagnostics)> testClassProvider = 
             context.CompilationProvider.Select(static (compilation, cancellationToken) =>
             {
-                return GetTestClassesFromCompilation(compilation, cancellationToken);
+                return GetTestClassesFromCompilation(compilation);
             });
 
         // Generate source for each test class
         context.RegisterSourceOutput(testClassProvider, static (context, result) =>
         {
-            foreach (var diagnostic in result.diagnostics)
+            foreach (var diagnostic in result.Diagnostics)
             {
                 context.ReportDiagnostic(diagnostic);
             }
 
-            foreach (var testClass in result.testClasses)
+            foreach (var testClass in result.TestClasses)
             {
                 string testClassContent = GetTestClassContent(testClass);
                 string fileName = $"{testClass.ClassName}.g.cs";
@@ -48,9 +47,8 @@ public class UnitTestGenerator : IIncrementalGenerator
         });
     }
 
-    private static (IReadOnlyList<TestClass> testClasses, ImmutableArray<Diagnostic> diagnostics) GetTestClassesFromCompilation(
-        Compilation compilation,
-        CancellationToken token)
+    private static (IReadOnlyList<TestClass> testClasses, ImmutableArray<Diagnostic> diagnostics) 
+        GetTestClassesFromCompilation(Compilation compilation)
     {
         List<TestClass> testClasses = [];
         List<Diagnostic> diagnostics = [];
@@ -58,31 +56,19 @@ public class UnitTestGenerator : IIncrementalGenerator
         // Check current assembly attributes
         foreach (AttributeData attribute in compilation.Assembly.GetAttributes())
         {
-            ProcessGenerateHelpersAttribute(attribute, compilation, testClasses, diagnostics);
-        }
-
-        // Check referenced assemblies for GenerateHelpersAttribute
-        foreach (var reference in compilation.References)
-        {
-            if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assemblySymbol)
-            {
-                foreach (AttributeData attribute in assemblySymbol.GetAttributes())
-                {
-                    ProcessGenerateHelpersAttribute(attribute, compilation, testClasses, diagnostics);
-                }
-            }
+            ProcessGeneratedTestsAttribute(attribute, compilation, testClasses, diagnostics);
         }
 
         return (testClasses, diagnostics.ToImmutableArray());
     }
 
-    private static void ProcessGenerateHelpersAttribute(
+    private static void ProcessGeneratedTestsAttribute(
         AttributeData attribute,
         Compilation compilation,
         List<TestClass> testClasses,
         List<Diagnostic> diagnostics)
     {
-        if (attribute.AttributeClass?.Name != "GenerateHelpersAttribute")
+        if (attribute.AttributeClass?.Name != "GenerateTestsAttribute")
         {
             return;
         }
