@@ -1,6 +1,6 @@
 ﻿using XamlTest;
 
-[assembly: GenerateHelpers(typeof(System.Windows.Window)), GenerateHelpers(typeof(System.Windows.Window))]
+[assembly: GenerateHelpers(typeof(System.Windows.Window))]
 [assembly: GenerateHelpers(typeof(System.Windows.Controls.AccessText))]
 [assembly: GenerateHelpers(typeof(System.Windows.Controls.Border))]
 [assembly: GenerateHelpers(typeof(System.Windows.Controls.Button))]
