@@ -39,25 +39,27 @@ xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
             throw new ArgumentNullException(nameof(app));
         }
 
-        string xaml = @$"<Window
-xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
-xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-xmlns:d=""http://schemas.microsoft.com/expression/blend/2008""
-xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006""
-{string.Join(Environment.NewLine, additionalXmlNamespaces
-.Select(x =>
-{
-    return x.StartsWith("xmlns") ? x : $"xmlns:{x}";
-}))}
-mc:Ignorable=""d""
-Height=""{windowSize?.Height ?? 800}"" 
-Width=""{windowSize?.Width ?? 1100}""
-Title=""{title}""
-Background=""{background}""
-WindowStartupLocation=""{startupLocation}""
-{windowAttributes}>
-{xamlContent}
-</Window>";
+        string xaml = $"""
+            <Window
+              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+              {string.Join(Environment.NewLine, additionalXmlNamespaces
+              .Select(x =>
+              {
+                  return x.StartsWith("xmlns") ? x : $"xmlns:{x}";
+              }))}
+              mc:Ignorable="d"
+              Height="{windowSize?.Height ?? 800}" 
+              Width="{windowSize?.Width ?? 1100}"
+              Title="{title}"
+              Background="{background}"
+              WindowStartupLocation="{startupLocation}"
+              {windowAttributes}>
+            {xamlContent}
+            </Window>
+            """;
 
         return await app.CreateWindow(xaml);
     }
