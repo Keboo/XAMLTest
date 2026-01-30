@@ -121,12 +121,7 @@
 namespace XamlTest.Tests;
 
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-public class GenerateTestsAttribute : Attribute
+public class GenerateTestsAttribute(Type controlType) : Attribute
 {
-    public Type ControlType { get; set; }
-
-    public GenerateTestsAttribute(Type controlType)
-    {
-        ControlType = controlType;
-    }
+    public Type ControlType { get; set; } = controlType;
 }

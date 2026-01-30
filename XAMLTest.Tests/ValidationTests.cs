@@ -160,7 +160,7 @@ public class ValidationTests
 
         //Assert
         Assert.IsNotNull(errors);
-        Assert.AreEqual(1, errors.Count);
+        Assert.HasCount(1, errors);
         Assert.IsInstanceOfType(errors[0].RuleInError, typeof(NotEmptyValidationRule));
         Assert.AreEqual("Field is required.", errors[0].ErrorContent);
 

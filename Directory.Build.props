@@ -15,7 +15,7 @@
     <Description>A library that allows unit tests to be written against WPF XAML.</Description>
     <Copyright>Copyright 2020</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageIcon>icon.png</PackageIcon>
+    <PackageIcon>Icon.png</PackageIcon>
     <RepositoryUrl>https://github.com/Keboo/XamlTest</RepositoryUrl>
     <Authors>Keboo</Authors>
   </PropertyGroup>

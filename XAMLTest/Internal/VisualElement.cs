@@ -53,7 +53,7 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
     public Task<IVisualElement?> FindElement(string query)
         => FindElement(query, null);
 
-    public async Task<IVisualElement<TElement>?> FindElement<TElement>(string query) 
+    public async Task<IVisualElement<TElement>?> FindElement<TElement>(string query)
         => (IVisualElement<TElement>?)await FindElement(query, typeof(TElement));
 
     private Task<IVisualElement?> FindElement(string query, Type? desiredType)
@@ -512,17 +512,21 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
         {
             return current;
         }
-        var targetType = typeof(TVisualElement);
-        if (targetType.IsGenericType &&
-            targetType.GetGenericTypeDefinition() == typeof(IVisualElement<>))
+        return (TVisualElement)Convert(typeof(TVisualElement));
+    }
+
+    private IVisualElement Convert(Type visualElementType)
+    {
+        if (visualElementType.IsGenericType &&
+            visualElementType.GetGenericTypeDefinition() == typeof(IVisualElement<>))
         {
-            Type elementType = targetType.GetGenericArguments()[0];
+            Type elementType = visualElementType.GetGenericArguments()[0];
             if (GetValidTypes(Type).Contains(elementType))
             {
-                return (TVisualElement)Create(Client, Id, Type, Context, LogMessage, elementType);
+                return Create(Client, Id, Type, Context, LogMessage, elementType);
             }
         }
-        throw new InvalidOperationException($"Cannot convert {typeof(IVisualElement<T>)} to {typeof(IVisualElement)}");
+        throw new InvalidOperationException($"Cannot convert {typeof(IVisualElement<T>)} to {visualElementType}");
 
         static IEnumerable<Type> GetValidTypes(Type type)
         {
@@ -542,7 +546,10 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
     public IVisualElement<TElement> As<TElement>() where TElement : DependencyObject
         => Convert<IVisualElement<TElement>>();
 
-    public Task<TReturn?> RemoteExecute<TReturn>(Delegate @delegate, object?[] parameters) 
+    public IVisualElement As(Type visualElementType)
+        => Convert(visualElementType);
+
+    public Task<TReturn?> RemoteExecute<TReturn>(Delegate @delegate, object?[] parameters)
         => Client.RemoteExecute<TReturn>(Serializer, LogMessage, x => x.ElementId = Id, @delegate, parameters);
 
     public async Task Highlight(HighlightConfig highlightConfig)

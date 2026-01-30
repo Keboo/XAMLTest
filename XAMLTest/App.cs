@@ -5,8 +5,6 @@ namespace XamlTest;
 
 public static class App
 {
-    private static SemaphoreSlim SingletonAppLock { get; } = new(1, 1);
-
     public static Task<IApp> StartRemote<TApp>(Action<string>? logMessage = null)
     {
         AppOptions options = new()
