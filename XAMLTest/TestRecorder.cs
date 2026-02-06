@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
-using static PInvoke.User32;
+using Windows.Win32;
+using Windows.Win32.UI.Input.KeyboardAndMouse;
 
 namespace XamlTest;
 
@@ -21,18 +22,18 @@ public sealed class TestRecorder : IAsyncDisposable
         {
             return new InputStates
             {
-                IsLeftButtonDown = GetCurrentState(VirtualKey.VK_LBUTTON),
-                IsRightButtonDown = GetCurrentState(VirtualKey.VK_RBUTTON),
-                IsMiddleButtonDown = GetCurrentState(VirtualKey.VK_MBUTTON),
-                IsShiftDown = GetCurrentState(VirtualKey.VK_SHIFT),
-                IsControlDown = GetCurrentState(VirtualKey.VK_CONTROL),
-                IsAltDown = GetCurrentState(VirtualKey.VK_MENU)
+                IsLeftButtonDown = GetCurrentState(VIRTUAL_KEY.VK_LBUTTON),
+                IsRightButtonDown = GetCurrentState(VIRTUAL_KEY.VK_RBUTTON),
+                IsMiddleButtonDown = GetCurrentState(VIRTUAL_KEY.VK_MBUTTON),
+                IsShiftDown = GetCurrentState(VIRTUAL_KEY.VK_SHIFT),
+                IsControlDown = GetCurrentState(VIRTUAL_KEY.VK_CONTROL),
+                IsAltDown = GetCurrentState(VIRTUAL_KEY.VK_MENU)
             };
         }
 
-        private static bool GetCurrentState(VirtualKey key)
+        private static bool GetCurrentState(VIRTUAL_KEY key)
         {
-            var ctrl = GetAsyncKeyState((int)key);
+            var ctrl = PInvoke.GetAsyncKeyState((int)key);
             return ((ushort)ctrl >> 15) == 1;
         }
     }

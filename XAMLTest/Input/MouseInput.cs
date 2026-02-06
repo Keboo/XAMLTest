@@ -1,5 +1,6 @@
 ﻿using System.Windows;
-using static PInvoke.User32;
+using Windows.Win32;
+using Windows.Win32.UI.Input.KeyboardAndMouse;
 
 namespace XamlTest.Input;
 
@@ -24,35 +25,35 @@ internal static class MouseInput
     }
 
     public static void LeftDown()
-        => MouseEvent(mouse_eventFlags.MOUSEEVENTF_LEFTDOWN);
+        => MouseEvent(MOUSE_EVENT_FLAGS.MOUSEEVENTF_LEFTDOWN);
 
     public static void LeftUp()
-        => MouseEvent(mouse_eventFlags.MOUSEEVENTF_LEFTUP);
+        => MouseEvent(MOUSE_EVENT_FLAGS.MOUSEEVENTF_LEFTUP);
 
     public static void RightDown()
-        => MouseEvent(mouse_eventFlags.MOUSEEVENTF_RIGHTDOWN);
+        => MouseEvent(MOUSE_EVENT_FLAGS.MOUSEEVENTF_RIGHTDOWN);
 
     public static void RightUp()
-        => MouseEvent(mouse_eventFlags.MOUSEEVENTF_RIGHTUP);
+        => MouseEvent(MOUSE_EVENT_FLAGS.MOUSEEVENTF_RIGHTUP);
 
     public static void MiddleDown()
-        => MouseEvent(mouse_eventFlags.MOUSEEVENTF_MIDDLEDOWN);
+        => MouseEvent(MOUSE_EVENT_FLAGS.MOUSEEVENTF_MIDDLEDOWN);
 
     public static void MiddleUp()
-        => MouseEvent(mouse_eventFlags.MOUSEEVENTF_MIDDLEUP);
+        => MouseEvent(MOUSE_EVENT_FLAGS.MOUSEEVENTF_MIDDLEUP);
 
     public static void MoveCursor(Point screenLocation)
-        => SetCursorPos((int)screenLocation.X, (int)screenLocation.Y);
+        => PInvoke.SetCursorPos((int)screenLocation.X, (int)screenLocation.Y);
 
     public static Point GetCursorPosition()
     {
-        PInvoke.POINT pos = GetCursorPos();
-        return new Point(pos.x, pos.y);
+        PInvoke.GetCursorPos(out var pos);
+        return new Point(pos.X, pos.Y);
     }
 
-    private static unsafe void MouseEvent(mouse_eventFlags flags)
+    private static void MouseEvent(MOUSE_EVENT_FLAGS flags)
     {
-        mouse_event(flags, 0, 0, 0, null);
+        PInvoke.mouse_event(flags, 0, 0, 0, 0);
     }
 
 }

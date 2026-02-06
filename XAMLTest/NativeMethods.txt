@@ -1,2 +1,11 @@
 ShowWindow
 GetDoubleClickTime
+mouse_event
+SetCursorPos
+GetCursorPos
+SendMessage
+SendInput
+GetAsyncKeyState
+GetForegroundWindow
+GetParent
+GetWindowPlacement

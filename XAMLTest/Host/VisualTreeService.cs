@@ -720,18 +720,18 @@ internal partial class VisualTreeService(Application application) : Protocol.Pro
         }
 
         //Check if focus is in child window, such as a popup
-        IntPtr foregroundWindowHandle = PInvoke.User32.GetForegroundWindow();
-        IntPtr expectedParentHandle = new WindowInteropHelper(window).EnsureHandle();
+        Windows.Win32.Foundation.HWND foregroundWindowHandle = Windows.Win32.PInvoke.GetForegroundWindow();
+        Windows.Win32.Foundation.HWND expectedParentHandle = new(new WindowInteropHelper(window).EnsureHandle());
 
-        while (foregroundWindowHandle != IntPtr.Zero &&
-            expectedParentHandle != IntPtr.Zero)
+        while (!foregroundWindowHandle.IsNull &&
+            !expectedParentHandle.IsNull)
         {
             if (foregroundWindowHandle == expectedParentHandle)
             {
                 Logger.Log("Child window has is foreground");
                 return true;
             }
-            foregroundWindowHandle = PInvoke.User32.GetParent(foregroundWindowHandle);
+            foregroundWindowHandle = Windows.Win32.PInvoke.GetParent(foregroundWindowHandle);
         }
 
         Logger.Log("Using mouse to activate Window");

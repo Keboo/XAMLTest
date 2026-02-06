@@ -1,11 +1,16 @@
-using PInvoke;
 using System.Windows.Input;
-using static PInvoke.User32;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.UI.Input.KeyboardAndMouse;
 
 namespace XamlTest.Input;
 
 internal static class KeyboardInput
 {
+    private const uint WM_CHAR = 0x0102;
+    private const uint WM_KEYDOWN = 0x0100;
+    private const uint WM_KEYUP = 0x0101;
+
     public static void SendModifiers(IntPtr windowHandle, params ModifierKeys[] modifiers)
     {
         IEnumerable<WindowInput> inputs = modifiers.SelectMany(GetKeyPress);
@@ -26,9 +31,10 @@ internal static class KeyboardInput
 
     private static void SendInput(IntPtr windowHandle, IEnumerable<WindowMessage> messages)
     {
+        HWND hwnd = new(windowHandle);
         foreach (WindowMessage message in messages)
         {
-            User32.SendMessage(windowHandle, message.Message, message.WParam, message.LParam);
+            PInvoke.SendMessage(hwnd, message.Message, new WPARAM((nuint)message.WParam), new LPARAM(message.LParam));
         }
     }
 
@@ -43,7 +49,7 @@ internal static class KeyboardInput
 
         foreach (WindowInput input in inputs)
         {
-            User32.SendInput(1, new[] { input.Input }, sizeOfInputStruct);
+            PInvoke.SendInput([input.Input], sizeOfInputStruct);
             //https://source.dot.net/#System.Windows.Forms/System/Windows/Forms/SendKeys.cs,720
             Thread.Sleep(1);
         }
@@ -51,17 +57,17 @@ internal static class KeyboardInput
 
     private static IEnumerable<WindowMessage> GetKeyPress(char character)
     {
-        IntPtr wParam = new(character);
-        IntPtr lParam = new(0x0000_0000);
-        yield return new WindowMessage(User32.WindowMessage.WM_CHAR, wParam, lParam);
+        nint wParam = character;
+        nint lParam = 0x0000_0000;
+        yield return new WindowMessage(WM_CHAR, wParam, lParam);
     }
 
     private static IEnumerable<WindowMessage> GetKeyPress(Key key)
     {
-        IntPtr wParam = new(KeyInterop.VirtualKeyFromKey(key));
-        IntPtr lParam = new(0x0000_0000);
-        yield return new WindowMessage(User32.WindowMessage.WM_KEYDOWN, wParam, lParam);
-        yield return new WindowMessage(User32.WindowMessage.WM_KEYUP, wParam, lParam);
+        nint wParam = KeyInterop.VirtualKeyFromKey(key);
+        nint lParam = 0x0000_0000;
+        yield return new WindowMessage(WM_KEYDOWN, wParam, lParam);
+        yield return new WindowMessage(WM_KEYUP, wParam, lParam);
     }
 
     private static IEnumerable<WindowInput> GetKeyPress(ModifierKeys modifiers)
@@ -69,46 +75,46 @@ internal static class KeyboardInput
         if (modifiers == ModifierKeys.None)
         {
             // Special case to remove any modifiers previously set, so we send KEYUP for all modifiers
-            yield return new WindowInput(CreateInput(VirtualKey.VK_MENU, true));
-            yield return new WindowInput(CreateInput(VirtualKey.VK_CONTROL, true));
-            yield return new WindowInput(CreateInput(VirtualKey.VK_SHIFT, true));
-            yield return new WindowInput(CreateInput(VirtualKey.VK_LWIN, true));
+            yield return new WindowInput(CreateInput(VIRTUAL_KEY.VK_MENU, true));
+            yield return new WindowInput(CreateInput(VIRTUAL_KEY.VK_CONTROL, true));
+            yield return new WindowInput(CreateInput(VIRTUAL_KEY.VK_SHIFT, true));
+            yield return new WindowInput(CreateInput(VIRTUAL_KEY.VK_LWIN, true));
         }
         else
         {
-            yield return new WindowInput(CreateInput(VirtualKey.VK_MENU, !modifiers.HasFlag(ModifierKeys.Alt)));
-            yield return new WindowInput(CreateInput(VirtualKey.VK_CONTROL, !modifiers.HasFlag(ModifierKeys.Control)));
-            yield return new WindowInput(CreateInput(VirtualKey.VK_SHIFT, !modifiers.HasFlag(ModifierKeys.Shift)));
-            yield return new WindowInput(CreateInput(VirtualKey.VK_LWIN, !modifiers.HasFlag(ModifierKeys.Windows)));
+            yield return new WindowInput(CreateInput(VIRTUAL_KEY.VK_MENU, !modifiers.HasFlag(ModifierKeys.Alt)));
+            yield return new WindowInput(CreateInput(VIRTUAL_KEY.VK_CONTROL, !modifiers.HasFlag(ModifierKeys.Control)));
+            yield return new WindowInput(CreateInput(VIRTUAL_KEY.VK_SHIFT, !modifiers.HasFlag(ModifierKeys.Shift)));
+            yield return new WindowInput(CreateInput(VIRTUAL_KEY.VK_LWIN, !modifiers.HasFlag(ModifierKeys.Windows)));
         }
     }
 
-    private static INPUT CreateInput(VirtualKey modifierKey, bool keyUp)
+    private static INPUT CreateInput(VIRTUAL_KEY modifierKey, bool keyUp)
     {
         INPUT input = new()
         {
-            type = User32.InputType.INPUT_KEYBOARD
+            type = INPUT_TYPE.INPUT_KEYBOARD
         };
-        input.Inputs.ki.wVk = modifierKey;
+        input.Anonymous.ki.wVk = modifierKey;
         if (keyUp)
         {
-            input.Inputs.ki.dwFlags = KEYEVENTF.KEYEVENTF_KEYUP;
+            input.Anonymous.ki.dwFlags = KEYBD_EVENT_FLAGS.KEYEVENTF_KEYUP;
         }
         return input;
     }
 
     private class WindowMessage
     {
-        public WindowMessage(User32.WindowMessage message, IntPtr wParam, IntPtr lParam)
+        public WindowMessage(uint message, nint wParam, nint lParam)
         {
             Message = message;
             WParam = wParam;
             LParam = lParam;
         }
 
-        public User32.WindowMessage Message { get; }
-        public IntPtr WParam { get; }
-        public IntPtr LParam { get; }
+        public uint Message { get; }
+        public nint WParam { get; }
+        public nint LParam { get; }
     }
 
     private class WindowInput
