@@ -141,23 +141,6 @@ public class SendMouseInputTests
     }
 
     [TestMethod]
-    public async Task CanMiddleDoubleClickOnButton()
-    {
-        await using var recorder = new TestRecorder(App);
-
-        await using IEventRegistration registration = await Button.RegisterForEvent(nameof(Control.MouseDoubleClick));
-
-        await Wait.For(async () =>
-        {
-            await Button.MiddleDoubleClick();
-            var invocations = await registration.GetInvocations();
-            Assert.IsGreaterThan(1, invocations.Count);
-        });
-
-        recorder.Success();
-    }
-
-    [TestMethod]
     public async Task LeftClick_WithPositionOffset_OffsetsCursor()
     {
         await using var recorder = new TestRecorder(App);

@@ -91,20 +91,6 @@ public static partial class VisualElementMixins
             clickTime);
     }
 
-    public static async Task<Point> MiddleDoubleClick(this IVisualElement element,
-        Position position = Position.Center,
-        int xOffset = 0, int yOffset = 0,
-        TimeSpan? clickTime = null)
-    {
-        return await SendDoubleClick(element,
-            MouseInput.MiddleDown(),
-            MouseInput.MiddleUp(),
-            position,
-            xOffset,
-            yOffset,
-            clickTime);
-    }
-
     public static async Task<Point> SendClick(IVisualElement element,
         MouseInput down,
         MouseInput up,
