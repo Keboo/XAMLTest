@@ -70,7 +70,7 @@ public class SendMouseInputTests
     {
         await using var recorder = new TestRecorder(App);
         await TopMenuItem.LeftClick();
-        await Task.Delay(200);
+        await Task.Delay(200, TestContext.CancellationToken);
         var nestedMenuItem = await TopMenuItem.GetElement<MenuItem>("SubMenu");
 
         await using IEventRegistration registration = await nestedMenuItem.RegisterForEvent(nameof(MenuItem.Click));
@@ -241,4 +241,6 @@ public class SendMouseInputTests
         Assert.IsLessThan(tolerance, distance.Length, $"Distance {distance.Length} is greater than tolerance");
         recorder.Success();
     }
+
+    public TestContext TestContext { get; set; }
 }
