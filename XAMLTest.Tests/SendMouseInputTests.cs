@@ -100,7 +100,7 @@ public class SendMouseInputTests
         {
             await Button.LeftDoubleClick();
             var invocations = await registration.GetInvocations();
-            Assert.IsTrue(invocations.Count > 1);
+            Assert.IsGreaterThan(1, invocations.Count);
         });
 
         recorder.Success();
@@ -117,7 +117,7 @@ public class SendMouseInputTests
         {
             await Button.RightDoubleClick();
             var invocations = await registration.GetInvocations();
-            Assert.IsTrue(invocations.Count > 1);
+            Assert.IsGreaterThan(1, invocations.Count);
         });
 
         recorder.Success();
@@ -134,7 +134,7 @@ public class SendMouseInputTests
         {
             await Button.MiddleClick();
             var invocations = await registration.GetInvocations();
-            Assert.IsTrue(invocations.Count > 0);
+            Assert.IsNotEmpty(invocations);
         });
 
         recorder.Success();
@@ -151,23 +151,12 @@ public class SendMouseInputTests
         {
             await Button.MiddleDoubleClick();
             var invocations = await registration.GetInvocations();
-            Assert.IsTrue(invocations.Count > 1);
-        });
-
-        recorder.Success();
-    }
-
-        await using IEventRegistration registration = await Button.RegisterForEvent(nameof(Control.MouseDoubleClick));
-
-        await Wait.For(async () =>
-        {
-            await Button.LeftDoubleClick();
-            var invocations = await registration.GetInvocations();
             Assert.IsGreaterThan(1, invocations.Count);
         });
 
         recorder.Success();
     }
+
     [TestMethod]
     public async Task LeftClick_WithPositionOffset_OffsetsCursor()
     {
