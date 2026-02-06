@@ -310,7 +310,7 @@ public class VisualElementTests
 
         static async Task ChangeTitle(Window window)
         {
-            await Task.Delay(10);
+            await Task.Delay(10, CancellationToken.None);
             window.Title = "Test Title";
         }
     }
@@ -331,7 +331,7 @@ public class VisualElementTests
 
         static async Task<string> ChangeTitle(Window window)
         {
-            await Task.Delay(10);
+            await Task.Delay(10, CancellationToken.None);
             window.Title = "Test Title";
             return window.Title;
         }

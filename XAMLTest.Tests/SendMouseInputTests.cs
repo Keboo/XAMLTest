@@ -25,25 +25,28 @@ public class SendMouseInputTests
         await App.InitializeWithDefaults(Assembly.GetExecutingAssembly().Location);
 
         var window = await App.CreateWindowWithContent(
-            @$"
-<Grid x:Name=""Grid"" Background=""Transparent"" Margin=""10"">
-    <Grid.RowDefinitions>
-        <RowDefinition Height=""Auto"" />
-        <RowDefinition />
-    </Grid.RowDefinitions>
-    <Grid.ContextMenu>
-        <ContextMenu>
-            <MenuItem Header=""Context1"" x:Name=""Context1"" />
-        </ContextMenu>
-    </Grid.ContextMenu>
-    <Menu> 
-        <MenuItem Header=""TopLevel"" x:Name=""TopLevel"">
-            <MenuItem Header=""SubMenu"" x:Name=""SubMenu"" />
-        </MenuItem>
-    </Menu>
-    <Button Content=""Click Me"" Grid.Row=""1"" VerticalAlignment=""Center"" HorizontalAlignment=""Center""/>
-</Grid>
-");
+            """
+            <Grid x:Name="Grid" Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Menu> 
+                    <MenuItem Header="TopLevel" x:Name="TopLevel">
+                        <MenuItem Header="SubMenu" x:Name="SubMenu" />
+                    </MenuItem>
+                </Menu>
+                <Button Content="Click Me" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                <Grid x:Name="HasContextMenu" Background="Transparent" Grid.Row="2">
+                    <Grid.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Context1" x:Name="Context1" />
+                        </ContextMenu>
+                    </Grid.ContextMenu>
+                </Grid>
+            </Grid>
+            """);
         Grid = await window.GetElement<Grid>("Grid");
         TopMenuItem = await window.GetElement<MenuItem>("TopLevel");
         Button = await window.GetElement<Button>();
@@ -70,7 +73,7 @@ public class SendMouseInputTests
     {
         await using var recorder = new TestRecorder(App);
         await TopMenuItem.LeftClick();
-        await Task.Delay(200);
+        await Task.Delay(200, TestContext.CancellationToken);
         var nestedMenuItem = await TopMenuItem.GetElement<MenuItem>("SubMenu");
 
         await using IEventRegistration registration = await nestedMenuItem.RegisterForEvent(nameof(MenuItem.Click));
@@ -107,6 +110,40 @@ public class SendMouseInputTests
     }
 
     [TestMethod]
+    public async Task CanRightDoubleClickOnButton()
+    {
+        await using var recorder = new TestRecorder(App);
+
+        await using IEventRegistration registration = await Button.RegisterForEvent(nameof(Control.MouseDoubleClick));
+
+        await Wait.For(async () =>
+        {
+            await Button.RightDoubleClick();
+            var invocations = await registration.GetInvocations();
+            Assert.IsGreaterThan(1, invocations.Count);
+        });
+
+        recorder.Success();
+    }
+
+    [TestMethod]
+    public async Task CanMiddleClickOnButton()
+    {
+        await using var recorder = new TestRecorder(App);
+
+        await using IEventRegistration registration = await Button.RegisterForEvent(nameof(Control.MouseUp));
+
+        await Wait.For(async () =>
+        {
+            await Button.MiddleClick();
+            var invocations = await registration.GetInvocations();
+            Assert.IsNotEmpty(invocations);
+        });
+
+        recorder.Success();
+    }
+
+    [TestMethod]
     public async Task LeftClick_WithPositionOffset_OffsetsCursor()
     {
         await using var recorder = new TestRecorder(App);
@@ -123,11 +160,13 @@ public class SendMouseInputTests
     public async Task CanRightClickToShowContextMenu()
     {
         await using var recorder = new TestRecorder(App);
-        await Grid.RightClick();
-        IVisualElement<ContextMenu>? contextMenu = await Grid.GetContextMenu();
+        var bottomGrid = await Grid.GetElement<Grid>("HasContextMenu");
+        await bottomGrid.RightClick();
+        IVisualElement<ContextMenu>? contextMenu = await bottomGrid.GetContextMenu();
         Assert.IsNotNull(contextMenu);
+
         var menuItem = await contextMenu.GetElement<MenuItem>("Context1");
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.CancellationToken);
         Assert.IsNotNull(menuItem);
         await using IEventRegistration registration = await menuItem.RegisterForEvent(nameof(MenuItem.Click));
         await menuItem.LeftClick(clickTime: TimeSpan.FromMilliseconds(100));
@@ -207,4 +246,6 @@ public class SendMouseInputTests
         Assert.IsLessThan(tolerance, distance.Length, $"Distance {distance.Length} is greater than tolerance");
         recorder.Success();
     }
+
+    public TestContext TestContext { get; set; }
 }
