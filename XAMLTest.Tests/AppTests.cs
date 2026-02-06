@@ -176,8 +176,10 @@ public class AppTests
             IntPtr hWnd = notepadProcess.MainWindowHandle;
             Assert.AreNotEqual(IntPtr.Zero, hWnd);
 
-            PInvoke.User32.WindowShowStyle windowState = PInvoke.User32.GetWindowPlacement(hWnd).showCmd;
-            Assert.AreNotEqual(PInvoke.User32.WindowShowStyle.SW_SHOWMINIMIZED, windowState);
+            Windows.Win32.UI.WindowsAndMessaging.WINDOWPLACEMENT placement = new() { length = (uint)System.Runtime.InteropServices.Marshal.SizeOf<Windows.Win32.UI.WindowsAndMessaging.WINDOWPLACEMENT>() };
+            Windows.Win32.PInvoke.GetWindowPlacement(new Windows.Win32.Foundation.HWND(hWnd), ref placement);
+            Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD windowState = placement.showCmd;
+            Assert.AreNotEqual(Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_SHOWMINIMIZED, windowState);
 
             await using var app = await App.StartRemote(new AppOptions<XAMLTest.TestApp.App>
             {
@@ -188,8 +190,10 @@ public class AppTests
             IWindow? window = await app.GetMainWindow();
             Assert.IsNotNull(window);
 
-            windowState = PInvoke.User32.GetWindowPlacement(hWnd).showCmd;
-            Assert.AreEqual(PInvoke.User32.WindowShowStyle.SW_SHOWMINIMIZED, windowState);
+            placement = new() { length = (uint)System.Runtime.InteropServices.Marshal.SizeOf<Windows.Win32.UI.WindowsAndMessaging.WINDOWPLACEMENT>() };
+            Windows.Win32.PInvoke.GetWindowPlacement(new Windows.Win32.Foundation.HWND(hWnd), ref placement);
+            windowState = placement.showCmd;
+            Assert.AreEqual(Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_SHOWMINIMIZED, windowState);
         }
         finally
         {
