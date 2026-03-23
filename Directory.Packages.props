@@ -4,7 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="coverlet.collector" Version="8.0.1" />
-    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.1" />
     <PackageVersion Include="Grpc.Tools" Version="2.78.0" />
     <PackageVersion Include="GrpcDotNetNamedPipes" Version="3.1.0" />
     <PackageVersion Include="MaterialDesignThemes" Version="5.3.1" />
