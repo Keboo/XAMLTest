@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFrameworks>net10.0-windows7;net9.0-windows7</TargetFrameworks>
+    <TargetFrameworks>net10.0-windows7</TargetFrameworks>
     <UseWPF>true</UseWPF>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>XamlTest</RootNamespace>
@@ -24,7 +24,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="System.CommandLine" />
-    <PackageReference Include="System.Drawing.Common" />
     <ProjectReference Include="..\XAMLTest.Generator\XAMLTest.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <Protobuf Include="Host\XamlTestSpec.proto" GrpcServices="Both" />
   </ItemGroup>
