@@ -72,6 +72,9 @@ service Protocol {
 
   //Highlight an element
   rpc HighlightElement(HighlightRequest) returns (HighlightResult);
+
+  //Get the visual tree for a window
+  rpc GetVisualTree (GetVisualTreeQuery) returns (GetVisualTreeResult);
 }
 
 message GetWindowsQuery {
@@ -332,4 +335,19 @@ message HighlightRequest {
 
 message HighlightResult {
   repeated string errorMessages = 1;
+}
+
+message GetVisualTreeQuery {
+  string windowId = 1;
+}
+
+message VisualTreeNode {
+  string type = 1;
+  string name = 2;
+  repeated VisualTreeNode children = 3;
+}
+
+message GetVisualTreeResult {
+  repeated string errorMessages = 1;
+  VisualTreeNode root = 2;
 }
