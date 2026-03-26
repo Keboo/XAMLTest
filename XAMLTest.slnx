@@ -13,6 +13,7 @@
     <File Path=".github/workflows/dotnet-core.yml" />
   </Folder>
   <Project Path="XAMLTest.Generator/XAMLTest.Generator.csproj" />
+  <Project Path="XAMLTest.Mcp/XAMLTest.Mcp.csproj" />
   <Project Path="XAMLTest.TestApp/XAMLTest.TestApp.csproj" />
   <Project Path="XAMLTest.Tests/XAMLTest.Tests.csproj" />
   <Project Path="XAMLTest.UnitTestGenerator/XAMLTest.UnitTestGenerator.csproj" />
