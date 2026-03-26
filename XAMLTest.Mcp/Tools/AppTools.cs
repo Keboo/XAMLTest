@@ -110,7 +110,7 @@ internal class AppTools(AppServiceManager appServiceManager) : BaseTools
                 {
                     Uri = $"file:///{filename}",
                     MimeType = System.Net.Mime.MediaTypeNames.Image.Jpeg,
-                    Blob = Convert.ToBase64String(imageData)
+                    Blob = System.Text.Encoding.UTF8.GetBytes(Convert.ToBase64String(imageData))
                 }
             };
 
