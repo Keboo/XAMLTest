@@ -31,7 +31,7 @@ internal class VisualElement<T> : IVisualElement, IVisualElement<T>, IElementId
 
     private AppContext Context { get; }
     private Serializer Serializer => Context.Serializer;
-    private Protocol.ProtocolClient Client { get; }
+    protected Protocol.ProtocolClient Client { get; }
 
     public string Id { get; }
     public Type Type { get; }
