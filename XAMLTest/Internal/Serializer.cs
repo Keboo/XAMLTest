@@ -27,9 +27,12 @@ internal class Serializer : ISerializer
 
     string ISerializer.Serialize(Type type, object? value, ISerializer rootSerializer)
     {
-        if (Serializers.FirstOrDefault(x => x.CanSerialize(type, rootSerializer)) is { } serializer)
+        for (int i = 0; i < Serializers.Count; i++)
         {
-            return serializer.Serialize(type, value, rootSerializer);
+            if (Serializers[i].CanSerialize(type, rootSerializer))
+            {
+                return Serializers[i].Serialize(type, value, rootSerializer);
+            }
         }
         return "";
     }
@@ -39,9 +42,12 @@ internal class Serializer : ISerializer
 
     object? ISerializer.Deserialize(Type type, string value, ISerializer rootSerializer)
     {
-        if (Serializers.FirstOrDefault(x => x.CanSerialize(type, rootSerializer)) is { } serializer)
+        for (int i = 0; i < Serializers.Count; i++)
         {
-            return serializer.Deserialize(type, value, rootSerializer);
+            if (Serializers[i].CanSerialize(type, rootSerializer))
+            {
+                return Serializers[i].Deserialize(type, value, rootSerializer);
+            }
         }
         return null;
     }
@@ -55,6 +61,15 @@ internal class Serializer : ISerializer
         return default;
     }
 
-    bool ISerializer.CanSerialize(Type type, ISerializer rootSerializer) 
-        => Serializers.Any(x => x.CanSerialize(type, rootSerializer));
+    bool ISerializer.CanSerialize(Type type, ISerializer rootSerializer)
+    {
+        for (int i = 0; i < Serializers.Count; i++)
+        {
+            if (Serializers[i].CanSerialize(type, rootSerializer))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 }
