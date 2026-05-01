@@ -10,6 +10,15 @@ namespace XamlTest.Host;
 
 internal partial class VisualTreeService : Protocol.ProtocolBase
 {
+    [GeneratedRegex(@"(?<=^\[[^=\]]+=[^=\]]+)\]")]
+    private static partial Regex PropertyExpressionRegex();
+
+    [GeneratedRegex(@"(?<=.)[\.\/\~]")]
+    private static partial Regex QuerySeparatorRegex();
+
+    [GeneratedRegex(@"\[(?<Index>\d+)]$")]
+    private static partial Regex IndexerRegex();
+
     private Dictionary<string, WeakReference<DependencyObject>> KnownElements { get; } = new();
 
     public override async Task<ElementResult> GetElement(ElementQuery request, ServerCallContext context)
@@ -133,17 +142,14 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
 
         static QueryPartType GetNextQueryType(ref string query, out string value)
         {
-            Regex propertyExpressionRegex = new(@"(?<=^\[[^=\]]+=[^=\]]+)\]");
-            Regex regex = new(@"(?<=.)[\.\/\~]");
-
             string currentQuery = query;
-            if (propertyExpressionRegex.Match(query) is { } propertyExpressionMatch &&
+            if (PropertyExpressionRegex().Match(query) is { } propertyExpressionMatch &&
                 propertyExpressionMatch.Success)
             {
                 currentQuery = query[..(propertyExpressionMatch.Index + 1)];
                 query = query[(propertyExpressionMatch.Index + 1)..];
             }
-            else if (regex.Match(query) is { } match &&
+            else if (QuerySeparatorRegex().Match(query) is { } match &&
                 match.Success)
             {
                 currentQuery = query[..match.Index];
@@ -203,10 +209,8 @@ internal partial class VisualTreeService : Protocol.ProtocolBase
 
         static bool TryEvaluateChildTypeQuery(DependencyObject root, string childTypeQuery, [NotNullWhen(true)] out object? found)
         {
-            Regex indexerRegex = new(@"\[(?<Index>\d+)]$");
-
             int index = 0;
-            Match match = indexerRegex.Match(childTypeQuery);
+            Match match = IndexerRegex().Match(childTypeQuery);
             if (match.Success)
             {
                 index = int.Parse(match.Groups["Index"].Value);
