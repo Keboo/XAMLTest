@@ -5,6 +5,8 @@ namespace XamlTest;
 
 public static class App
 {
+    private const string DisableMinimizeAllEnvironmentVariable = "XAMLTEST_DISABLE_MINIMIZEALL";
+
     public static Task<IApp> StartRemote<TApp>(Action<string>? logMessage = null)
     {
         AppOptions options = new()
@@ -31,7 +33,7 @@ public static class App
             throw new XamlTestException($"Could not find test app '{options.XamlTestPath}'");
         }
 
-        if (options.MinimizeOtherWindows)
+        if (options.MinimizeOtherWindows && !IsMinimizeAllDisabled())
         {
             MinimizeOtherWindows();
         }
@@ -127,5 +129,11 @@ public static class App
                     Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_MINIMIZE);
             }
         }
+    }
+
+    private static bool IsMinimizeAllDisabled()
+    {
+        string? environmentValue = Environment.GetEnvironmentVariable(DisableMinimizeAllEnvironmentVariable);
+        return string.Equals(environmentValue, bool.TrueString, StringComparison.OrdinalIgnoreCase);
     }
 }
