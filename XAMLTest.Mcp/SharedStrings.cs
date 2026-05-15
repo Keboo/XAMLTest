@@ -21,4 +21,27 @@ public static class SharedStrings
         """;
 
     public const string PropertyNameDescription = "The name of the property to access (e.g. Content, Text, IsEnabled, Width).";
+
+    public const string InputActionsJsonDescription =
+        """
+        A JSON array of ordered interaction actions to execute on the target element.
+        Each action must include a `type` property. Supported action types:
+        - focus
+        - delay (milliseconds)
+        - mouse_move_to_element (position, xOffset, yOffset)
+        - mouse_move_relative (xOffset, yOffset)
+        - mouse_move_absolute (x, y)
+        - mouse_button_down (button: left|right|middle)
+        - mouse_button_up (button: left|right|middle)
+        - mouse_click (button, count, position, xOffset, yOffset, clickDelayMs)
+        - keyboard_text (text)
+        - keyboard_keys (keys: string[])
+        Example:
+        [
+          { "type": "focus" },
+          { "type": "mouse_click", "button": "left", "position": "Center" },
+          { "type": "keyboard_text", "text": "Hello world" },
+          { "type": "keyboard_keys", "keys": ["Enter"] }
+        ]
+        """;
 }
