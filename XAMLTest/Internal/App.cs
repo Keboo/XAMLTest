@@ -277,7 +277,7 @@ internal sealed class App(
         {
             return reply.WindowIds.Select(x => new Window(Client, x, Context, LogMessage)).ToList();
         }
-        return Array.Empty<IWindow>();
+        return [];
     }
 
     public async Task<IImage> GetScreenshot()

@@ -83,44 +83,38 @@ internal class AppTools(AppServiceManager appServiceManager) : BaseTools
 
     [McpServerTool]
     [Description("""
-        Captures a screenshot of the specified XAML Test application and returns it as an embedded resource.
+        Captures a screenshot of the specified XAML Test application and returns it as inline BMP image content.
         """)]
-    public async Task<CallToolResult> SaveScreenshot(
-        [Description(SharedStrings.AppIdDescription)] string appId
-        )
+    public async Task<CallToolResult> SaveScreenshot(string appId,
+        [Description("Optional file path locations for where to same the image")]
+        string? filePath = null)
     {
-        if (appServiceManager.TryGetApp(appId, out var app))
+        if (!appServiceManager.TryGetApp(appId, out var app))
         {
-            IImage screenshot = await app.GetScreenshot();
-            if (await app.GetMainWindow() is { } window)
-            {
-                //TOD: expose Activate window
-
-            }
-            ; //TODO handle multiple windows
-            using MemoryStream memoryStream = new();
-            await screenshot.Save(memoryStream);
-
-            string filename = $"screenshot_{appId}_{DateTime.Now:yyyyMMdd_HHmmss}.jpg";
-            byte[] imageData = memoryStream.ToArray();
-
-            EmbeddedResourceBlock resourceBlock = new()
-            {
-                Resource = new BlobResourceContents
-                {
-                    Uri = $"file:///{filename}",
-                    MimeType = System.Net.Mime.MediaTypeNames.Image.Jpeg,
-                    Blob = System.Text.Encoding.UTF8.GetBytes(Convert.ToBase64String(imageData))
-                }
-            };
-
-            return new()
-            {
-                IsError = false,
-                Content = [resourceBlock]
-            };
+            return Failure($"No known app with id '{appId}' is running");
         }
-        return Failure($"No known app with id '{appId}' is running");
+
+        IImage screenshot = await app.GetScreenshot();
+
+        using MemoryStream bmpStream = new();
+        await screenshot.Save(bmpStream);
+        bmpStream.Position = 0;
+        byte[] bmpBytes = bmpStream.ToArray();
+
+        if (filePath is not null)
+        {
+            await File.WriteAllBytesAsync(filePath, bmpBytes);
+        }
+
+        return new CallToolResult
+        {
+            IsError = false,
+            Content =
+            [
+                new TextContentBlock { Text = $"Screenshot for {appId}:" },
+                ImageContentBlock.FromBytes(bmpBytes, "image/bmp")
+            ]
+        };
     }
 }
 

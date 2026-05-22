@@ -3,7 +3,7 @@ using XamlTest;
 
 namespace XAMLTest.Mcp;
 
-public class AppServiceManager : IAsyncDisposable
+public sealed class AppServiceManager : IAsyncDisposable
 {
     private Dictionary<string, IApp> RunningApps { get; } = [];
 
