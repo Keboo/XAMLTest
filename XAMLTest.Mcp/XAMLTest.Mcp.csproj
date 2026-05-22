@@ -6,7 +6,7 @@
     <OutputType>Exe</OutputType>
 
     <!-- Set up the NuGet package to be an MCP server -->
-    <PackAsTool>true</PackAsTool>
+    <!--<PackAsTool>true</PackAsTool>-->
     <PackageType>McpServer</PackageType>
 
     <!-- Set up the MCP server to be a self-contained application that does not rely on a shared framework -->
@@ -27,6 +27,7 @@
   <!-- Include additional files for browsing the MCP server. -->
   <ItemGroup>
     <None Include=".mcp\server.json" Pack="true" PackagePath="/.mcp/" />
+    <None Include="..\Images\icon.png" Pack="true" PackagePath="" />
     <None Include="README.md" Pack="true" PackagePath="/" />
   </ItemGroup>
 
