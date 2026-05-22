@@ -1,12 +1,12 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
-  "description": "<your description here>",
-  "name": "io.github.<your GitHub username here>/<your repo name>",
+  "description": "MCP server for the XAMLTest library. Enables AI agents to start WPF applications, inspect and modify the visual tree, interact with UI elements via mouse and keyboard input, and capture screenshots.",
+  "name": "io.github.keboo/xamltest-mcp",
   "version": "0.1.0-beta",
   "packages": [
     {
       "registryType": "nuget",
-      "identifier": "<your package ID here>",
+      "identifier": "XAMLTest.Mcp",
       "version": "0.1.0-beta",
       "transport": {
         "type": "stdio"
@@ -16,7 +16,7 @@
     }
   ],
   "repository": {
-    "url": "https://github.com/<your GitHub username here>/<your repo name>",
+    "url": "https://github.com/Keboo/XamlTest",
     "source": "github"
   }
 }

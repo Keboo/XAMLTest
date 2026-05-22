@@ -18,10 +18,10 @@
 
     <!-- Set recommended package metadata -->
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageId>SampleMcpServer</PackageId>
+    <PackageId>XAMLTest.Mcp</PackageId>
     <PackageVersion>0.1.0-beta</PackageVersion>
-    <PackageTags>AI; MCP; server; stdio</PackageTags>
-    <Description>An MCP server using the MCP C# SDK.</Description>
+    <PackageTags>AI; MCP; WPF; XAML; testing; UI automation</PackageTags>
+    <Description>MCP server for the XAMLTest library. Enables AI agents to start WPF applications, inspect and modify the visual tree, interact with UI elements via mouse and keyboard input, and capture screenshots.</Description>
   </PropertyGroup>
 
   <!-- Include additional files for browsing the MCP server. -->
