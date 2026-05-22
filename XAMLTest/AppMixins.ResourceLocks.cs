@@ -1,5 +1,3 @@
-using System.Diagnostics;
-
 namespace XamlTest;
 
 public static partial class AppMixins
@@ -18,37 +16,22 @@ public static partial class AppMixins
         return ResourceLockLease.Acquire(locks, timeout ?? ResourceLockSettings.DefaultTimeout, cancellationToken);
     }
 
-    private sealed class ResourceLockLease : IAsyncDisposable
+    private sealed class ResourceLockLease(IReadOnlyList<SemaphoreSlim> acquiredSemaphores) : IAsyncDisposable
     {
-        private static IAsyncDisposable Empty { get; } = new ResourceLockLease();
+        private IReadOnlyList<SemaphoreSlim>? AcquiredSemaphores { get; set; } = acquiredSemaphores;
 
-        private static IReadOnlyList<(ResourceLocks Lock, string Name)> OrderedLocks { get; } =
+        private static IAsyncDisposable Empty { get; } = new ResourceLockLease([]);
+
+        private static IReadOnlyList<ResourceLocks> OrderedLocks { get; } =
         [
-            (ResourceLocks.Keyboard, @"Local\XamlTest.ResourceLocks.Keyboard"),
-            (ResourceLocks.Mouse, @"Local\XamlTest.ResourceLocks.Mouse"),
-            (ResourceLocks.Focus, @"Local\XamlTest.ResourceLocks.Focus")
+            ResourceLocks.Keyboard,
+            ResourceLocks.Mouse,
+            ResourceLocks.Focus
         ];
 
-        private readonly ManualResetEventSlim _releaseSignal = new(false);
-        private readonly TaskCompletionSource _acquired = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        private readonly TaskCompletionSource _released = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        private int _disposeSignaled;
-
-        private ResourceLockLease()
-        {
-            _acquired.SetResult();
-            _released.SetResult();
-        }
-
-        private ResourceLockLease(IReadOnlyList<string> lockNames, TimeSpan timeout, CancellationToken cancellationToken)
-        {
-            Thread ownerThread = new(() => AcquireAndHoldLocks(lockNames, timeout, cancellationToken))
-            {
-                IsBackground = true,
-                Name = "XamlTest.ResourceLockLease"
-            };
-            ownerThread.Start();
-        }
+        private static SemaphoreSlim KeyboardSemaphore { get; } = new(1, 1);
+        private static SemaphoreSlim MouseSemaphore { get; } = new(1, 1);
+        private static SemaphoreSlim FocusSemaphore { get; } = new(1, 1);
 
         public static async ValueTask<IAsyncDisposable> Acquire(
             ResourceLocks requestedLocks,
@@ -66,91 +49,40 @@ public static partial class AppMixins
                 return Empty;
             }
 
-            ResourceLockLease lease = new(locks, timeout, cancellationToken);
-            await lease._acquired.Task.ConfigureAwait(false);
-            return lease;
-        }
-
-        private void AcquireAndHoldLocks(IReadOnlyList<string> lockNames, TimeSpan timeout, CancellationToken cancellationToken)
-        {
-            List<Mutex> acquiredMutexes = new(lockNames.Count);
-            Stopwatch elapsed = Stopwatch.StartNew();
+            List<SemaphoreSlim> acquiredSemaphores = new(locks.Count);
             try
             {
-                foreach (var lockName in lockNames)
+                foreach (var requestedLock in locks)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    TimeSpan remaining = GetRemainingTimeout(timeout, elapsed);
-                    Mutex mutex = new(false, lockName);
-                    if (!Wait(mutex, remaining, cancellationToken))
+                    SemaphoreSlim semaphore = GetSemaphore(requestedLock);
+                    if (!await semaphore.WaitAsync(timeout, cancellationToken).ConfigureAwait(false))
                     {
-                        mutex.Dispose();
-                        throw new TimeoutException($"Failed to acquire resource lock '{lockName}' within {timeout}.");
+                        throw new TimeoutException($"Failed to acquire resource lock '{requestedLock}' within {timeout}.");
                     }
 
-                    acquiredMutexes.Add(mutex);
+                    acquiredSemaphores.Add(semaphore);
                 }
+            }
+            catch
+            {
+                ReleaseAll(acquiredSemaphores);
+                throw;
+            }
 
-                _acquired.SetResult();
-                _releaseSignal.Wait();
-            }
-            catch (Exception ex)
-            {
-                _acquired.TrySetException(ex);
-            }
-            finally
-            {
-                ReleaseAll(acquiredMutexes);
-                _released.TrySetResult();
-            }
-        }
+            return new ResourceLockLease(acquiredSemaphores);
 
-        private static bool Wait(Mutex mutex, TimeSpan timeout, CancellationToken cancellationToken)
-        {
-            if (!cancellationToken.CanBeCanceled)
+            static void ReleaseAll(IReadOnlyList<SemaphoreSlim> acquiredSemaphores)
             {
-                try
+                for (int i = acquiredSemaphores.Count - 1; i >= 0; i--)
                 {
-                    return mutex.WaitOne(timeout);
-                }
-                catch (AbandonedMutexException)
-                {
-                    return true;
+                    acquiredSemaphores[i].Release();
                 }
             }
-
-            int waitResult;
-            try
-            {
-                waitResult = WaitHandle.WaitAny([mutex, cancellationToken.WaitHandle], timeout);
-            }
-            catch (AbandonedMutexException ex) when (ex.MutexIndex == 0)
-            {
-                return true;
-            }
-
-            return waitResult switch
-            {
-                WaitHandle.WaitTimeout => false,
-                0 => true,
-                1 => throw new OperationCanceledException(cancellationToken),
-                _ => throw new InvalidOperationException($"Unexpected wait result '{waitResult}'.")
-            };
         }
 
-        private static TimeSpan GetRemainingTimeout(TimeSpan timeout, Stopwatch elapsed)
-        {
-            if (timeout == Timeout.InfiniteTimeSpan)
-            {
-                return timeout;
-            }
-
-            TimeSpan remaining = timeout - elapsed.Elapsed;
-            return remaining > TimeSpan.Zero ? remaining : TimeSpan.Zero;
-        }
-
-        private static IReadOnlyList<string> GetRequestedLocks(ResourceLocks requestedLocks)
+        private static IReadOnlyList<ResourceLocks> GetRequestedLocks(ResourceLocks requestedLocks)
         {
             ResourceLocks supportedLocks = ResourceLocks.All;
             ResourceLocks invalidFlags = requestedLocks & ~supportedLocks;
@@ -160,29 +92,34 @@ public static partial class AppMixins
             }
 
             return OrderedLocks
-                .Where(x => requestedLocks.HasFlag(x.Lock))
-                .Select(x => x.Name)
+                .Where(x => requestedLocks.HasFlag(x))
                 .ToList();
         }
 
+        private static SemaphoreSlim GetSemaphore(ResourceLocks requestedLock)
+            => requestedLock switch
+            {
+                ResourceLocks.Keyboard => KeyboardSemaphore,
+                ResourceLocks.Mouse => MouseSemaphore,
+                ResourceLocks.Focus => FocusSemaphore,
+                _ => throw new ArgumentOutOfRangeException(nameof(requestedLock), requestedLock, "Unsupported lock.")
+            };
+
         public ValueTask DisposeAsync()
         {
-            if (Interlocked.Exchange(ref _disposeSignaled, 1) == 0)
+            if (AcquiredSemaphores is { } acquiredSemaphores)
             {
-                _releaseSignal.Set();
-                return new ValueTask(_released.Task);
+                AcquiredSemaphores = null;
+                ReleaseAll(acquiredSemaphores);
             }
-
             return ValueTask.CompletedTask;
-        }
 
-        private static void ReleaseAll(IReadOnlyList<Mutex> acquiredMutexes)
-        {
-            for (int i = acquiredMutexes.Count - 1; i >= 0; i--)
+            static void ReleaseAll(IReadOnlyList<SemaphoreSlim> acquiredSemaphores)
             {
-                Mutex mutex = acquiredMutexes[i];
-                mutex.ReleaseMutex();
-                mutex.Dispose();
+                for (int i = acquiredSemaphores.Count - 1; i >= 0; i--)
+                {
+                    acquiredSemaphores[i].Release();
+                }
             }
         }
     }
