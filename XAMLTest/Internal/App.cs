@@ -1,4 +1,4 @@
-﻿using Grpc.Core;
+using Grpc.Core;
 using XamlTest.Host;
 
 namespace XamlTest.Internal;
@@ -75,7 +75,7 @@ internal sealed class App(
         }
         catch (OperationCanceledException)
         { }
-        catch(RpcException rpcException) when (rpcException.StatusCode == StatusCode.Unavailable)
+        catch (RpcException rpcException) when (rpcException.StatusCode == StatusCode.Unavailable)
         { }
         finally
         {
@@ -277,7 +277,7 @@ internal sealed class App(
         {
             return reply.WindowIds.Select(x => new Window(Client, x, Context, LogMessage)).ToList();
         }
-        return Array.Empty<IWindow>();
+        return [];
     }
 
     public async Task<IImage> GetScreenshot()

@@ -19,4 +19,36 @@ internal class Window : VisualElement<System.Windows.Window>, IWindow
             WindowId = Id,
             Query = query
         };
+
+    public async Task<VisualTreeNodeInfo> GetVisualTree()
+    {
+        LogMessage?.Invoke($"{nameof(GetVisualTree)}()");
+        GetVisualTreeQuery request = new()
+        {
+            WindowId = Id
+        };
+        if (await Client.GetVisualTreeAsync(request) is { } reply)
+        {
+            if (reply.ErrorMessages.Any())
+            {
+                throw new XamlTestException(string.Join(Environment.NewLine, reply.ErrorMessages));
+            }
+            if (reply.Root is { } root)
+            {
+                return MapNode(root);
+            }
+            throw new XamlTestException("Visual tree result did not contain a root node");
+        }
+        throw new XamlTestException("Failed to receive a reply");
+    }
+
+    private static VisualTreeNodeInfo MapNode(VisualTreeNode node)
+    {
+        return new VisualTreeNodeInfo
+        {
+            Type = node.Type,
+            Name = node.Name,
+            Children = node.Children.Select(MapNode).ToList()
+        };
+    }
 }
