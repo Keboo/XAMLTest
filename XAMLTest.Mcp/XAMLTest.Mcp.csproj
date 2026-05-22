@@ -2,19 +2,16 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0-windows</TargetFramework>
-    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
     <OutputType>Exe</OutputType>
 
-    <!-- Set up the NuGet package to be an MCP server -->
-    <!--<PackAsTool>true</PackAsTool>-->
+    <!-- McpServer package type lets MCP clients (VS Code, Claude Desktop, etc.) recognize and install this server. -->
     <PackageType>McpServer</PackageType>
 
-    <!-- Set up the MCP server to be a self-contained application that does not rely on a shared framework -->
-    <!--<SelfContained>true</SelfContained>-->
-    <PublishSelfContained>true</PublishSelfContained>
-
-    <!-- Set up the MCP server to be a single file executable -->
-    <PublishSingleFile>true</PublishSingleFile>
+    <!-- Suppress the default lib/ output; we place everything under tools/ via the target below. -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <!-- Suppress the expected warning about missing lib/ folder.
+         This package puts all content under tools/ rather than lib/ by design. -->
+    <NoWarn>NU5128</NoWarn>
 
     <!-- Set recommended package metadata -->
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -39,5 +36,22 @@
   <ItemGroup>
     <ProjectReference Include="..\XAMLTest\XAMLTest.csproj" />
   </ItemGroup>
+
+  <!--
+    PackAsTool is incompatible with platform-specific TFMs (net10.0-windows / WPF).
+    Instead, we run Publish as part of the pack and bundle every output file into
+    tools/net10.0-windows7.0/any/ so MCP clients get a fully self-contained tree.
+  -->
+  <Target Name="_IncludeMcpServerToolFiles" BeforeTargets="_GetPackageFiles" DependsOnTargets="Publish">
+    <!-- Collect publish output into a private item type to avoid metadata mixing with static None items -->
+    <ItemGroup>
+      <_McpPublishFiles Include="$(PublishDir)**\*" Exclude="$(PublishDir)**\*.pdb" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Include="@(_McpPublishFiles)"
+            Pack="true"
+            PackagePath="tools/net10.0-windows7.0/any/%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+  </Target>
 
 </Project>
