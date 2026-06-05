@@ -361,8 +361,12 @@ public class ElementGenerator : IIncrementalGenerator
         {
             switch ($"{type}")
             {
-                case "System.Windows.Media.Brush": return false;
-                case "System.Windows.DependencyObject": return true;
+                case "System.Windows.Media.Brush":
+                case "System.Windows.Media.Brush?": 
+                    return false;
+                case "System.Windows.DependencyObject":
+                case "System.Windows.DependencyObject?":
+                    return true;
             }
         }
         return false;
