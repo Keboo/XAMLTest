@@ -23,6 +23,11 @@ env:
 
 jobs:
   build:
+    # Required for Trusted Publishing: allows GitHub to issue OIDC tokens for this job
+    # This enables secure, keyless authentication with NuGet.org
+    permissions:
+      id-token: write
+
     runs-on: windows-latest
 
     steps:
@@ -96,9 +101,16 @@ jobs:
         name: NuGet
         path: ${{ github.workspace }}\XAMLTest\bin\${{ env.configuration }}\XAMLTest.${{ env.nugetVersion }}*nupkg
 
+    - name: NuGet login (OIDC → temporary API key)
+      if: ${{ github.event_name != 'pull_request' }}
+      uses: NuGet/login@v1
+      id: login
+      with:
+        user: ${{ secrets.NUGET_USER }} 
+
     - name: Push NuGet
       if: ${{ github.event_name != 'pull_request' }}
-      run: dotnet nuget push ${{ github.workspace }}\XAMLTest\bin\${{ env.configuration }}\XAMLTest.${{ env.nugetVersion }}.nupkg --source https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }} --skip-duplicate
+      run: dotnet nuget push ${{ github.workspace }}\XAMLTest\bin\${{ env.configuration }}\XAMLTest.${{ env.nugetVersion }}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --skip-duplicate
       
   automerge:
     needs: build
