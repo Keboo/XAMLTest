@@ -18,3 +18,9 @@ If the host does not exit, it is killed and given another 10 seconds to terminat
 Asynchronous disposal waits without blocking a thread or polling process state.
 Local shutdown timeouts are logged and process cleanup still runs; unexpected
 RPC errors remain visible to the caller.
+
+## Testing policy
+Tests must exercise public APIs, not internal implementation details.
+`Microsoft.CodeAnalysis.BannedApiAnalyzers` runs in every project, using the
+repository-wide `BannedSymbols.txt`. `InternalsVisibleToAttribute` is banned;
+violations fail the build with RS0030.
