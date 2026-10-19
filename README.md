@@ -10,3 +10,11 @@ After the 1.0.0 release, this library will follow [Semantic Versioning](https://
 
 ## Samples?
 See the tests (XAMLTests.Tests) for samples of how tests can be setup. [Material Design In XAML Toolkit](https://github.com/MaterialDesignInXAML/MaterialDesignInXamlToolkit) is also leveraging this library for the purpose of testing its various styles and templates. You can see samples of its tests [here](https://github.com/MaterialDesignInXAML/MaterialDesignInXamlToolkit/tree/master/MaterialDesignThemes.UITests).
+
+## Application cleanup
+Dispose each `IApp` after use, preferably with `await using`. Disposal allows up to
+10 seconds for the shutdown RPC, then waits up to 10 seconds for process exit.
+If the host does not exit, it is killed and given another 10 seconds to terminate.
+Asynchronous disposal waits without blocking a thread or polling process state.
+Local shutdown timeouts are logged and process cleanup still runs; unexpected
+RPC errors remain visible to the caller.
