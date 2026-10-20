@@ -1,0 +1,1 @@
+T:System.Runtime.CompilerServices.InternalsVisibleToAttribute;Do not expose internals to other assemblies. Tests must use the public API.

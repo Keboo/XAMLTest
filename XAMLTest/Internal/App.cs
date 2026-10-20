@@ -8,6 +8,9 @@ internal sealed class App(
     Protocol.ProtocolClient client,
     AppOptions appOptions) : IApp
 {
+    private static readonly TimeSpan ShutdownTimeout = TimeSpan.FromSeconds(10);
+    private static readonly TimeSpan ProcessExitTimeout = TimeSpan.FromSeconds(10);
+
     public Process Process { get; } = process ?? throw new ArgumentNullException(nameof(process));
 
     private Protocol.ProtocolClient Client { get; } = client ?? throw new ArgumentNullException(nameof(client));
@@ -27,10 +30,9 @@ internal sealed class App(
             ExitCode = 0
         };
         LogMessage?.Invoke($"{nameof(IApp)}.{nameof(Dispose)}()");
+        using CancellationTokenSource cts = new(ShutdownTimeout);
         try
         {
-            using CancellationTokenSource cts = new();
-            cts.CancelAfter(TimeSpan.FromSeconds(1));
             if (Client.Shutdown(request, cancellationToken: cts.Token) is { } reply)
             {
                 if (reply.ErrorMessages.Any())
@@ -41,14 +43,26 @@ internal sealed class App(
             }
             throw new XamlTestException("Failed to get a reply");
         }
-        catch (OperationCanceledException)
-        { }
+        catch (OperationCanceledException) when (cts.IsCancellationRequested)
+        {
+            LogMessage?.Invoke("Shutdown request timed out; waiting for process exit.");
+        }
+        catch (RpcException rpcException) when (rpcException.StatusCode == StatusCode.Cancelled && cts.IsCancellationRequested)
+        {
+            LogMessage?.Invoke("Shutdown request timed out; waiting for process exit.");
+        }
         catch (RpcException rpcException) when (rpcException.StatusCode == StatusCode.Unavailable)
         { }
         finally
         {
-            KillProcess();
-            CleanupLogFiles();
+            try
+            {
+                KillProcess();
+            }
+            finally
+            {
+                CleanupLogFiles();
+            }
         }
     }
 
@@ -59,10 +73,9 @@ internal sealed class App(
             ExitCode = 0
         };
         LogMessage?.Invoke($"{nameof(IApp)}.{nameof(DisposeAsync)}()");
+        using CancellationTokenSource cts = new(ShutdownTimeout);
         try
         {
-            using CancellationTokenSource cts = new();
-            cts.CancelAfter(TimeSpan.FromSeconds(1));
             if (await Client.ShutdownAsync(request, cancellationToken: cts.Token) is { } reply)
             {
                 if (reply.ErrorMessages.Any())
@@ -73,14 +86,26 @@ internal sealed class App(
             }
             throw new XamlTestException("Failed to get a reply");
         }
-        catch (OperationCanceledException)
-        { }
+        catch (OperationCanceledException) when (cts.IsCancellationRequested)
+        {
+            LogMessage?.Invoke("Shutdown request timed out; waiting for process exit.");
+        }
+        catch (RpcException rpcException) when (rpcException.StatusCode == StatusCode.Cancelled && cts.IsCancellationRequested)
+        {
+            LogMessage?.Invoke("Shutdown request timed out; waiting for process exit.");
+        }
         catch (RpcException rpcException) when (rpcException.StatusCode == StatusCode.Unavailable)
         { }
         finally
         {
-            KillProcess();
-            await CleanupLogFilesAsync();
+            try
+            {
+                await KillProcessAsync();
+            }
+            finally
+            {
+                await CleanupLogFilesAsync();
+            }
         }
     }
 
@@ -133,29 +158,41 @@ internal sealed class App(
     private void KillProcess()
     {
         LogMessage?.Invoke("Waiting for process exit");
-        using CancellationTokenSource cts = new();
-        cts.CancelAfter(TimeSpan.FromSeconds(10));
-        Process? process = null;
-        do
-        {
-            try
-            {
-                process = Process.GetProcessById(Process.Id);
-            }
-            catch (ArgumentException)
-            {
-                //Thrown when the process specified by the processId parameter is not running.
-            }
-        }
-        while (process?.HasExited == false && !cts.IsCancellationRequested);
-
-        LogMessage?.Invoke($"Process Exited? {process?.HasExited}");
-        if (process?.HasExited == false)
+        if (!Process.WaitForExit((int)ProcessExitTimeout.TotalMilliseconds))
         {
             LogMessage?.Invoke($"Invoking kill");
-            process.Kill();
-            process.WaitForExit(1_000);
+            Process.Kill();
+            if (!Process.WaitForExit((int)ProcessExitTimeout.TotalMilliseconds))
+            {
+                throw new XamlTestException("Host process did not exit after being killed.");
+            }
         }
+        LogMessage?.Invoke($"Process Exited? {Process.HasExited}");
+    }
+
+    private async Task KillProcessAsync()
+    {
+        LogMessage?.Invoke("Waiting for process exit");
+        using CancellationTokenSource cts = new(ProcessExitTimeout);
+        try
+        {
+            await Process.WaitForExitAsync(cts.Token);
+        }
+        catch (OperationCanceledException) when (cts.IsCancellationRequested)
+        {
+            LogMessage?.Invoke("Invoking kill");
+            Process.Kill();
+            using CancellationTokenSource killCts = new(ProcessExitTimeout);
+            try
+            {
+                await Process.WaitForExitAsync(killCts.Token);
+            }
+            catch (OperationCanceledException e) when (killCts.IsCancellationRequested)
+            {
+                throw new XamlTestException("Host process did not exit after being killed.", e);
+            }
+        }
+        LogMessage?.Invoke($"Process Exited? {Process.HasExited}");
     }
 
     public async Task Initialize(string applicationResourceXaml, params string[] assemblies)
